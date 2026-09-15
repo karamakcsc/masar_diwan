@@ -1,0 +1,23 @@
+{
+ "creation": "2026-09-15 23:53:39.955863",
+ "currency": "JOD",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "Correspondence",
+ "filters_json": "[\n [\n  \"Correspondence\",\n  \"status\",\n  \"=\",\n  \"Draft\"\n ]\n]",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Correspondence - Draft",
+ "modified": "2026-09-16 00:29:35.306600",
+ "modified_by": "Administrator",
+ "module": "Masar Diwan",
+ "name": "Correspondence - Draft",
+ "owner": "Administrator",
+ "report_function": "Sum",
+ "show_full_number": 0,
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Daily",
+ "type": "Document Type"
+}

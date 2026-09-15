@@ -1,0 +1,171 @@
+{
+ "creation": "2026-09-15 23:41:05.406705",
+ "docstatus": 0,
+ "doctype": "Workflow",
+ "document_type": "Correspondence Request",
+ "enable_action_confirmation": 0,
+ "idx": 0,
+ "is_active": 1,
+ "modified": "2026-09-15 23:41:05.406705",
+ "modified_by": "Administrator",
+ "name": "Correspondence Request Workflow",
+ "override_status": 0,
+ "owner": "Administrator",
+ "send_email_alert": 0,
+ "states": [
+  {
+   "allow_edit": "Correspondence Employee",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Draft"
+  },
+  {
+   "allow_edit": "Diwan Officer",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Pending Review"
+  },
+  {
+   "allow_edit": "Diwan Officer",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Under Review"
+  },
+  {
+   "allow_edit": "Correspondence Employee",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Needs Revision"
+  },
+  {
+   "allow_edit": "Diwan Officer",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Rejected"
+  },
+  {
+   "allow_edit": "Diwan Officer",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Approved & Numbered"
+  }
+ ],
+ "transitions": [
+  {
+   "action": "Submit",
+   "allow_self_approval": 1,
+   "allowed": "Correspondence Employee",
+   "next_state": "Pending Review",
+   "send_email_to_creator": 0,
+   "state": "Draft"
+  },
+  {
+   "action": "Resubmit",
+   "allow_self_approval": 1,
+   "allowed": "Correspondence Employee",
+   "next_state": "Pending Review",
+   "send_email_to_creator": 0,
+   "state": "Needs Revision"
+  },
+  {
+   "action": "Submit",
+   "allow_self_approval": 1,
+   "allowed": "Department Head",
+   "next_state": "Pending Review",
+   "send_email_to_creator": 0,
+   "state": "Draft"
+  },
+  {
+   "action": "Resubmit",
+   "allow_self_approval": 1,
+   "allowed": "Department Head",
+   "next_state": "Pending Review",
+   "send_email_to_creator": 0,
+   "state": "Needs Revision"
+  },
+  {
+   "action": "Submit",
+   "allow_self_approval": 1,
+   "allowed": "Diwan Officer",
+   "next_state": "Pending Review",
+   "send_email_to_creator": 0,
+   "state": "Draft"
+  },
+  {
+   "action": "Resubmit",
+   "allow_self_approval": 1,
+   "allowed": "Diwan Officer",
+   "next_state": "Pending Review",
+   "send_email_to_creator": 0,
+   "state": "Needs Revision"
+  },
+  {
+   "action": "Submit",
+   "allow_self_approval": 1,
+   "allowed": "Senior Management",
+   "next_state": "Pending Review",
+   "send_email_to_creator": 0,
+   "state": "Draft"
+  },
+  {
+   "action": "Resubmit",
+   "allow_self_approval": 1,
+   "allowed": "Senior Management",
+   "next_state": "Pending Review",
+   "send_email_to_creator": 0,
+   "state": "Needs Revision"
+  },
+  {
+   "action": "Start Review",
+   "allow_self_approval": 1,
+   "allowed": "Diwan Officer",
+   "next_state": "Under Review",
+   "send_email_to_creator": 0,
+   "state": "Pending Review"
+  },
+  {
+   "action": "Request Revision",
+   "allow_self_approval": 1,
+   "allowed": "Diwan Officer",
+   "next_state": "Needs Revision",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
+  },
+  {
+   "action": "Reject",
+   "allow_self_approval": 1,
+   "allowed": "Diwan Officer",
+   "next_state": "Rejected",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
+  },
+  {
+   "action": "Approve & Register",
+   "allow_self_approval": 1,
+   "allowed": "Diwan Officer",
+   "next_state": "Approved & Numbered",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
+  }
+ ],
+ "workflow_name": "Correspondence Request Workflow",
+ "workflow_state_field": "status"
+}

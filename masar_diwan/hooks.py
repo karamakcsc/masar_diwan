@@ -51,7 +51,7 @@ app_license = "mit"
 # Svg Icons
 # ------------------
 # include app icons in desk
-# app_include_icons = "masar_diwan/public/icons.svg"
+app_include_icons = "masar_diwan/public/icons.svg"
 
 # Home Pages
 # ----------
@@ -84,6 +84,7 @@ jinja = {
 # ------------
 
 after_install = "masar_diwan.install.after_install"
+after_migrate = "masar_diwan.install.after_migrate"
 
 # Uninstallation
 # ------------

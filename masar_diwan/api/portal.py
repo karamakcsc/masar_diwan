@@ -1,4 +1,11 @@
-"""Whitelisted endpoints backing the /track portal page (Phase 7).
+"""Whitelisted endpoints backing correspondence search/tracking.
+
+Called from two front doors that share this one implementation instead of
+duplicating it: the `/track` website page for Website Users, and the
+"Correspondence Tracking" Desk Page for System Users who'd rather not leave
+`/app`. `log_event()`'s own channel inference (Website User -> Portal, else
+Desk) is what tells the two callers apart in the Access Log - this module
+never hardcodes a channel.
 
 Both the search list and the single-reference lookup reuse
 `masar_diwan.permissions` for the actual access decision instead of
@@ -111,7 +118,7 @@ def search_correspondence(
 		as_dict=True,
 	)
 
-	log_event("View", channel="Portal", reason="Portal search")
+	log_event("View", reason="Correspondence search")
 
 	return [_mask_if_restricted(r, user) for r in rows]
 
@@ -131,7 +138,6 @@ def get_tracking_detail(ref: str, via: str = "qr"):
 			reason="Reference not found",
 			reference_doctype="Correspondence",
 			reference_name=ref,
-			channel="Portal",
 		)
 		return {"found": False}
 
@@ -144,14 +150,58 @@ def get_tracking_detail(ref: str, via: str = "qr"):
 		reason=None if allowed else "No read permission",
 		reference_doctype="Correspondence",
 		reference_name=ref,
-		channel="Portal",
 	)
 
 	if not allowed:
 		return {"found": True, "restricted": True}
 
+	attachments = frappe.get_all(
+		"File",
+		filters={"attached_to_doctype": "Correspondence", "attached_to_name": ref},
+		fields=["name", "file_name", "file_url"],
+	)
+
 	return {
 		"found": True,
 		"restricted": False,
 		"data": {f: doc.get(f) for f in RESULT_FIELDS},
+		"attachments": attachments,
 	}
+
+
+@frappe.whitelist()
+def download_attachment(file_id: str):
+	"""Logged replacement for the raw /private/files/... route (Phase 6's
+	own TODO): re-checks permission on the *Correspondence* the file is
+	attached to (not just the File doctype itself), logs a Download event
+	either way, and only then streams the content.
+	"""
+	if not frappe.db.exists("File", file_id):
+		frappe.throw(_("File not found"), frappe.DoesNotExistError)
+
+	file_doc = frappe.get_doc("File", file_id)
+	user = frappe.session.user
+
+	if file_doc.attached_to_doctype != "Correspondence" or not file_doc.attached_to_name:
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+	reference_name = file_doc.attached_to_name
+	allowed = frappe.db.exists("Correspondence", reference_name) and has_permission(
+		frappe.get_doc("Correspondence", reference_name), "read", user
+	)
+
+	log_event(
+		"Download",
+		result="Success" if allowed else "Denied",
+		reason=None if allowed else "No read permission on the attached Correspondence",
+		reference_doctype="Correspondence",
+		reference_name=reference_name,
+		file_name=file_doc.file_name,
+	)
+
+	if not allowed:
+		frappe.throw(_("You are not permitted to download this file"), frappe.PermissionError)
+
+	frappe.local.response.filename = file_doc.file_name
+	frappe.local.response.filecontent = file_doc.get_content()
+	frappe.local.response.type = "download"

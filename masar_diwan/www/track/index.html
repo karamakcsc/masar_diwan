@@ -124,6 +124,9 @@ frappe.ready(function() {
 			return;
 		}
 		const d = data.data;
+		const attachmentsHtml = (data.attachments || []).map(function(f) {
+			return `<li><a href="#" onclick="masarDownload('${f.name}'); return false;">${frappe.utils.escape_html(f.file_name)}</a></li>`;
+		}).join("");
 		el.innerHTML = `
 			<div class="card mb-3"><div class="card-body">
 				<h5>${frappe.utils.escape_html(d.reference_no)}</h5>
@@ -131,9 +134,14 @@ frappe.ready(function() {
 				<p><b>${__("Party")}:</b> ${frappe.utils.escape_html(d.party || "")}</p>
 				<p><b>${__("Status")}:</b> ${frappe.utils.escape_html(d.status || "")}</p>
 				<p><b>${__("Department")}:</b> ${frappe.utils.escape_html(d.department || "")}</p>
+				${attachmentsHtml ? `<p><b>${__("Attachments")}:</b></p><ul>${attachmentsHtml}</ul>` : ""}
 			</div></div>
 		`;
 	}
+
+	window.masarDownload = function(fileId) {
+		window.location.href = "/api/method/masar_diwan.api.portal.download_attachment?file_id=" + encodeURIComponent(fileId);
+	};
 
 	function lookupRef(ref, via) {
 		frappe.call({

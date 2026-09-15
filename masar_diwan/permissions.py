@@ -28,6 +28,8 @@ so the list never shows a row the form would then refuse to open.
 
 import frappe
 
+from masar_diwan.access_log import log_event
+
 DEPARTMENT_EXEMPT_ROLES = {"Diwan Officer", "Senior Management"}
 CONFIDENTIAL_BYPASS_ROLES = {"Diwan Officer", "Senior Management"}
 HIGHLY_CONFIDENTIAL_BYPASS_ROLES = {"Senior Management"}
@@ -53,10 +55,13 @@ def _is_authorized_viewer(reference_name: str, user: str) -> bool:
 
 
 def _log_denial(doctype: str, name: str, user: str, reason: str):
-	# TODO (phase 6): write an Access Log row here with result=Denied once
-	# the Access Log doctype exists, instead of just logging server-side.
-	frappe.logger("masar_diwan.permissions").info(
-		f"Access denied: user={user} doctype={doctype} name={name} reason={reason}"
+	log_event(
+		"View",
+		result="Denied",
+		reason=reason,
+		reference_doctype=doctype,
+		reference_name=name,
+		user=user,
 	)
 
 
