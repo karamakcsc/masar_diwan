@@ -76,17 +76,14 @@ app_license = "mit"
 # Jinja
 # ----------
 
-# add methods and filters to jinja environment
-# jinja = {
-# 	"methods": "masar_diwan.utils.jinja_methods",
-# 	"filters": "masar_diwan.utils.jinja_filters"
-# }
+jinja = {
+	"methods": ["masar_diwan.utils.qrcode_utils.qr_data_uri"],
+}
 
 # Installation
 # ------------
 
-# before_install = "masar_diwan.install.before_install"
-# after_install = "masar_diwan.install.after_install"
+after_install = "masar_diwan.install.after_install"
 
 # Uninstallation
 # ------------
@@ -132,13 +129,17 @@ app_license = "mit"
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+permission_query_conditions = {
+	"Correspondence": "masar_diwan.permissions.get_permission_query_conditions",
+}
+
+has_permission = {
+	"Correspondence": "masar_diwan.permissions.has_permission",
+}
+
+# Access Log (Phase 6)
+# --------------------
+on_session_creation = "masar_diwan.access_log.log_login"
 
 # Document Events
 # ---------------
@@ -261,4 +262,27 @@ app_license = "mit"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
+
+# Fixtures
+# --------
+fixtures = [
+	{
+		"doctype": "Role",
+		"filters": [
+			[
+				"name",
+				"in",
+				[
+					"Correspondence Employee",
+					"Department Head",
+					"Diwan Officer",
+					"Senior Management",
+					"Portal Tracking User",
+				],
+			]
+		],
+	},
+	{"doctype": "Correspondence Type"},
+	{"doctype": "Correspondence Category"},
+]
 

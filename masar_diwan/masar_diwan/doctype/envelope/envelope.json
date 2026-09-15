@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "allow_bulk_edit": 1,
+ "allow_rename": 1,
+ "autoname": "format:\u0645\u063a\u0644\u0641-{YYYY}-{####}",
+ "creation": "2026-09-15 23:50:34.367946",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "envelope_no",
+  "status",
+  "column_break_1",
+  "creation_date",
+  "linked_delivery_sheet",
+  "section_break_docs",
+  "envelope_documents"
+ ],
+ "fields": [
+  {
+   "fieldname": "envelope_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Envelope No",
+   "read_only": 1
+  },
+  {
+   "default": "Open",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Open\nSent\nArchived"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "creation_date",
+   "fieldtype": "Date",
+   "label": "Creation Date"
+  },
+  {
+   "fieldname": "linked_delivery_sheet",
+   "fieldtype": "Link",
+   "label": "Linked Delivery Sheet",
+   "options": "Delivery Sheet"
+  },
+  {
+   "fieldname": "section_break_docs",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "envelope_documents",
+   "fieldtype": "Table",
+   "label": "Documents",
+   "options": "Envelope Document"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-15 23:50:34.367946",
+ "modified_by": "Administrator",
+ "module": "Masar Diwan",
+ "name": "Envelope",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Diwan Officer",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Department Head",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Senior Management",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "envelope_no",
+ "track_changes": 1
+}

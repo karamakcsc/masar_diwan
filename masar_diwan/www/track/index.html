@@ -1,0 +1,188 @@
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+<div class="masar-track-page" dir="auto">
+	<div class="alert alert-info d-flex justify-content-between align-items-center">
+		<span>{{ _("Website User — Tracking Portal Only") }} ({{ user_fullname }})</span>
+		{% if is_portal_user %}
+		<span class="badge badge-secondary">{{ _("Portal Tracking User") }}</span>
+		{% endif %}
+	</div>
+
+	<div class="card mb-4">
+		<div class="card-body">
+			<h5>{{ _("Scan a Correspondence") }}</h5>
+			<div class="btn-group mb-2">
+				<button class="btn btn-primary" id="open-camera-scan">{{ _("Scan with Camera") }}</button>
+			</div>
+			<div class="form-inline">
+				<input type="text" id="barcode-input" class="form-control mr-2"
+					placeholder="{{ _('Scan barcode or type reference number, then Enter') }}" autofocus>
+			</div>
+			<div id="qr-reader" style="width: 320px; display:none; margin-top: 10px;"></div>
+		</div>
+	</div>
+
+	<div id="scan-result"></div>
+
+	<div class="card mb-4">
+		<div class="card-body">
+			<h5>{{ _("Search Correspondence") }}</h5>
+			<form id="search-form" class="form-row">
+				<div class="col-md-3 mb-2">
+					<select class="form-control" name="correspondence_type">
+						<option value="">{{ _("Type") }}</option>
+						{% for t in correspondence_types %}
+						<option value="{{ t.name }}">{{ t.title }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="col-md-3 mb-2">
+					<select class="form-control" name="status">
+						<option value="">{{ _("Status") }}</option>
+						{% for s in statuses %}
+						<option value="{{ s }}">{{ s }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="col-md-3 mb-2">
+					<input type="text" class="form-control" name="text" placeholder="{{ _('Reference No / Subject') }}">
+				</div>
+				<div class="col-md-3 mb-2">
+					<button type="submit" class="btn btn-secondary btn-block">{{ _("Search") }}</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<table class="table table-bordered" id="results-table">
+		<thead>
+			<tr>
+				<th>{{ _("Reference No") }}</th>
+				<th>{{ _("Subject") }}</th>
+				<th>{{ _("Party") }}</th>
+				<th>{{ _("Status") }}</th>
+				<th>{{ _("Date") }}</th>
+			</tr>
+		</thead>
+		<tbody id="results-body"></tbody>
+	</table>
+</div>
+{% endblock %}
+
+{% block head_include %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+{% endblock %}
+
+{% block script %}
+<script>
+frappe.ready(function() {
+	const initialRef = {{ (ref or "") | tojson }};
+
+	function renderResults(rows) {
+		const body = document.getElementById("results-body");
+		body.innerHTML = "";
+		(rows || []).forEach(function(row) {
+			const tr = document.createElement("tr");
+			tr.innerHTML = `
+				<td><a href="/track?ref=${encodeURIComponent(row.name)}">${frappe.utils.escape_html(row.reference_no || row.name)}</a></td>
+				<td>${frappe.utils.escape_html(row.subject || "")}</td>
+				<td>${frappe.utils.escape_html(row.party || "")}</td>
+				<td>${frappe.utils.escape_html(row.status || "")}</td>
+				<td>${frappe.utils.escape_html(row.document_date || "")}</td>
+			`;
+			body.appendChild(tr);
+		});
+	}
+
+	function runSearch(filters) {
+		frappe.call({
+			method: "masar_diwan.api.portal.search_correspondence",
+			args: filters || {},
+			callback: function(r) {
+				renderResults(r.message);
+			},
+		});
+	}
+
+	document.getElementById("search-form").addEventListener("submit", function(e) {
+		e.preventDefault();
+		const fd = new FormData(e.target);
+		const filters = {};
+		fd.forEach(function(v, k) { if (v) filters[k] = v; });
+		runSearch(filters);
+	});
+
+	function showScanResult(data) {
+		const el = document.getElementById("scan-result");
+		if (!data.found) {
+			el.innerHTML = `<div class="alert alert-warning">${__("Reference not found")}</div>`;
+			return;
+		}
+		if (data.restricted) {
+			el.innerHTML = `<div class="alert alert-danger">•• ${__("Restricted content")} •• ${__("You are not authorized to view this correspondence")}</div>`;
+			return;
+		}
+		const d = data.data;
+		el.innerHTML = `
+			<div class="card mb-3"><div class="card-body">
+				<h5>${frappe.utils.escape_html(d.reference_no)}</h5>
+				<p><b>${__("Subject")}:</b> ${frappe.utils.escape_html(d.subject || "")}</p>
+				<p><b>${__("Party")}:</b> ${frappe.utils.escape_html(d.party || "")}</p>
+				<p><b>${__("Status")}:</b> ${frappe.utils.escape_html(d.status || "")}</p>
+				<p><b>${__("Department")}:</b> ${frappe.utils.escape_html(d.department || "")}</p>
+			</div></div>
+		`;
+	}
+
+	function lookupRef(ref, via) {
+		frappe.call({
+			method: "masar_diwan.api.portal.get_tracking_detail",
+			args: {ref: ref, via: via || "qr"},
+			callback: function(r) {
+				showScanResult(r.message);
+			},
+		});
+	}
+
+	if (initialRef) {
+		lookupRef(initialRef, "qr");
+	}
+
+	const barcodeInput = document.getElementById("barcode-input");
+	barcodeInput.addEventListener("keydown", function(e) {
+		if (e.key === "Enter" && barcodeInput.value) {
+			e.preventDefault();
+			window.location.href = "/track?ref=" + encodeURIComponent(barcodeInput.value);
+		}
+	});
+
+	document.getElementById("open-camera-scan").addEventListener("click", function() {
+		const readerDiv = document.getElementById("qr-reader");
+		readerDiv.style.display = "block";
+		if (typeof Html5Qrcode === "undefined") {
+			readerDiv.innerHTML = `<div class="alert alert-warning">${__("Camera scanner library failed to load")}</div>`;
+			return;
+		}
+		const scanner = new Html5Qrcode("qr-reader");
+		scanner.start(
+			{ facingMode: "environment" },
+			{ fps: 10, qrbox: 200 },
+			function(decodedText) {
+				scanner.stop();
+				let ref = decodedText;
+				try {
+					const url = new URL(decodedText);
+					ref = url.searchParams.get("ref") || decodedText;
+				} catch (e) {
+					// decodedText wasn't a URL, use as-is
+				}
+				window.location.href = "/track?ref=" + encodeURIComponent(ref);
+			}
+		);
+	});
+
+	runSearch({});
+});
+</script>
+{% endblock %}

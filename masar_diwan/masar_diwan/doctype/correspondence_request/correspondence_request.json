@@ -1,0 +1,225 @@
+{
+ "actions": [],
+ "allow_bulk_edit": 1,
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-09-15 23:39:57.817252",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "request_type",
+  "correspondence_type",
+  "column_break_1",
+  "requested_by",
+  "department",
+  "request_date",
+  "section_break_content",
+  "subject",
+  "party_or_department",
+  "draft_text",
+  "column_break_2",
+  "suggested_priority",
+  "suggested_confidentiality",
+  "note_to_registrar",
+  "section_break_decision",
+  "status",
+  "decision_note",
+  "resulting_correspondence"
+ ],
+ "fields": [
+  {
+   "fieldname": "request_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Request Type",
+   "options": "Incoming\nOutgoing\nInternal",
+   "reqd": 1
+  },
+  {
+   "description": "Set by the Diwan Officer before approval - determines the reference number series.",
+   "fieldname": "correspondence_type",
+   "fieldtype": "Link",
+   "label": "Correspondence Type",
+   "options": "Correspondence Type"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "__user",
+   "fieldname": "requested_by",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Requested By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Department",
+   "options": "Department"
+  },
+  {
+   "fieldname": "request_date",
+   "fieldtype": "Datetime",
+   "label": "Request Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_content",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Subject",
+   "reqd": 1
+  },
+  {
+   "fieldname": "party_or_department",
+   "fieldtype": "Data",
+   "label": "Party / Department"
+  },
+  {
+   "fieldname": "draft_text",
+   "fieldtype": "Text Editor",
+   "label": "Draft Text"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Normal",
+   "fieldname": "suggested_priority",
+   "fieldtype": "Select",
+   "label": "Suggested Priority",
+   "options": "Normal\nUrgent"
+  },
+  {
+   "default": "Normal",
+   "fieldname": "suggested_confidentiality",
+   "fieldtype": "Select",
+   "label": "Suggested Confidentiality",
+   "options": "Normal\nConfidential\nHighly Confidential"
+  },
+  {
+   "fieldname": "note_to_registrar",
+   "fieldtype": "Small Text",
+   "label": "Note to Registrar"
+  },
+  {
+   "fieldname": "section_break_decision",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nPending Review\nUnder Review\nNeeds Revision\nRejected\nApproved & Numbered",
+   "read_only": 1
+  },
+  {
+   "fieldname": "decision_note",
+   "fieldtype": "Small Text",
+   "label": "Decision Note"
+  },
+  {
+   "fieldname": "resulting_correspondence",
+   "fieldtype": "Link",
+   "label": "Resulting Correspondence",
+   "options": "Correspondence",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-15 23:39:57.817252",
+ "modified_by": "Administrator",
+ "module": "Masar Diwan",
+ "name": "Correspondence Request",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Diwan Officer",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Senior Management",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "if_owner": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Correspondence Employee",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "if_owner": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Department Head",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "subject",
+ "track_changes": 1
+}

@@ -1,0 +1,361 @@
+{
+ "actions": [],
+ "allow_bulk_edit": 1,
+ "allow_import": 1,
+ "allow_rename": 1,
+ "creation": "2026-09-15 23:08:27.656180",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "correspondence_type",
+  "reference_no",
+  "column_break_type",
+  "qr_code",
+  "section_break_subject",
+  "subject",
+  "subject_en",
+  "column_break_subject",
+  "document_date",
+  "actual_date",
+  "section_break_party",
+  "party_type",
+  "party",
+  "column_break_party",
+  "category",
+  "priority",
+  "section_break_confidentiality",
+  "confidentiality",
+  "authorized_viewers",
+  "section_break_routing",
+  "status",
+  "current_owner",
+  "department",
+  "column_break_routing",
+  "follow_up_date",
+  "linked_correspondence",
+  "section_break_related",
+  "related_document_type",
+  "related_document",
+  "column_break_related",
+  "company",
+  "branch",
+  "source_request",
+  "delivery_sheet",
+  "envelope",
+  "section_break_followup",
+  "follow_up_actions",
+  "section_break_transfer_log",
+  "transfer_log"
+ ],
+ "fields": [
+  {
+   "fieldname": "correspondence_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Correspondence Type",
+   "options": "Correspondence Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reference_no",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "label": "Reference No",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_type",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "qr_code",
+   "fieldtype": "Attach Image",
+   "label": "QR Code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_subject",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "label": "Subject",
+   "reqd": 1
+  },
+  {
+   "fieldname": "subject_en",
+   "fieldtype": "Data",
+   "label": "Subject (English)"
+  },
+  {
+   "fieldname": "column_break_subject",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "document_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Document Date"
+  },
+  {
+   "fieldname": "actual_date",
+   "fieldtype": "Date",
+   "label": "Actual Date"
+  },
+  {
+   "fieldname": "section_break_party",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "party_type",
+   "fieldtype": "Select",
+   "label": "Party Type",
+   "options": "\nContact\nCustomer\nSupplier\nEmployee\nDepartment"
+  },
+  {
+   "fieldname": "party",
+   "fieldtype": "Dynamic Link",
+   "label": "Party",
+   "options": "party_type"
+  },
+  {
+   "fieldname": "column_break_party",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Category",
+   "options": "Correspondence Category"
+  },
+  {
+   "default": "Normal",
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Priority",
+   "options": "Normal\nUrgent"
+  },
+  {
+   "fieldname": "section_break_confidentiality",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "Normal",
+   "fieldname": "confidentiality",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Confidentiality",
+   "options": "Normal\nConfidential\nHighly Confidential"
+  },
+  {
+   "depends_on": "eval:doc.confidentiality != 'Normal'",
+   "fieldname": "authorized_viewers",
+   "fieldtype": "Table MultiSelect",
+   "label": "Authorized Viewers",
+   "options": "Correspondence Authorized Viewer"
+  },
+  {
+   "fieldname": "section_break_routing",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nUnder Review\nReferred / In Progress\nCompleted\nArchived",
+   "read_only": 1
+  },
+  {
+   "fieldname": "current_owner",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Current Owner",
+   "options": "User"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Department",
+   "options": "Department"
+  },
+  {
+   "fieldname": "column_break_routing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "follow_up_date",
+   "fieldtype": "Date",
+   "in_standard_filter": 1,
+   "label": "Follow-up Date"
+  },
+  {
+   "fieldname": "linked_correspondence",
+   "fieldtype": "Link",
+   "label": "Linked Correspondence",
+   "options": "Correspondence"
+  },
+  {
+   "fieldname": "section_break_related",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "related_document_type",
+   "fieldtype": "Link",
+   "label": "Related Document Type",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "related_document",
+   "fieldtype": "Dynamic Link",
+   "label": "Related Document",
+   "options": "related_document_type"
+  },
+  {
+   "fieldname": "column_break_related",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "options": "Branch"
+  },
+  {
+   "fieldname": "source_request",
+   "fieldtype": "Link",
+   "label": "Source Request",
+   "options": "Correspondence Request",
+   "read_only": 1
+  },
+  {
+   "fieldname": "delivery_sheet",
+   "fieldtype": "Link",
+   "label": "Delivery Sheet",
+   "options": "Delivery Sheet",
+   "read_only": 1
+  },
+  {
+   "fieldname": "envelope",
+   "fieldtype": "Link",
+   "label": "Envelope",
+   "options": "Envelope",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_followup",
+   "fieldtype": "Section Break",
+   "label": "Follow-up"
+  },
+  {
+   "fieldname": "follow_up_actions",
+   "fieldtype": "Table",
+   "label": "Follow-up Actions",
+   "options": "Follow-up Action"
+  },
+  {
+   "fieldname": "section_break_transfer_log",
+   "fieldtype": "Section Break",
+   "label": "Transfer Log"
+  },
+  {
+   "fieldname": "transfer_log",
+   "fieldtype": "Table",
+   "label": "Transfer Log",
+   "options": "Correspondence Transfer Log",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-15 23:08:27.656180",
+ "modified_by": "Administrator",
+ "module": "Masar Diwan",
+ "name": "Correspondence",
+ "naming_rule": "By script",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Correspondence Employee",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Department Head",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Diwan Officer",
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Senior Management"
+  },
+  {
+   "read": 1,
+   "role": "Portal Tracking User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "subject",
+ "track_changes": 1
+}
