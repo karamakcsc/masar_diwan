@@ -51,7 +51,10 @@ app_license = "mit"
 # Svg Icons
 # ------------------
 # include app icons in desk
-app_include_icons = "masar_diwan/public/icons.svg"
+# Deliberately NOT used: the custom "diwan-tray" icon in public/icons.svg is
+# unused for now (see CLAUDE.md). The Masar Diwan workspace uses the
+# standard "stock" icon (Link -> Workspace "Stock") instead.
+# app_include_icons = "masar_diwan/public/icons.svg"
 
 # Home Pages
 # ----------
