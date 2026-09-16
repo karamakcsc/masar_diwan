@@ -12,10 +12,12 @@ ROLES = [
 def after_install():
 	create_roles()
 	ensure_workspace_sidebar()
+	ensure_desktop_icon()
 
 
 def after_migrate():
 	ensure_workspace_sidebar()
+	ensure_desktop_icon()
 
 
 def create_roles():
@@ -53,3 +55,25 @@ def ensure_workspace_sidebar():
 		frappe.db.commit()
 	except Exception:
 		frappe.log_error(title="masar_diwan: failed to ensure Workspace Sidebar")
+
+
+def ensure_desktop_icon():
+	"""The Desk home grid (the actual "app switcher" grid of tiles - Framework,
+	Organization, Accounting, Buying, Stock, ...) is driven by a *third*,
+	still different doctype: `Desktop Icon`. Neither `Workspace` (public=1,
+	is_hidden=0) nor `Workspace Sidebar` (fixed above) puts a tile on this
+	specific grid - only a `Desktop Icon` row does. Same story as
+	`ensure_workspace_sidebar()`: Frappe only auto-creates these once, via
+	`create_desktop_icons()` during `bench install-app`, which ran before
+	the "Masar Diwan" Workspace existed. `create_desktop_icons_from_workspace()`
+	is Frappe's own official, idempotent generator for exactly this (guarded
+	by `if not frappe.db.exists("Desktop Icon", label)`), so re-running it on
+	every migrate is safe and makes this self-healing too.
+	"""
+	try:
+		from frappe.desk.doctype.desktop_icon.desktop_icon import create_desktop_icons
+
+		create_desktop_icons()
+		frappe.db.commit()
+	except Exception:
+		frappe.log_error(title="masar_diwan: failed to ensure Desktop Icon")
