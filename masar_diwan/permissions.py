@@ -72,6 +72,24 @@ def has_permission(doc, ptype="read", user=None):
 
 	roles = set(frappe.get_roles(user))
 
+	if ptype == "create":
+		# Confidentiality tiers protect who may *read* an existing document -
+		# they don't apply to the act of creating/registering a new one (the
+		# creator necessarily already knows the content; there is nothing to
+		# leak). Only department scoping applies here, same as the Normal
+		# tier below. Without this, e.g. a Diwan Officer directly creating a
+		# Highly Confidential Correspondence outside the diwan-tray approval
+		# path (which uses ignore_permissions=True) would be wrongly denied,
+		# since they aren't in HIGHLY_CONFIDENTIAL_BYPASS_ROLES for *reading*.
+		if roles & DEPARTMENT_EXEMPT_ROLES:
+			return True
+		if not doc.department:
+			return True
+		if doc.department in get_user_departments(user):
+			return True
+		_log_denial(doc.doctype, doc.name or "(new)", user, "Create: outside user's department")
+		return False
+
 	if doc.confidentiality == "Highly Confidential":
 		if roles & HIGHLY_CONFIDENTIAL_BYPASS_ROLES:
 			return True
