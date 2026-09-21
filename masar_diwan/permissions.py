@@ -8,18 +8,22 @@ correspondence" - is entirely driven by two independent, stacked rules:
 1. Department scoping: a user may only see correspondence belonging to a
    department they are explicitly linked to (via `User Permission` on
    Department), unless their role is exempt (Diwan Officer, Senior
-   Management always see across departments, subject to rule 2 below).
-   The `department` field on Correspondence has `ignore_user_permissions=1`
-   so Frappe's own automatic Link-field User Permission enforcement never
-   doubles up with (or silently overrides) the logic below.
+   Management, System Manager always see across departments, subject to
+   rule 2 below). The `department` field on Correspondence has
+   `ignore_user_permissions=1` so Frappe's own automatic Link-field User
+   Permission enforcement never doubles up with (or silently overrides)
+   the logic below.
 
 2. Confidentiality tiering, evaluated independently of department:
    - Normal: department rule only.
    - Confidential: current_owner, department members, authorized_viewers,
-     Diwan Officer, Senior Management.
+     Diwan Officer, Senior Management, System Manager.
    - Highly Confidential: only authorized_viewers + Senior Management
      (even the assigned Department Head is excluded unless explicitly
-     added to authorized_viewers).
+     added to authorized_viewers - System Manager deliberately does NOT
+     bypass this tier either, decided 2026-09-21 after being raised as an
+     open question: holding System Manager alone should not unlock every
+     department's most sensitive correspondence).
 
 Both `has_permission` (single document read/write/etc gate) and
 `get_permission_query_conditions` (List/Report View filtering) must agree,
@@ -30,8 +34,9 @@ import frappe
 
 from masar_diwan.access_log import log_event
 
-DEPARTMENT_EXEMPT_ROLES = {"Diwan Officer", "Senior Management"}
-CONFIDENTIAL_BYPASS_ROLES = {"Diwan Officer", "Senior Management"}
+DEPARTMENT_EXEMPT_ROLES = {"Diwan Officer", "Senior Management", "System Manager"}
+CONFIDENTIAL_BYPASS_ROLES = {"Diwan Officer", "Senior Management", "System Manager"}
+# Deliberately NOT extended to System Manager - see the module docstring.
 HIGHLY_CONFIDENTIAL_BYPASS_ROLES = {"Senior Management"}
 
 # Who the Diwan Portal (queue/tray/print/access log) is for. Deliberately
