@@ -8,40 +8,57 @@ def get_next_reference_no(correspondence_type: str) -> str:
 	Locks the matching row in Correspondence Settings' Numbering Rule child
 	table (creating it on first use) so concurrent inserts of the same
 	Correspondence Type never collide.
+
+	The very first call for a brand-new Correspondence Type has no row yet
+	to lock with `FOR UPDATE`, so a MySQL named lock (`GET_LOCK`) keyed on
+	the type is held around the whole check-or-create step to serialize
+	concurrent first-time creations too.
 	"""
 	if not correspondence_type:
 		frappe.throw(frappe._("Correspondence Type is required to generate a reference number"))
 
 	year = now_datetime().year
-	row = frappe.db.sql(
-		"""
-		select name, prefix, current_number, reset_yearly, last_reset_year
-		from `tabCorrespondence Numbering Rule`
-		where parent = %s and parentfield = %s and correspondence_type = %s
-		for update
-		""",
-		("Correspondence Settings", "numbering_rules", correspondence_type),
-		as_dict=True,
-	)
+	lock_name = f"masar_diwan_numbering::{correspondence_type}"
+	got_lock = frappe.db.sql("select get_lock(%s, 10)", (lock_name,))[0][0]
+	if not got_lock:
+		frappe.throw(
+			frappe._("Could not acquire numbering lock for {0}, please try again").format(
+				correspondence_type
+			)
+		)
 
-	if row:
-		rule = row[0]
-	else:
-		rule = _create_numbering_rule(correspondence_type, year)
+	try:
+		row = frappe.db.sql(
+			"""
+			select name, prefix, current_number, reset_yearly, last_reset_year
+			from `tabCorrespondence Numbering Rule`
+			where parent = %s and parentfield = %s and correspondence_type = %s
+			for update
+			""",
+			("Correspondence Settings", "numbering_rules", correspondence_type),
+			as_dict=True,
+		)
 
-	if rule.reset_yearly and rule.last_reset_year != year:
-		new_number = 1
-	else:
-		new_number = (rule.current_number or 0) + 1
+		if row:
+			rule = row[0]
+		else:
+			rule = _create_numbering_rule(correspondence_type, year)
 
-	frappe.db.sql(
-		"""
-		update `tabCorrespondence Numbering Rule`
-		set current_number = %s, last_reset_year = %s
-		where name = %s
-		""",
-		(new_number, year, rule.name),
-	)
+		if rule.reset_yearly and rule.last_reset_year != year:
+			new_number = 1
+		else:
+			new_number = (rule.current_number or 0) + 1
+
+		frappe.db.sql(
+			"""
+			update `tabCorrespondence Numbering Rule`
+			set current_number = %s, last_reset_year = %s
+			where name = %s
+			""",
+			(new_number, year, rule.name),
+		)
+	finally:
+		frappe.db.sql("select release_lock(%s)", (lock_name,))
 
 	return f"{rule.prefix}-{year}-{str(new_number).zfill(4)}"
 

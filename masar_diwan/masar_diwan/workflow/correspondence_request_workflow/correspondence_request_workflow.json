@@ -180,6 +180,70 @@
    "next_state": "Approved & Numbered",
    "send_email_to_creator": 0,
    "state": "Under Review"
+  },
+  {
+   "action": "Start Review",
+   "allow_self_approval": 1,
+   "allowed": "Senior Management",
+   "next_state": "Under Review",
+   "send_email_to_creator": 0,
+   "state": "Pending Review"
+  },
+  {
+   "action": "Request Revision",
+   "allow_self_approval": 1,
+   "allowed": "Senior Management",
+   "next_state": "Needs Revision",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
+  },
+  {
+   "action": "Reject",
+   "allow_self_approval": 1,
+   "allowed": "Senior Management",
+   "next_state": "Rejected",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
+  },
+  {
+   "action": "Approve & Register",
+   "allow_self_approval": 1,
+   "allowed": "Senior Management",
+   "next_state": "Approved & Numbered",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
+  },
+  {
+   "action": "Start Review",
+   "allow_self_approval": 1,
+   "allowed": "System Manager",
+   "next_state": "Under Review",
+   "send_email_to_creator": 0,
+   "state": "Pending Review"
+  },
+  {
+   "action": "Request Revision",
+   "allow_self_approval": 1,
+   "allowed": "System Manager",
+   "next_state": "Needs Revision",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
+  },
+  {
+   "action": "Reject",
+   "allow_self_approval": 1,
+   "allowed": "System Manager",
+   "next_state": "Rejected",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
+  },
+  {
+   "action": "Approve & Register",
+   "allow_self_approval": 1,
+   "allowed": "System Manager",
+   "next_state": "Approved & Numbered",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
   }
  ],
  "workflow_name": "Correspondence Request Workflow",

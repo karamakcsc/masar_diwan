@@ -75,8 +75,8 @@ active_route, user_fullname, lang (current frappe.local.lang).
 				<input class="diwan-navbar__search" type="text" placeholder="{{ _('Search') }}..." disabled>
 				<div class="diwan-navbar__spacer"></div>
 				<div class="diwan-navbar__lang">
-					<a href="?lang=en" class="{{ 'is-active' if lang == 'en' else '' }}">EN</a>
-					<a href="?lang=ar" class="{{ 'is-active' if lang == 'ar' else '' }}">AR</a>
+					<a href="?_lang=en" class="{{ 'is-active' if lang == 'en' else '' }}">EN</a>
+					<a href="?_lang=ar" class="{{ 'is-active' if lang == 'ar' else '' }}">AR</a>
 				</div>
 				{% if user_fullname %}
 				<div class="diwan-navbar__avatar" title="{{ user_fullname }}">{{ user_fullname[0] }}</div>
