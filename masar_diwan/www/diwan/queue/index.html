@@ -1,0 +1,205 @@
+{% extends "templates/pages/diwan_shell.html" %}
+
+{% block diwan_breadcrumb %}
+<a href="/diwan/queue">{{ _("Diwan Portal") }}</a> / {{ _("Queue") }}
+{% if detail and not detail.not_found %} / {{ detail.name }}{% endif %}
+{% endblock %}
+
+{% block diwan_title %}
+{%- if detail -%}
+	{%- if detail.not_found -%}{{ _("Not Found") }}{%- else -%}{{ detail.subject }}{%- endif -%}
+{%- else -%}
+	{{ _("Incoming Requests") }}
+{%- endif -%}
+{% endblock %}
+
+{% block diwan_status %}
+{% if detail and not detail.not_found %}
+<span id="status-pill"></span>
+<span id="confidentiality-pill"></span>
+{% endif %}
+{% endblock %}
+
+{% block diwan_body %}
+{% if not detail %}
+	{% if requests %}
+	<div class="diwan-card" style="padding:0;">
+		<table class="diwan-table">
+			<thead><tr>
+				<th>{{ _("Subject") }}</th>
+				<th>{{ _("Type") }}</th>
+				<th>{{ _("Requester") }}</th>
+				<th>{{ _("Department") }}</th>
+				<th>{{ _("Status") }}</th>
+				<th></th>
+				<th>{{ _("Requested") }}</th>
+			</tr></thead>
+			<tbody>
+				{% for r in requests %}
+				<tr onclick="window.location.href='/diwan/queue?name={{ r.name }}'" style="cursor:pointer;">
+					<td>{{ r.subject }}</td>
+					<td>{{ _(r.request_type) }}</td>
+					<td>{{ r.requested_by }}</td>
+					<td>{{ r.department or "-" }}</td>
+					<td><span class="request-status-pill" data-status="{{ r.status }}"></span></td>
+					<td><span class="conf-pill" data-conf="{{ r.suggested_confidentiality }}"></span></td>
+					<td>{{ frappe.utils.format_date(r.request_date) if r.request_date else "-" }}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	{% else %}
+	<div class="diwan-empty">{{ _("Nothing waiting in the queue right now.") }}</div>
+	{% endif %}
+
+{% elif detail.not_found %}
+	<div class="diwan-empty">{{ _("This request doesn't exist or you don't have access to it.") }}</div>
+
+{% else %}
+	<div style="display:flex; gap:20px; flex-wrap:wrap;">
+		<div style="flex:2 1 380px;">
+			<div class="diwan-card">
+				<div class="diwan-card__title">{{ _("Details") }}</div>
+				<p><b>{{ _("Type") }}:</b> {{ _(detail.request_type) }}</p>
+				<p><b>{{ _("Requester") }}:</b> {{ detail.requested_by }}</p>
+				<p><b>{{ _("Department") }}:</b> {{ detail.department or "-" }}</p>
+				{% if detail.party_or_department %}<p><b>{{ _("Party / Department") }}:</b> {{ detail.party_or_department }}</p>{% endif %}
+				{% if detail.draft_text %}<p><b>{{ _("Draft Text") }}:</b><br>{{ detail.draft_text | safe }}</p>{% endif %}
+				<p><b>{{ _("Suggested Priority") }}:</b> {{ _(detail.suggested_priority) }}</p>
+				{% if detail.note_to_registrar %}<p><b>{{ _("Note to Registrar") }}:</b> {{ detail.note_to_registrar }}</p>{% endif %}
+
+				{% if attachments %}
+				<p><b>{{ _("Attachments") }}:</b></p>
+				{% for f in attachments %}
+				<div class="diwan-attachment">
+					<span>{{ f.file_name }}</span>
+					<a style="margin-inline-start:auto;color:var(--md-brand);"
+						href="/api/method/masar_diwan.api.portal.download_attachment?file_id={{ f.name }}">{{ _("Download") }}</a>
+				</div>
+				{% endfor %}
+				{% endif %}
+			</div>
+
+			{% if detail.status in ("Pending Review", "Under Review") %}
+			<div class="diwan-card" id="decision-card">
+				<div class="diwan-card__title">{{ _("Decision") }}</div>
+
+				{% if detail.status == "Under Review" %}
+				<div class="diwan-field">
+					<label>{{ _("Correspondence Type") }} *</label>
+					<select id="field-correspondence-type">
+						<option value="">-</option>
+						{% for t in correspondence_types %}
+						<option value="{{ t.name }}" {{ "selected" if t.name == detail.correspondence_type else "" }}>{{ t.title }}</option>
+						{% endfor %}
+					</select>
+					<div class="diwan-hint">{{ _("Required before approving - determines the reference number series.") }}</div>
+				</div>
+				<div class="diwan-field">
+					<label>{{ _("Decision Note") }}</label>
+					<textarea id="field-decision-note" rows="3">{{ detail.decision_note or "" }}</textarea>
+					<div class="diwan-hint">{{ _("Required for Reject and Request Revision.") }}</div>
+				</div>
+				{% endif %}
+
+				<div id="decision-message"></div>
+
+				<div style="display:flex; gap:8px; flex-wrap:wrap; margin-block-start:10px;">
+					{% if detail.status == "Pending Review" %}
+					<button class="diwan-btn diwan-btn--primary" id="start-review-btn" type="button">{{ _("Start Review") }}</button>
+					{% else %}
+					<button class="diwan-btn diwan-btn--primary" id="approve-btn" type="button">{{ _("Approve & Register") }}</button>
+					<button class="diwan-btn" id="revision-btn" type="button">{{ _("Request Revision") }}</button>
+					<button class="diwan-btn diwan-btn--danger" id="reject-btn" type="button">{{ _("Reject") }}</button>
+					{% endif %}
+				</div>
+			</div>
+			{% elif detail.resulting_correspondence %}
+			<div class="diwan-card">
+				<div class="diwan-card__title">{{ _("Outcome") }}</div>
+				<p><b>{{ _("Reference Number") }}:</b> <span class="ref-code">{{ detail.resulting_correspondence }}</span></p>
+				{% if detail.decision_note %}<p><b>{{ _("Decision Note") }}:</b> {{ detail.decision_note }}</p>{% endif %}
+			</div>
+			{% elif detail.decision_note %}
+			<div class="diwan-card">
+				<div class="diwan-card__title">{{ _("Decision Note") }}</div>
+				<p>{{ detail.decision_note }}</p>
+			</div>
+			{% endif %}
+		</div>
+	</div>
+{% endif %}
+{% endblock %}
+
+{% block diwan_script %}
+<script>
+frappe.ready(function () {
+	document.querySelectorAll(".request-status-pill").forEach(function (el) {
+		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.status);
+	});
+	document.querySelectorAll(".conf-pill").forEach(function (el) {
+		el.outerHTML = diwanPortal.confidentialityPillHtml(el.dataset.conf);
+	});
+
+	var detail = {{ (detail_json if detail else "null") | safe }};
+	if (detail && !detail.not_found) {
+		document.getElementById("status-pill").innerHTML = diwanPortal.statusPillHtml(detail.status);
+		var confHost = document.getElementById("confidentiality-pill");
+		if (confHost) confHost.innerHTML = diwanPortal.confidentialityPillHtml(detail.suggested_confidentiality);
+	}
+
+	function showMessage(text, isError) {
+		var el = document.getElementById("decision-message");
+		if (!el) return;
+		el.innerHTML = '<div class="diwan-hint" style="color:' +
+			(isError ? "var(--md-danger)" : "var(--md-success)") + ';margin-block-start:6px;">' +
+			frappe.utils.escape_html(text) + "</div>";
+	}
+
+	function applyAction(action, extraFields) {
+		var chain = Promise.resolve();
+		if (extraFields && Object.keys(extraFields).length) {
+			chain = frappe.call({
+				method: "frappe.client.set_value",
+				args: { doctype: "Correspondence Request", name: detail.name, fieldname: extraFields },
+			});
+		}
+		chain.then(function () {
+			return frappe.call({
+				method: "frappe.model.workflow.apply_workflow",
+				args: { doc: { doctype: "Correspondence Request", name: detail.name }, action: action },
+			});
+		}).then(function () {
+			window.location.reload();
+		}).catch(function (err) {
+			showMessage(__("Could not complete this action. Check the required fields above."), true);
+		});
+	}
+
+	var startBtn = document.getElementById("start-review-btn");
+	if (startBtn) startBtn.addEventListener("click", function () { applyAction("Start Review"); });
+
+	var approveBtn = document.getElementById("approve-btn");
+	if (approveBtn) approveBtn.addEventListener("click", function () {
+		var ct = document.getElementById("field-correspondence-type").value;
+		if (!ct) { showMessage(__("Set a Correspondence Type before approving."), true); return; }
+		applyAction("Approve & Register", { correspondence_type: ct });
+	});
+
+	var revisionBtn = document.getElementById("revision-btn");
+	if (revisionBtn) revisionBtn.addEventListener("click", function () {
+		var note = document.getElementById("field-decision-note").value;
+		if (!note) { showMessage(__("A decision note is required."), true); return; }
+		applyAction("Request Revision", { decision_note: note });
+	});
+
+	var rejectBtn = document.getElementById("reject-btn");
+	if (rejectBtn) rejectBtn.addEventListener("click", function () {
+		var note = document.getElementById("field-decision-note").value;
+		if (!note) { showMessage(__("A decision note is required."), true); return; }
+		applyAction("Reject", { decision_note: note });
+	});
+});
+</script>
+{% endblock %}

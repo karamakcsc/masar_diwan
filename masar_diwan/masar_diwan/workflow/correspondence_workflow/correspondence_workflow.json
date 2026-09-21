@@ -1,0 +1,139 @@
+{
+ "creation": "2026-09-15 23:28:40.726903",
+ "docstatus": 0,
+ "doctype": "Workflow",
+ "document_type": "Correspondence",
+ "enable_action_confirmation": 0,
+ "idx": 0,
+ "is_active": 1,
+ "modified": "2026-09-15 23:28:40.726903",
+ "modified_by": "Administrator",
+ "name": "Correspondence Workflow",
+ "override_status": 0,
+ "owner": "Administrator",
+ "send_email_alert": 0,
+ "states": [
+  {
+   "allow_edit": "Correspondence Employee",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Draft"
+  },
+  {
+   "allow_edit": "Department Head",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Under Review"
+  },
+  {
+   "allow_edit": "Department Head",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Referred / In Progress"
+  },
+  {
+   "allow_edit": "Diwan Officer",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Completed"
+  },
+  {
+   "allow_edit": "Diwan Officer",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Archived"
+  }
+ ],
+ "transitions": [
+  {
+   "action": "Submit for Review",
+   "allow_self_approval": 1,
+   "allowed": "Correspondence Employee",
+   "next_state": "Under Review",
+   "send_email_to_creator": 0,
+   "state": "Draft"
+  },
+  {
+   "action": "Submit for Review",
+   "allow_self_approval": 1,
+   "allowed": "Department Head",
+   "next_state": "Under Review",
+   "send_email_to_creator": 0,
+   "state": "Draft"
+  },
+  {
+   "action": "Send Back for Revision",
+   "allow_self_approval": 1,
+   "allowed": "Department Head",
+   "next_state": "Draft",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
+  },
+  {
+   "action": "Refer",
+   "allow_self_approval": 1,
+   "allowed": "Department Head",
+   "next_state": "Referred / In Progress",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
+  },
+  {
+   "action": "Refer",
+   "allow_self_approval": 1,
+   "allowed": "Diwan Officer",
+   "next_state": "Referred / In Progress",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
+  },
+  {
+   "action": "Return for Review",
+   "allow_self_approval": 1,
+   "allowed": "Department Head",
+   "next_state": "Under Review",
+   "send_email_to_creator": 0,
+   "state": "Referred / In Progress"
+  },
+  {
+   "action": "Mark Completed",
+   "allow_self_approval": 1,
+   "allowed": "Department Head",
+   "condition": "doc.current_owner == frappe.session.user",
+   "next_state": "Completed",
+   "send_email_to_creator": 0,
+   "state": "Referred / In Progress"
+  },
+  {
+   "action": "Mark Completed",
+   "allow_self_approval": 1,
+   "allowed": "Diwan Officer",
+   "next_state": "Completed",
+   "send_email_to_creator": 0,
+   "state": "Referred / In Progress"
+  },
+  {
+   "action": "Archive",
+   "allow_self_approval": 1,
+   "allowed": "Diwan Officer",
+   "next_state": "Archived",
+   "send_email_to_creator": 0,
+   "state": "Completed"
+  }
+ ],
+ "workflow_name": "Correspondence Workflow",
+ "workflow_state_field": "status"
+}

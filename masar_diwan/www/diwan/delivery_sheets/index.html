@@ -1,0 +1,47 @@
+{% extends "templates/pages/diwan_shell.html" %}
+
+{% block diwan_breadcrumb %}<a href="/diwan/queue">{{ _("Diwan Portal") }}</a> / {{ _("Delivery Sheets") }}{% endblock %}
+{% block diwan_title %}{{ _("Delivery Sheets") }}{% endblock %}
+
+{% block diwan_body %}
+{% if sheets %}
+<div class="diwan-card" style="padding:0;">
+	<table class="diwan-table">
+		<thead><tr>
+			<th>{{ _("No.") }}</th>
+			<th>{{ _("Method") }}</th>
+			<th>{{ _("Recipient") }}</th>
+			<th>{{ _("Status") }}</th>
+			<th></th>
+		</tr></thead>
+		<tbody>
+			{% for s in sheets %}
+			<tr>
+				<td><span class="ref-code">{{ s.name }}</span></td>
+				<td>{{ _(s.delivery_method) }}</td>
+				<td>{{ s.recipient_party }}</td>
+				<td><span class="ds-status-pill" data-status="{{ s.status }}"></span></td>
+				<td>
+					<a class="diwan-btn" target="_blank"
+						href="/printview?doctype=Delivery+Sheet&name={{ s.name | urlencode }}&format=Delivery+Sheet+Print">{{ _("Print") }}</a>
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% else %}
+<div class="diwan-empty">{{ _("No delivery sheets yet.") }}</div>
+{% endif %}
+{% endblock %}
+
+{% block diwan_script %}
+<script>
+frappe.ready(function () {
+	var STATUS_CLASS = { "Pending Delivery": "pending", "Delivered": "review", "Receipt Confirmed": "approved" };
+	document.querySelectorAll(".ds-status-pill").forEach(function (el) {
+		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.status, STATUS_CLASS);
+	});
+});
+</script>
+{% endblock %}

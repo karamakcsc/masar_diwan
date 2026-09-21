@@ -1,0 +1,102 @@
+{% extends "templates/pages/diwan_shell.html" %}
+
+{% block diwan_breadcrumb %}{{ _("Track") }}{% endblock %}
+{% block diwan_title %}{{ _("Track Correspondence") }}{% endblock %}
+
+{% block diwan_body %}
+<div class="diwan-card">
+	<div class="diwan-card__title">{{ _("Scan or Enter a Reference") }}</div>
+	<div class="diwan-hint" style="margin-block-end:10px;">
+		{{ _("Enter the exact tracking reference or scan the QR code printed on the correspondence. This only shows the single record you already hold a reference to - it is not a search tool.") }}
+	</div>
+	<div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+		<button class="diwan-btn diwan-btn--primary" id="open-camera-scan" type="button">{{ _("Scan with Camera") }}</button>
+		<input type="text" id="ref-input" class="diwan-field ref-code" dir="ltr"
+			style="flex:1 1 260px; direction:ltr; unicode-bidi:bidi-override; border:1px solid var(--md-ink-100); border-radius:var(--radius-sm); padding:7px 10px;"
+			placeholder="{{ _('Reference number, then Enter') }}" value="{{ ref or '' }}" autofocus>
+	</div>
+	<div id="qr-reader" style="width:280px; display:none; margin-block-start:12px;"></div>
+</div>
+
+{% if ref %}
+<div class="diwan-card" id="result-card">
+	{% if not result.found %}
+		<div class="diwan-empty">{{ _("No correspondence found for this reference.") }}</div>
+	{% elif result.restricted %}
+		<div class="diwan-restricted">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+			<span>{{ _("This reference exists, but you are not authorized to view its details.") }}</span>
+		</div>
+	{% else %}
+		{% set d = result.data %}
+		<div class="diwan-result-header">
+			<div class="diwan-card__title"><span class="ref-code">{{ d.reference_no }}</span></div>
+			<span id="result-status-pill"></span>
+			<span id="result-confidentiality-pill"></span>
+		</div>
+		<div id="result-hstepper"></div>
+		<p><b>{{ _("Subject") }}:</b> {{ d.subject or "-" }}</p>
+		<p><b>{{ _("Party") }}:</b> {{ d.party or "-" }}</p>
+		<p><b>{{ _("Department") }}:</b> {{ d.department or "-" }}</p>
+		<p><b>{{ _("Document Date") }}:</b> {{ frappe.utils.format_date(d.document_date) if d.document_date else "-" }}</p>
+		{% if result.attachments %}
+		<p><b>{{ _("Attachments") }}:</b></p>
+		{% for f in result.attachments %}
+		<div class="diwan-attachment">
+			<span>{{ f.file_name }}</span>
+			<a style="margin-inline-start:auto;color:var(--md-brand);"
+				href="/api/method/masar_diwan.api.portal.download_attachment?file_id={{ f.name }}">{{ _("Download") }}</a>
+		</div>
+		{% endfor %}
+		{% endif %}
+	{% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block diwan_script %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+frappe.ready(function () {
+	{% if ref and result and result.found and not result.restricted %}
+	var pillHost = document.getElementById("result-status-pill");
+	if (pillHost) pillHost.innerHTML = diwanPortal.statusPillHtml({{ (result.data.status or "") | tojson }}, diwanPortal.CORRESPONDENCE_STATUS_CLASS);
+	var confHost = document.getElementById("result-confidentiality-pill");
+	if (confHost) confHost.innerHTML = diwanPortal.confidentialityPillHtml({{ (result.data.confidentiality or "") | tojson }});
+	var hstepperHost = document.getElementById("result-hstepper");
+	if (hstepperHost) hstepperHost.innerHTML = diwanPortal.correspondenceHstepperHtml({{ (result.data.status or "") | tojson }});
+	{% endif %}
+
+	var input = document.getElementById("ref-input");
+	input.addEventListener("keydown", function (e) {
+		if (e.key === "Enter" && input.value) {
+			e.preventDefault();
+			window.location.href = "/track?ref=" + encodeURIComponent(input.value);
+		}
+	});
+
+	document.getElementById("open-camera-scan").addEventListener("click", function () {
+		var readerDiv = document.getElementById("qr-reader");
+		readerDiv.style.display = "block";
+		if (typeof Html5Qrcode === "undefined") {
+			readerDiv.innerHTML = "<div class=\"diwan-hint\">" + __("Camera scanner library failed to load") + "</div>";
+			return;
+		}
+		var scanner = new Html5Qrcode("qr-reader");
+		scanner.start(
+			{ facingMode: "environment" },
+			{ fps: 10, qrbox: 200 },
+			function (decodedText) {
+				scanner.stop();
+				var ref = decodedText;
+				try {
+					var url = new URL(decodedText);
+					ref = url.searchParams.get("ref") || decodedText;
+				} catch (e) {}
+				window.location.href = "/track?ref=" + encodeURIComponent(ref) + "&via=qr";
+			}
+		);
+	});
+});
+</script>
+{% endblock %}

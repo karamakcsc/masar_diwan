@@ -1,0 +1,602 @@
+/* Shared visual system for the three masar_diwan portals (Requester, Diwan,
+Track). Scoped under .diwan-app so it never leaks onto other website pages -
+this file is included per-page, not via a global web_include_css hook.
+
+2026-09-21 retoken: replaced the previous "Espresso" HSL token set with the
+app-wide "masar_diwan" identity below (--md-* custom properties). These are
+new custom properties, not overrides of any of Frappe's own core CSS
+variables. The old semantic aliases (--paper, --ink, --line, --status-*, ...)
+are kept as *names* so the rest of this file's selectors didn't need a
+wholesale rewrite, but every one of them is now derived from the --md-*
+palette instead of the old brass/navy HSL values - there is no HSL math left
+anywhere in this file. */
+
+.diwan-app {
+	/* ---- masar_diwan identity tokens (see CLAUDE.md) ---- */
+	--md-ink-950: #0b111e;
+	--md-ink-900: #111827;
+	--md-ink-100: #eff2f5;
+	--md-ink-50:  #f8fafc;
+
+	--md-brand:         #1a375b;
+	--md-brand-strong:  #0b111e;
+
+	--md-accent:        #f59014;
+	--md-accent-strong: #d8790e;
+
+	--md-success: #187269;
+	--md-warning: #d8790e;
+	--md-danger:  #ba2c3c;
+	--md-info:    #7154b6;
+
+	/* Intentionally non-uniform radii: large cards vs. small elements. */
+	--radius-lg: 15px;
+	--radius-sm: 9px;
+	--radius: var(--radius-sm); /* legacy alias, small-element default */
+	--shadow-card: 0 1px 2px rgba(10,20,40,.04), 0 6px 20px -6px rgba(10,20,40,.10);
+
+	/* ---- semantic aliases, all derived from the tokens above ---- */
+	--paper: var(--md-ink-50);
+	--paper-raised: #ffffff;
+	--canvas: var(--md-ink-100);
+	--ink: var(--md-ink-900);
+	--ink-soft: color-mix(in srgb, var(--md-ink-900) 55%, white);
+	--line: var(--md-ink-100);
+	--line-soft: color-mix(in srgb, var(--md-ink-100) 55%, white);
+
+	--status-draft: var(--ink-soft);      --status-draft-soft: var(--md-ink-100);
+	--status-pending: var(--md-warning);  --status-pending-soft: color-mix(in srgb, var(--md-warning) 14%, white);
+	--status-review: var(--md-brand);     --status-review-soft: color-mix(in srgb, var(--md-brand) 10%, white);
+	--status-revision: var(--md-info);    --status-revision-soft: color-mix(in srgb, var(--md-info) 12%, white);
+	--status-rejected: var(--md-danger);  --status-rejected-soft: color-mix(in srgb, var(--md-danger) 10%, white);
+	--status-approved: var(--md-success); --status-approved-soft: color-mix(in srgb, var(--md-success) 10%, white);
+
+	--primary: var(--md-brand); --primary-foreground: #ffffff;
+	--sidebar-width: 220px; --rail-width: 56px; --navbar-height: 48px;
+
+	font-family: "IBM Plex Sans Arabic", "Noto Sans Arabic", -apple-system, BlinkMacSystemFont, sans-serif;
+	font-size: 14px;
+	font-weight: 420;
+	color: var(--ink);
+	background: var(--canvas);
+	min-height: 100vh;
+}
+
+.diwan-app * { box-sizing: border-box; }
+.diwan-app a { color: var(--md-brand); text-decoration: none; }
+.diwan-app a:hover { text-decoration: underline; }
+.diwan-app :focus-visible {
+	outline: 2px solid var(--md-brand);
+	outline-offset: 1px;
+}
+
+/* ---------- Shell layout: icon rail + nav panel + navbar + main ---------- */
+
+.diwan-shell {
+	display: flex;
+	min-height: 100vh;
+}
+
+.diwan-rail {
+	width: var(--rail-width);
+	flex: 0 0 auto;
+	background: var(--md-brand-strong);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	padding-block: 12px;
+}
+
+.diwan-rail__mark {
+	width: 32px;
+	height: 32px;
+	border-radius: var(--radius-sm);
+	background: var(--primary);
+	color: var(--primary-foreground);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 600;
+	margin-block-end: 8px;
+}
+
+.diwan-rail__icon {
+	width: 36px;
+	height: 36px;
+	border-radius: var(--radius-sm);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: rgba(255,255,255,.6);
+}
+.diwan-rail__icon.is-active,
+.diwan-rail__icon:hover {
+	background: rgba(255,255,255,.1);
+	color: #ffffff;
+}
+
+.diwan-nav {
+	width: var(--sidebar-width);
+	flex: 0 0 auto;
+	background: var(--paper);
+	border-inline-end: 1px solid var(--line);
+	padding: 12px;
+	overflow-y: auto;
+}
+
+.diwan-nav__section-title {
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--ink-soft);
+	padding-inline-start: 10px;
+	margin-block: 10px 4px;
+}
+
+.diwan-nav__item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 10px;
+	border-radius: var(--radius-sm);
+	color: var(--ink);
+	border-inline-start: 2px solid transparent;
+}
+.diwan-nav__item:hover { background: var(--line-soft); text-decoration: none; }
+.diwan-nav__item.is-active {
+	background: var(--paper-raised);
+	border-inline-start-color: var(--md-brand);
+	box-shadow: 0 1px 2px rgba(10,20,40,.08);
+	font-weight: 500;
+}
+
+.diwan-main {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.diwan-navbar {
+	height: var(--navbar-height);
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding-inline: 16px;
+	background: var(--paper-raised);
+	border-block-end: 1px solid var(--line);
+}
+
+.diwan-navbar__hamburger {
+	display: none;
+	width: 32px;
+	height: 32px;
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--line);
+	background: var(--paper-raised);
+	align-items: center;
+	justify-content: center;
+}
+
+.diwan-navbar__search {
+	flex: 1 1 auto;
+	max-width: 360px;
+	height: 30px;
+	padding-inline: 10px;
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--line);
+	background: var(--canvas);
+	color: var(--ink-soft);
+	font-size: 13px;
+}
+
+.diwan-navbar__spacer { flex: 1 1 auto; }
+
+.diwan-navbar__lang {
+	display: flex;
+	border: 1px solid var(--line);
+	border-radius: var(--radius-sm);
+	overflow: hidden;
+}
+.diwan-navbar__lang a {
+	padding: 4px 10px;
+	font-size: 12px;
+	color: var(--ink-soft);
+}
+.diwan-navbar__lang a.is-active {
+	background: var(--md-brand-strong);
+	color: #ffffff;
+}
+
+.diwan-navbar__avatar {
+	width: 28px;
+	height: 28px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--md-accent) 18%, white);
+	color: var(--md-accent-strong);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.diwan-content {
+	flex: 1 1 auto;
+	padding: 20px 24px 48px;
+	max-width: 980px;
+	width: 100%;
+	margin-inline: 0;
+}
+
+/* ---------- Page header: breadcrumb + title + status + primary action ---------- */
+
+.diwan-page-header {
+	margin-block-end: 20px;
+}
+.diwan-breadcrumb {
+	font-size: 12px;
+	color: var(--ink-soft);
+	margin-block-end: 6px;
+}
+.diwan-breadcrumb a { color: var(--ink-soft); }
+.diwan-page-header__row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+.diwan-page-header__title {
+	font-size: 20px;
+	font-weight: 600;
+	margin: 0;
+	color: var(--ink);
+}
+.diwan-page-header__spacer { flex: 1 1 auto; }
+
+/* ---------- Buttons ---------- */
+
+.diwan-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 30px;
+	padding-inline: 12px;
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--line);
+	background: var(--paper-raised);
+	color: var(--ink);
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+}
+.diwan-btn:hover { background: var(--line-soft); text-decoration: none; }
+.diwan-btn--primary {
+	background: var(--primary);
+	color: var(--primary-foreground);
+	border-color: var(--primary);
+}
+.diwan-btn--primary:hover { background: var(--md-brand-strong); border-color: var(--md-brand-strong); }
+.diwan-btn--danger {
+	background: var(--status-rejected-soft);
+	color: var(--status-rejected);
+	border-color: transparent;
+}
+.diwan-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+/* ---------- Cards / forms ---------- */
+
+.diwan-card {
+	background: var(--paper-raised);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-card);
+	padding: 16px;
+	margin-block-end: 16px;
+}
+.diwan-card__title {
+	font-size: 14px;
+	font-weight: 600;
+	margin-block-end: 12px;
+}
+.diwan-field { margin-block-end: 14px; }
+.diwan-field label {
+	display: block;
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--ink-soft);
+	margin-block-end: 4px;
+}
+.diwan-field input[type="text"],
+.diwan-field input[type="date"],
+.diwan-field select,
+.diwan-field textarea {
+	width: 100%;
+	border: 1px solid var(--line);
+	border-radius: var(--radius-sm);
+	padding: 7px 10px;
+	font: inherit;
+	color: var(--ink);
+	background: var(--paper);
+	text-align: start;
+}
+.diwan-field input:focus,
+.diwan-field select:focus,
+.diwan-field textarea:focus {
+	outline: none;
+	border-color: var(--md-brand);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-brand) 12%, transparent);
+}
+.diwan-hint { font-size: 12px; color: var(--ink-soft); margin-block-start: 4px; }
+
+.diwan-pillgroup { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.diwan-pillgroup input { display: none; }
+.diwan-pillgroup label {
+	display: inline-flex;
+	align-items: center;
+	height: 28px;
+	padding-inline: 12px;
+	border-radius: 999px;
+	border: 1px solid var(--line);
+	font-size: 13px;
+	cursor: pointer;
+	color: var(--ink-soft);
+}
+.diwan-pillgroup input:checked + label {
+	background: color-mix(in srgb, var(--md-brand) 10%, white);
+	border-color: var(--md-brand);
+	color: var(--md-brand);
+	font-weight: 500;
+}
+
+/* ---------- Status indicator pill (Frappe indicator-pill) ---------- */
+
+.indicator-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 20px;
+	padding-inline: 8px;
+	border-radius: 999px;
+	font-size: 13px;
+	font-weight: 400;
+	line-height: 1;
+	white-space: nowrap;
+}
+.indicator-pill .dot {
+	width: 6px;
+	height: 6px;
+	border-radius: 999px;
+	flex: 0 0 auto;
+}
+
+.indicator-pill--draft { background: var(--status-draft-soft); color: var(--status-draft); }
+.indicator-pill--draft .dot { background: var(--status-draft); }
+.indicator-pill--pending { background: var(--status-pending-soft); color: var(--status-pending); }
+.indicator-pill--pending .dot { background: var(--status-pending); }
+.indicator-pill--review { background: var(--status-review-soft); color: var(--status-review); }
+.indicator-pill--review .dot { background: var(--status-review); }
+.indicator-pill--revision { background: var(--status-revision-soft); color: var(--status-revision); }
+.indicator-pill--revision .dot { background: var(--status-revision); }
+.indicator-pill--rejected { background: var(--status-rejected-soft); color: var(--status-rejected); }
+.indicator-pill--rejected .dot { background: var(--status-rejected); }
+.indicator-pill--approved { background: var(--status-approved-soft); color: var(--status-approved); }
+.indicator-pill--approved .dot { background: var(--status-approved); }
+
+/* Confidentiality flags: normal is never rendered (see diwan-portal.js),
+   confidential = warning amber, highly confidential = danger red. */
+.indicator-pill--confidential { background: color-mix(in srgb, var(--md-warning) 14%, white); color: var(--md-warning); }
+.indicator-pill--confidential .dot { background: var(--md-warning); }
+.indicator-pill--highly-confidential { background: color-mix(in srgb, var(--md-danger) 10%, white); color: var(--md-danger); }
+.indicator-pill--highly-confidential .dot { background: var(--md-danger); }
+
+/* ---------- Reference-number bidi fix (Unicode bidi rule W2) ----------
+   Shared everywhere a Correspondence / Correspondence Request reference
+   number is rendered across these portals. See CLAUDE.md. */
+.ref-code {
+	direction: ltr;
+	unicode-bidi: bidi-override;
+	display: inline-block;
+	font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Result header bar (Track result card) ---------- */
+
+.diwan-result-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+	background: var(--md-brand);
+	color: #ffffff;
+	padding: 14px 16px;
+	margin: -16px -16px 16px -16px;
+	border-start-start-radius: var(--radius-lg);
+	border-start-end-radius: var(--radius-lg);
+}
+.diwan-result-header .diwan-card__title { margin: 0; color: #ffffff; }
+.diwan-result-header .ref-code { font-size: 16px; font-weight: 600; }
+
+/* ---------- "Found but restricted" notice ---------- */
+
+.diwan-restricted {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 14px 16px;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--md-danger) 8%, white);
+	color: var(--md-danger);
+	font-size: 13px;
+}
+.diwan-restricted svg { flex: 0 0 auto; width: 20px; height: 20px; }
+
+/* ---------- Horizontal workflow bar (Track result card) ---------- */
+
+.diwan-hstepper {
+	display: flex;
+	align-items: center;
+	gap: 0;
+	margin-block: 4px 16px;
+}
+.diwan-hstepper__step {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	flex: 1 1 0;
+	text-align: center;
+	position: relative;
+}
+.diwan-hstepper__step:not(:first-child)::before {
+	content: "";
+	position: absolute;
+	inset-inline-end: 50%;
+	top: 9px;
+	width: 100%;
+	height: 2px;
+	background: var(--md-ink-100);
+	z-index: 0;
+}
+.diwan-hstepper__step.is-done:not(:first-child)::before,
+.diwan-hstepper__step.is-current:not(:first-child)::before {
+	background: var(--status-approved);
+}
+.diwan-hstepper__dot {
+	width: 20px;
+	height: 20px;
+	border-radius: 999px;
+	background: var(--md-ink-100);
+	color: var(--ink-soft);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 10px;
+	font-weight: 600;
+	position: relative;
+	z-index: 1;
+	border: 2px solid var(--paper-raised);
+}
+.diwan-hstepper__step.is-done .diwan-hstepper__dot { background: var(--status-approved); color: #fff; }
+.diwan-hstepper__step.is-current .diwan-hstepper__dot { background: var(--md-brand); color: #fff; }
+.diwan-hstepper__label { font-size: 11px; color: var(--ink-soft); }
+.diwan-hstepper__step.is-done .diwan-hstepper__label,
+.diwan-hstepper__step.is-current .diwan-hstepper__label { color: var(--ink); font-weight: 500; }
+
+/* ---------- Stepper (Requester Portal status timeline, vertical) ---------- */
+
+.diwan-stepper { display: flex; flex-direction: column; gap: 0; }
+.diwan-stepper__step {
+	display: flex;
+	gap: 10px;
+	padding-block-end: 18px;
+	position: relative;
+}
+.diwan-stepper__step:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	inset-inline-start: 5px;
+	top: 16px;
+	bottom: -2px;
+	width: 2px;
+	background: var(--line);
+}
+.diwan-stepper__dot {
+	width: 12px;
+	height: 12px;
+	border-radius: 999px;
+	background: var(--line);
+	border: 2px solid var(--paper-raised);
+	flex: 0 0 auto;
+	margin-block-start: 3px;
+	z-index: 1;
+}
+.diwan-stepper__step.is-done .diwan-stepper__dot { background: var(--status-approved); }
+.diwan-stepper__step.is-current .diwan-stepper__dot { background: var(--md-brand); }
+.diwan-stepper__step.is-blocked .diwan-stepper__dot { background: var(--status-rejected); }
+.diwan-stepper__label { font-size: 13px; font-weight: 500; }
+.diwan-stepper__meta { font-size: 12px; color: var(--ink-soft); }
+
+/* ---------- Table (Diwan Portal queues / access log) ---------- */
+
+.diwan-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.diwan-table th {
+	text-align: start;
+	font-weight: 500;
+	color: var(--ink-soft);
+	padding: 8px 10px;
+	border-block-end: 1px solid var(--line);
+}
+.diwan-table td {
+	padding: 10px;
+	border-block-end: 1px solid var(--line-soft);
+	vertical-align: middle;
+}
+.diwan-table tr:hover td { background: var(--line-soft); }
+
+.diwan-empty {
+	text-align: center;
+	padding: 40px 20px;
+	color: var(--ink-soft);
+	font-size: 13px;
+}
+
+/* ---------- Attachment chips ---------- */
+
+.diwan-attachment {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border: 1px solid var(--line);
+	border-radius: var(--radius-sm);
+	margin-block-end: 6px;
+	font-size: 13px;
+}
+.diwan-attachment__remove {
+	margin-inline-start: auto;
+	cursor: pointer;
+	color: var(--status-rejected);
+}
+
+/* ---------- Mobile: rail+panel become a hamburger-triggered slide-over ---------- */
+
+@media (max-width: 640px) {
+	.diwan-rail, .diwan-nav { display: none; }
+	.diwan-navbar__hamburger { display: flex; }
+
+	.diwan-drawer-scrim {
+		display: none;
+		position: fixed;
+		inset: 0;
+		background: color-mix(in srgb, var(--md-ink-950) 40%, transparent);
+		z-index: 40;
+	}
+	.diwan-drawer-scrim.is-open { display: block; }
+
+	.diwan-drawer {
+		position: fixed;
+		inset-block: 0;
+		inset-inline-start: 0;
+		width: min(80vw, 280px);
+		background: var(--paper);
+		z-index: 41;
+		transform: translateX(-100%);
+		transition: transform 0.2s ease;
+		display: flex;
+		overflow-y: auto;
+	}
+	[dir="rtl"] .diwan-drawer { transform: translateX(100%); }
+	.diwan-drawer.is-open { transform: translateX(0); }
+
+	.diwan-drawer .diwan-rail,
+	.diwan-drawer .diwan-nav {
+		display: flex;
+		flex-direction: column;
+	}
+	.diwan-drawer .diwan-nav { border-inline-end: none; width: auto; flex: 1 1 auto; }
+
+	.diwan-content { padding: 16px; }
+}

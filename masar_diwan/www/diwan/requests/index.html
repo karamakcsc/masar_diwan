@@ -1,0 +1,169 @@
+{% extends "templates/pages/diwan_shell.html" %}
+
+{% block diwan_breadcrumb %}
+<a href="/diwan/submit">{{ _("Requester Portal") }}</a> / {{ _("My Requests") }}
+{% if detail and not detail.not_found %} / {{ detail.name }}{% endif %}
+{% endblock %}
+
+{% block diwan_title %}
+{%- if detail -%}
+	{%- if detail.not_found -%}{{ _("Not Found") }}{%- else -%}{{ detail.subject }}{%- endif -%}
+{%- else -%}
+	{{ _("My Requests") }}
+{%- endif -%}
+{% endblock %}
+
+{% block diwan_status %}
+{% if detail and not detail.not_found %}<span id="status-pill"></span>{% endif %}
+{% endblock %}
+
+{% block diwan_primary_action %}
+{% if not detail %}
+<a class="diwan-btn diwan-btn--primary" href="/diwan/submit">{{ _("New Request") }}</a>
+{% elif detail.status == "Needs Revision" and detail.owner == frappe.session.user %}
+<button class="diwan-btn diwan-btn--primary" id="resubmit-btn" type="button">{{ _("Edit & Resubmit") }}</button>
+{% endif %}
+{% endblock %}
+
+{% block diwan_body %}
+{% if not detail %}
+	{% if requests %}
+	<div class="diwan-card" style="padding:0;">
+		<table class="diwan-table">
+			<thead><tr>
+				<th>{{ _("Subject") }}</th>
+				<th>{{ _("Type") }}</th>
+				<th>{{ _("Status") }}</th>
+				<th>{{ _("Reference") }}</th>
+				<th>{{ _("Date") }}</th>
+			</tr></thead>
+			<tbody>
+				{% for r in requests %}
+				<tr onclick="window.location.href='/diwan/requests?name={{ r.name }}'" style="cursor:pointer;">
+					<td>{{ r.subject }}</td>
+					<td>{{ _(r.request_type) }}</td>
+					<td><span class="request-status-pill" data-status="{{ r.status }}"></span></td>
+					<td>{% if r.resulting_correspondence %}<span class="ref-code">{{ r.resulting_correspondence }}</span>{% else %}-{% endif %}</td>
+					<td>{{ frappe.utils.format_date(r.request_date) if r.request_date else "-" }}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	{% else %}
+	<div class="diwan-empty">{{ _("You haven't submitted any correspondence requests yet.") }}</div>
+	{% endif %}
+
+{% elif detail.not_found %}
+	<div class="diwan-empty">{{ _("This request doesn't exist or you don't have access to it.") }}</div>
+
+{% else %}
+	<div style="display:flex; gap:20px; flex-wrap:wrap;">
+		<div style="flex:2 1 380px;">
+			<div class="diwan-card">
+				<div class="diwan-card__title">{{ _("Details") }}</div>
+				<p><b>{{ _("Type") }}:</b> {{ _(detail.request_type) }}</p>
+				{% if detail.party_or_department %}<p><b>{{ _("Party / Department") }}:</b> {{ detail.party_or_department }}</p>{% endif %}
+				{% if detail.draft_text %}<p><b>{{ _("Draft Text") }}:</b><br>{{ detail.draft_text | safe }}</p>{% endif %}
+				<p><b>{{ _("Suggested Priority") }}:</b> {{ _(detail.suggested_priority) }}</p>
+				<p><b>{{ _("Suggested Confidentiality") }}:</b> {{ _(detail.suggested_confidentiality) }}</p>
+				{% if detail.note_to_registrar %}<p><b>{{ _("Note to Registrar") }}:</b> {{ detail.note_to_registrar }}</p>{% endif %}
+				{% if detail.decision_note %}<p><b>{{ _("Decision Note") }}:</b> {{ detail.decision_note }}</p>{% endif %}
+				{% if detail.reference_no %}<p><b>{{ _("Reference Number") }}:</b> <span class="ref-code">{{ detail.reference_no }}</span></p>{% endif %}
+
+				{% if attachments %}
+				<p><b>{{ _("Attachments") }}:</b></p>
+				{% for f in attachments %}
+				<div class="diwan-attachment">
+					<span>{{ f.file_name }}</span>
+					<a class="diwan-attachment__remove" style="margin-inline-start:auto;color:var(--md-brand);"
+						href="/api/method/masar_diwan.api.portal.download_attachment?file_id={{ f.name }}">{{ _("Download") }}</a>
+				</div>
+				{% endfor %}
+				{% endif %}
+			</div>
+
+			{% if detail.status == "Needs Revision" and detail.owner == frappe.session.user %}
+			<div class="diwan-card" id="edit-card">
+				<div class="diwan-card__title">{{ _("Revise and Resubmit") }}</div>
+				<div class="diwan-field">
+					<label>{{ _("Subject") }}</label>
+					<input type="text" id="edit-subject" value="{{ detail.subject }}">
+				</div>
+				<div class="diwan-field">
+					<label>{{ _("Draft Text") }}</label>
+					<textarea id="edit-draft-text" rows="6">{{ detail.draft_text or "" }}</textarea>
+				</div>
+			</div>
+			{% endif %}
+		</div>
+
+		<div style="flex:1 1 220px;">
+			<div class="diwan-card">
+				<div class="diwan-card__title">{{ _("Status") }}</div>
+				<div class="diwan-stepper" id="status-stepper"></div>
+			</div>
+		</div>
+	</div>
+{% endif %}
+{% endblock %}
+
+{% block diwan_script %}
+<script>
+frappe.ready(function () {
+	document.querySelectorAll(".request-status-pill").forEach(function (el) {
+		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.status);
+	});
+
+	var detail = {{ (detail_json if detail else "null") | safe }};
+	if (detail && !detail.not_found) {
+		var pillHost = document.getElementById("status-pill");
+		if (pillHost) pillHost.innerHTML = diwanPortal.statusPillHtml(detail.status);
+
+		var order = ["Draft", "Pending Review", "Under Review", "Approved & Numbered"];
+		var idx = order.indexOf(detail.status);
+		var blocked = detail.status === "Rejected" || detail.status === "Needs Revision";
+		var stepper = document.getElementById("status-stepper");
+		var html = "";
+		order.forEach(function (state, i) {
+			var cls = i < idx ? "is-done" : i === idx ? "is-current" : "";
+			html += '<div class="diwan-stepper__step ' + cls + '">' +
+				'<div class="diwan-stepper__dot"></div>' +
+				'<div><div class="diwan-stepper__label">' + __(state) + "</div></div></div>";
+		});
+		if (blocked) {
+			html += '<div class="diwan-stepper__step is-blocked">' +
+				'<div class="diwan-stepper__dot"></div>' +
+				'<div><div class="diwan-stepper__label">' + __(detail.status) + "</div>" +
+				(detail.decision_note ? '<div class="diwan-stepper__meta">' + frappe.utils.escape_html(detail.decision_note) + "</div>" : "") +
+				"</div></div>";
+		}
+		stepper.innerHTML = html;
+	}
+
+	var resubmitBtn = document.getElementById("resubmit-btn");
+	if (resubmitBtn) {
+		resubmitBtn.addEventListener("click", function () {
+			frappe.call({
+				method: "frappe.client.set_value",
+				args: {
+					doctype: "Correspondence Request",
+					name: detail.name,
+					fieldname: {
+						subject: document.getElementById("edit-subject").value,
+						draft_text: document.getElementById("edit-draft-text").value,
+					},
+				},
+			}).then(function () {
+				return frappe.call({
+					method: "frappe.model.workflow.apply_workflow",
+					args: { doc: { doctype: "Correspondence Request", name: detail.name }, action: "Resubmit" },
+				});
+			}).then(function () {
+				window.location.reload();
+			});
+		});
+	}
+});
+</script>
+{% endblock %}

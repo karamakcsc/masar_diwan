@@ -1,0 +1,64 @@
+/* masar_diwan Desk-side visual identity tokens + shared helpers.
+Loaded globally on every Desk page via hooks.py app_include_css, but its
+rules are deliberately either (a) new custom properties on :root - additive,
+never redefining any of Frappe's own core CSS variables, so nothing else on
+Desk changes appearance - or (b) selectors scoped to this app's own two
+Desk Pages via [data-page-route="..."], or (c) the shared .ref-code helper
+(see CLAUDE.md gotcha on reference-number bidi rendering). Page-body-local
+styling for correspondence-request-new lives in that page's own JS
+(inject_styles()), matching the convention already established there;
+correspondence-track's page-local styling is injected the same way from its
+own JS. This file only holds what genuinely needs to be available before/
+outside those page bodies render. */
+
+:root {
+	--md-ink-950: #0b111e;
+	--md-ink-900: #111827;
+	--md-ink-100: #eff2f5;
+	--md-ink-50:  #f8fafc;
+
+	--md-brand:         #1a375b;
+	--md-brand-strong:  #0b111e;
+
+	--md-accent:        #f59014;
+	--md-accent-strong: #d8790e;
+
+	--md-success: #187269;
+	--md-warning: #d8790e;
+	--md-danger:  #ba2c3c;
+	--md-info:    #7154b6;
+
+	--md-radius-lg: 15px;  /* large cards */
+	--md-radius-sm: 9px;   /* badges / small buttons */
+	--md-shadow-card: 0 1px 2px rgba(10,20,40,.04), 0 6px 20px -6px rgba(10,20,40,.10);
+}
+
+/* ---------------------------------------------------------------------
+   Reference-number bidi fix (Unicode bidi rule W2) - shared, applied
+   everywhere a Correspondence/Correspondence Request reference number is
+   rendered on the Desk side. See CLAUDE.md "Frappe framework gotchas"
+   for the full explanation of why direction:ltr / unicode-bidi:isolate
+   alone are not sufficient.
+   --------------------------------------------------------------------- */
+.ref-code {
+	direction: ltr;
+	unicode-bidi: bidi-override;
+	display: inline-block;
+	font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------
+   correspondence-request-new: the primary/secondary page-action buttons
+   render into .page-actions, which sits in the page head, outside the
+   page body this page's own JS controls - so they need to be retoned
+   from here rather than from that page's own inject_styles().
+   --------------------------------------------------------------------- */
+[data-page-route="correspondence-request-new"] .page-actions .btn-primary {
+	background: var(--md-brand);
+	border-color: var(--md-brand);
+}
+[data-page-route="correspondence-request-new"] .page-actions .btn-primary:hover,
+[data-page-route="correspondence-request-new"] .page-actions .btn-primary:focus {
+	background: var(--md-brand-strong);
+	border-color: var(--md-brand-strong);
+}

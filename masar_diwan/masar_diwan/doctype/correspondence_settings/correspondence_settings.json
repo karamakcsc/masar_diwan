@@ -1,0 +1,69 @@
+{
+ "actions": [],
+ "allow_bulk_edit": 1,
+ "allow_rename": 1,
+ "creation": "2026-09-15 23:08:27.467714",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "numbering_rules",
+  "qr_scan_policy"
+ ],
+ "fields": [
+  {
+   "fieldname": "numbering_rules",
+   "fieldtype": "Table",
+   "label": "Numbering Rules",
+   "options": "Correspondence Numbering Rule"
+  },
+  {
+   "default": "Authorized Only",
+   "fieldname": "qr_scan_policy",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "QR Scan Policy for Restricted Correspondence",
+   "options": "Hide Completely\nAuthorized Only",
+   "reqd": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-15 23:08:27.467714",
+ "modified_by": "Administrator",
+ "module": "Masar Diwan",
+ "name": "Correspondence Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Diwan Officer",
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Senior Management"
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,12 @@
+<svg id="masar-diwan-symbols" aria-hidden="true" style="display: none;" class="icon" xmlns="http://www.w3.org/2000/svg">
+	<symbol viewBox="0 0 100 96" id="icon-diwan-tray">
+		<path fill-rule="evenodd" clip-rule="evenodd" d="
+			M20,4 L80,4 L91,30 L9,30 Z
+			M25,9 L75,9 L85,25 L15,25 Z
+			M5,33 L95,33 L91,40 L9,40 Z
+			M3,44 L97,44 L93,51 L7,51 Z
+			M2,55 L98,55 L98,86 Q98,94 90,94 L10,94 Q2,94 2,86 Z
+			M36,60 L64,60 L64,64 Q64,72 56,74 L44,74 Q36,72 36,64 Z
+		"/>
+	</symbol>
+</svg>

@@ -1,0 +1,112 @@
+{% extends "templates/base.html" %}
+{#
+Shared chrome for the three masar_diwan portals (Requester/Diwan/Track):
+56px icon rail + 220px nav panel (collapsing to a hamburger drawer under
+640px) + 48px navbar + page body with breadcrumb/title/status/primary
+action. Individual pages extend this and fill in the blocks below rather
+than repeating the shell markup three times, since all three portals must
+look identical in chrome per the design spec.
+
+Expects, from get_context(): portal_nav (list of {route, label, icon}),
+active_route, user_fullname, lang (current frappe.local.lang).
+#}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block head_include %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/masar_diwan/css/diwan-portal.css">
+{% endblock %}
+
+{% macro nav_icon(name) %}
+{%- if name == "inbox" -%}
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 13h4l2 3h4l2-3h4"/><path d="M5.5 6h13l2 7v6a1 1 0 0 1-1 1H4.5a1 1 0 0 1-1-1v-6z"/></svg>
+{%- elif name == "send" -%}
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 3 3 10.5l7 3 3 7z"/><path d="M21 3 13.5 20l-3.5-7-7-3.5z"/></svg>
+{%- elif name == "list" -%}
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>
+{%- elif name == "search" -%}
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-3.8-3.8"/></svg>
+{%- elif name == "tray" -%}
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h5l1.5 2h5L16 12h5"/><rect x="3" y="12" width="18" height="7" rx="1"/><path d="M6 12 8 5h8l2 7"/></svg>
+{%- elif name == "printer" -%}
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1"/><path d="M6 17h12v4H6z"/></svg>
+{%- elif name == "shield" -%}
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z"/></svg>
+{%- elif name == "qr" -%}
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v7M14 20h4"/></svg>
+{%- else -%}
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/></svg>
+{%- endif -%}
+{% endmacro %}
+
+{% macro nav_panel(id_prefix) %}
+<div class="diwan-rail">
+	<div class="diwan-rail__mark" title="{{ _('Masar Diwan') }}">م</div>
+	{% for item in portal_nav %}
+	<a class="diwan-rail__icon {{ 'is-active' if item.route == active_route else '' }}"
+		href="{{ item.route }}" title="{{ _(item.label) }}">{{ nav_icon(item.icon) }}</a>
+	{% endfor %}
+</div>
+<div class="diwan-nav">
+	<div class="diwan-nav__section-title">{{ _(portal_section_title or "Portal") }}</div>
+	{% for item in portal_nav %}
+	<a class="diwan-nav__item {{ 'is-active' if item.route == active_route else '' }}" href="{{ item.route }}">
+		{{ nav_icon(item.icon) }}
+		<span>{{ _(item.label) }}</span>
+	</a>
+	{% endfor %}
+</div>
+{% endmacro %}
+
+{% block content %}
+<div class="diwan-app" dir="{{ 'rtl' if is_rtl() else 'ltr' }}">
+	<div class="diwan-shell">
+		{{ nav_panel("desktop") }}
+
+		<div class="diwan-main">
+			<div class="diwan-navbar">
+				<button class="diwan-navbar__hamburger" data-diwan-hamburger type="button" aria-label="{{ _('Menu') }}">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+				</button>
+				<input class="diwan-navbar__search" type="text" placeholder="{{ _('Search') }}..." disabled>
+				<div class="diwan-navbar__spacer"></div>
+				<div class="diwan-navbar__lang">
+					<a href="?lang=en" class="{{ 'is-active' if lang == 'en' else '' }}">EN</a>
+					<a href="?lang=ar" class="{{ 'is-active' if lang == 'ar' else '' }}">AR</a>
+				</div>
+				{% if user_fullname %}
+				<div class="diwan-navbar__avatar" title="{{ user_fullname }}">{{ user_fullname[0] }}</div>
+				{% endif %}
+			</div>
+
+			<div class="diwan-content">
+				<div class="diwan-page-header">
+					<div class="diwan-breadcrumb">{% block diwan_breadcrumb %}{% endblock %}</div>
+					<div class="diwan-page-header__row">
+						<h1 class="diwan-page-header__title">{% block diwan_title %}{% endblock %}</h1>
+						{% block diwan_status %}{% endblock %}
+						<div class="diwan-page-header__spacer"></div>
+						{% block diwan_primary_action %}{% endblock %}
+					</div>
+				</div>
+
+				{% block diwan_body %}{% endblock %}
+			</div>
+		</div>
+	</div>
+
+	<div class="diwan-drawer-scrim" data-diwan-scrim></div>
+	<div class="diwan-drawer" data-diwan-drawer>
+		{{ nav_panel("mobile") }}
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="/assets/masar_diwan/js/diwan-portal.js"></script>
+{% block diwan_script %}{% endblock %}
+{% endblock %}

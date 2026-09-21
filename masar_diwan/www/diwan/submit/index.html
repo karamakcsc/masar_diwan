@@ -1,0 +1,210 @@
+{% extends "templates/pages/diwan_shell.html" %}
+
+{% block diwan_breadcrumb %}
+<a href="/diwan/submit">{{ _("Requester Portal") }}</a> / {{ _("New Request") }}
+{% endblock %}
+
+{% block diwan_title %}{{ _("New Correspondence Request") }}{% endblock %}
+
+{% block diwan_primary_action %}
+<button class="diwan-btn" id="save-draft-btn" type="button">{{ _("Save as Draft") }}</button>
+<button class="diwan-btn diwan-btn--primary" id="submit-btn" type="button">{{ _("Submit for Review") }}</button>
+{% endblock %}
+
+{% block diwan_body %}
+<div class="diwan-card">
+	<div class="diwan-hint" style="margin-block-end:12px;">
+		{{ _("Submitted by") }}: <b>{{ submitter.full_name }}</b>
+		{% if submitter.department %} &mdash; {{ submitter.department }}{% endif %}
+		&mdash; {{ submitter.date }}
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Request Type") }} *</label>
+		<div class="diwan-pillgroup" data-pillgroup="request_type">
+			<input type="radio" name="request_type" id="rt-incoming" value="Incoming" checked>
+			<label for="rt-incoming">{{ _("Incoming") }}</label>
+			<input type="radio" name="request_type" id="rt-outgoing" value="Outgoing">
+			<label for="rt-outgoing">{{ _("Outgoing") }}</label>
+			<input type="radio" name="request_type" id="rt-internal" value="Internal">
+			<label for="rt-internal">{{ _("Internal") }}</label>
+		</div>
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Subject") }} *</label>
+		<input type="text" id="field-subject" maxlength="140">
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Party / Department") }}</label>
+		<input type="text" id="field-party" placeholder="{{ _('Who is this correspondence with?') }}">
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Draft Text") }}</label>
+		<textarea id="field-draft-text" rows="6"></textarea>
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Suggested Priority") }}</label>
+		<div class="diwan-pillgroup" data-pillgroup="suggested_priority">
+			<input type="radio" name="suggested_priority" id="pr-normal" value="Normal" checked>
+			<label for="pr-normal">{{ _("Normal") }}</label>
+			<input type="radio" name="suggested_priority" id="pr-urgent" value="Urgent">
+			<label for="pr-urgent">{{ _("Urgent") }}</label>
+		</div>
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Suggested Confidentiality") }}</label>
+		<div class="diwan-pillgroup" data-pillgroup="suggested_confidentiality">
+			<input type="radio" name="suggested_confidentiality" id="cf-normal" value="Normal" checked>
+			<label for="cf-normal">{{ _("Normal") }}</label>
+			<input type="radio" name="suggested_confidentiality" id="cf-confidential" value="Confidential">
+			<label for="cf-confidential">{{ _("Confidential") }}</label>
+			<input type="radio" name="suggested_confidentiality" id="cf-highly" value="Highly Confidential">
+			<label for="cf-highly">{{ _("Highly Confidential") }}</label>
+		</div>
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Note to Registrar") }}</label>
+		<textarea id="field-note" rows="3"></textarea>
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Attachments") }}</label>
+		<input type="file" id="field-attachments" multiple>
+		<div id="attachment-list" style="margin-block-start:8px;"></div>
+	</div>
+
+	<div id="form-message"></div>
+</div>
+{% endblock %}
+
+{% block diwan_script %}
+<script>
+frappe.ready(function () {
+	var stagedFiles = [];
+	var savedDocname = null;
+
+	function fieldValue(id) {
+		return document.getElementById(id).value;
+	}
+	function pillValue(name) {
+		var checked = document.querySelector('input[name="' + name + '"]:checked');
+		return checked ? checked.value : null;
+	}
+	function showMessage(text, isError) {
+		var el = document.getElementById("form-message");
+		el.innerHTML = '<div class="diwan-hint" style="color:' +
+			(isError ? "var(--md-danger)" : "var(--md-success)") + ';margin-block-start:10px;">' +
+			frappe.utils.escape_html(text) + "</div>";
+	}
+
+	function renderAttachments() {
+		var list = document.getElementById("attachment-list");
+		list.innerHTML = "";
+		stagedFiles.forEach(function (file, idx) {
+			var row = document.createElement("div");
+			row.className = "diwan-attachment";
+			row.innerHTML = "<span>" + frappe.utils.escape_html(file.name) +
+				" (" + Math.round(file.size / 1024) + " KB)</span>" +
+				'<span class="diwan-attachment__remove" data-idx="' + idx + '">&times;</span>';
+			list.appendChild(row);
+		});
+		list.querySelectorAll("[data-idx]").forEach(function (el) {
+			el.addEventListener("click", function () {
+				stagedFiles.splice(parseInt(el.dataset.idx, 10), 1);
+				renderAttachments();
+			});
+		});
+	}
+
+	document.getElementById("field-attachments").addEventListener("change", function (e) {
+		stagedFiles = stagedFiles.concat(Array.prototype.slice.call(e.target.files));
+		renderAttachments();
+	});
+
+	function uploadStagedFiles(docname) {
+		var uploads = stagedFiles.map(function (file) {
+			var fd = new FormData();
+			fd.append("file", file);
+			fd.append("doctype", "Correspondence Request");
+			fd.append("docname", docname);
+			fd.append("is_private", "1");
+			return fetch("/api/method/upload_file", {
+				method: "POST",
+				headers: { "X-Frappe-CSRF-Token": frappe.csrf_token },
+				body: fd,
+			});
+		});
+		return Promise.all(uploads);
+	}
+
+	function buildDoc() {
+		return {
+			doctype: "Correspondence Request",
+			request_type: pillValue("request_type"),
+			subject: fieldValue("field-subject"),
+			party_or_department: fieldValue("field-party"),
+			draft_text: fieldValue("field-draft-text"),
+			suggested_priority: pillValue("suggested_priority"),
+			suggested_confidentiality: pillValue("suggested_confidentiality"),
+			note_to_registrar: fieldValue("field-note"),
+		};
+	}
+
+	function saveDoc(callback) {
+		if (!fieldValue("field-subject")) {
+			showMessage(__("Subject is required."), true);
+			return;
+		}
+		var call = savedDocname
+			? frappe.call({
+				method: "frappe.client.set_value",
+				args: {
+					doctype: "Correspondence Request",
+					name: savedDocname,
+					fieldname: buildDoc(),
+				},
+			})
+			: frappe.call({
+				method: "frappe.client.insert",
+				args: { doc: buildDoc() },
+			});
+
+		call.then(function (r) {
+			savedDocname = r.message.name;
+			uploadStagedFiles(savedDocname).then(function () {
+				stagedFiles = [];
+				renderAttachments();
+				callback && callback(savedDocname);
+			});
+		}).catch(function () {
+			showMessage(__("Could not save the request. Please check the required fields."), true);
+		});
+	}
+
+	document.getElementById("save-draft-btn").addEventListener("click", function () {
+		saveDoc(function (name) {
+			showMessage(__("Saved as draft.") + " (" + name + ")", false);
+		});
+	});
+
+	document.getElementById("submit-btn").addEventListener("click", function () {
+		saveDoc(function (name) {
+			frappe.call({
+				method: "frappe.model.workflow.apply_workflow",
+				args: { doc: { doctype: "Correspondence Request", name: name }, action: "Submit" },
+			}).then(function () {
+				window.location.href = "/diwan/requests?name=" + encodeURIComponent(name);
+			}).catch(function () {
+				showMessage(__("Saved as draft, but could not submit for review."), true);
+			});
+		});
+	});
+});
+</script>
+{% endblock %}
