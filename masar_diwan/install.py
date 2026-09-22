@@ -39,6 +39,7 @@ def after_install():
 	ensure_department_doctype()
 	ensure_department_read_access()
 	ensure_workflows()
+	ensure_workflow_states()
 
 
 def before_migrate():
@@ -54,6 +55,7 @@ def after_migrate():
 	ensure_department_doctype()
 	ensure_department_read_access()
 	ensure_workflows()
+	ensure_workflow_states()
 	try:
 		migrate_legacy_department_to_erpnext()
 	except Exception:
@@ -118,6 +120,87 @@ def ensure_workflows():
 		frappe.db.commit()
 	except Exception:
 		frappe.log_error(title="masar_diwan: failed to ensure Workflows")
+
+
+def ensure_workflow_states():
+	"""Found 2026-09-22 via a real live-browser session on `diwan.local`: opening
+	a brand-new `Internal Mail Movement` as a non-Administrator role threw a
+	misleading 403 ("does not have doctype access ... for document Workflow
+	State"), and the same action as Administrator (who bypasses the role-
+	permission wall) revealed the real error underneath it: `Workflow State
+	In Transit not found`.
+
+	Root cause, confirmed by reading `frappe/desk/form/meta.py::load_workflows()`
+	directly: every time a doctype's form meta is loaded, Frappe fetches a real
+	`Workflow State` document (`frappe.get_doc("Workflow State", state)`) for
+	each state in that doctype's active workflow, purely to read its display
+	`style` (Success/Danger/Warning/...). Desk's own "New Workflow State"
+	dialog auto-creates this record the moment a Workflow is saved *from the
+	Desk UI* - but a Workflow imported via `ensure_workflows()`'s JSON importer
+	(see its own docstring above) never goes through that save path, so it
+	never creates the matching `Workflow State` rows. `diwan.local` was missing
+	all three of this workflow's states outright (`Draft`/`In Transit`/
+	`Received`); `bob.local` only avoided the same failure because `Draft`
+	happened to already exist as a side effect of an older, unrelated
+	workflow sharing that same state name - masking the gap there, not fixing
+	it. Any future workflow (this app's own, or a state name that doesn't
+	happen to collide with an existing one) would hit the same failure again.
+
+	Fixed the same way `ensure_workflows()` fixes its own gap: generic,
+	idempotent, re-run on every migrate. Reads every state of every Workflow
+	this app owns and creates whichever `Workflow State` records are missing,
+	rather than hardcoding the two states that happened to be missing when
+	this was first diagnosed.
+	"""
+	# A Workflow's own `states` child table (`Workflow Document State`) has no
+	# style field of its own - display style belongs solely to the separate
+	# `Workflow State` master this function creates, referenced only by
+	# `state`'s Link. This app's workflow JSON files never carried style
+	# information to begin with, so there's nothing to read one from; this is
+	# a best-effort default map for the state names this app's own 3
+	# workflows are known to use (matching the styling `bob.local` already had
+	# for the states that happened to pre-exist there), falling back to
+	# "Primary" for anything not listed so a genuinely new/renamed state still
+	# gets created instead of silently failing.
+	STATE_STYLES = {
+		"Draft": "Inverse",
+		"In Transit": "Warning",
+		"Received": "Success",
+		"Pending Review": "Warning",
+		"Under Review": "Warning",
+		"Needs Revision": "Warning",
+		"Approved & Numbered": "Success",
+		"Rejected": "Danger",
+		"Pending Delivery": "Warning",
+		"Delivered": "Primary",
+		"Receipt Confirmed": "Success",
+		"Completed": "Success",
+		"Archived": "Info",
+		"Referred / In Progress": "Primary",
+	}
+	try:
+		workflow_dir = frappe.get_app_path("masar_diwan", "masar_diwan", "workflow")
+		if not os.path.isdir(workflow_dir):
+			return
+		for folder in sorted(os.listdir(workflow_dir)):
+			path = os.path.join(workflow_dir, folder, f"{folder}.json")
+			if not os.path.exists(path):
+				continue
+			with open(path) as f:
+				workflow = json.load(f)
+			for state_row in workflow.get("states", []):
+				state_name = state_row.get("state")
+				if state_name and not frappe.db.exists("Workflow State", state_name):
+					frappe.get_doc(
+						{
+							"doctype": "Workflow State",
+							"workflow_state_name": state_name,
+							"style": STATE_STYLES.get(state_name, "Primary"),
+						}
+					).insert(ignore_permissions=True)
+		frappe.db.commit()
+	except Exception:
+		frappe.log_error(title="masar_diwan: failed to ensure Workflow States")
 
 
 def ensure_workspace_sidebar():
