@@ -2,6 +2,7 @@ import json
 import os
 
 import frappe
+from frappe.modules.import_file import import_file_by_path
 
 ROLES = [
 	"Correspondence Employee",
@@ -23,11 +24,21 @@ DEPARTMENT_LINK_FIELDS = [
 ]
 
 
+DEPARTMENT_READ_ROLES = [
+	"Correspondence Employee",
+	"Department Head",
+	"Diwan Officer",
+	"Senior Management",
+]
+
+
 def after_install():
 	create_roles()
 	ensure_workspace_sidebar()
 	ensure_desktop_icon()
 	ensure_department_doctype()
+	ensure_department_read_access()
+	ensure_workflows()
 
 
 def before_migrate():
@@ -41,6 +52,8 @@ def after_migrate():
 	ensure_workspace_sidebar()
 	ensure_desktop_icon()
 	ensure_department_doctype()
+	ensure_department_read_access()
+	ensure_workflows()
 	try:
 		migrate_legacy_department_to_erpnext()
 	except Exception:
@@ -55,6 +68,56 @@ def create_roles():
 		role.role_name = role_name
 		role.desk_access = 0 if role_name == "Portal Tracking User" else 1
 		role.insert(ignore_permissions=True)
+
+
+def ensure_workflows():
+	"""Found 2026-09-22 while running a real end-to-end test on `diwan.local`
+	(a fresh `bench install-app masar_diwan`, no data ever hand-seeded there
+	beyond fixtures): every single workflow transition failed, and none of
+	this app's 3 `Workflow` records (`Correspondence Workflow`,
+	`Correspondence Request Workflow`, `Delivery Sheet Workflow`) existed in
+	its database at all - confirmed directly (`select * from tabWorkflow`:
+	zero rows), despite `bench migrate` reporting zero errors every time.
+
+	Root cause, confirmed by reading `frappe/model/sync.py` directly: Frappe's
+	own `sync_all()`/`sync_for()` only auto-imports a fixed, explicit list of
+	content types from an app's module folders (`IMPORTABLE_DOCTYPES`:
+	DocType, Page, Report, Print Format, Workspace, Onboarding Step, Client
+	Script, Custom Field, Property Setter, and a handful more) - `"workflow"`
+	does not appear anywhere in that file. **Frappe never auto-syncs Workflow
+	JSON files from an app's `<module>/workflow/*/*.json` into the database
+	on install or migrate, for any app** - this is a general Frappe
+	limitation, not something specific to this site or this app. This
+	project's 3 workflows only ever existed on `bob.local` because they were
+	originally created via one-off interactive Python scripts during this
+	app's own build (see the "gotcha #6" entry elsewhere in this file's
+	CLAUDE.md counterpart) and *exported* to JSON afterward for version
+	control - nothing ever closed the loop and made that JSON re-importable
+	on a fresh install. Every fresh `bench install-app masar_diwan`, on any
+	site, until this fix, would have had a completely non-functional
+	correspondence workflow and Diwan Tray - not a data problem, a genuine
+	installation gap.
+
+	Fixed using Frappe's own official, generic, reusable importer,
+	`frappe.modules.import_file.import_file_by_path()` - the exact function
+	`sync_for()` itself calls for every doctype in `IMPORTABLE_DOCTYPES` -
+	called directly against each workflow JSON path, which `sync_for()`
+	simply never does for `"workflow"`. It's naturally idempotent (compares
+	a stored hash/modified-timestamp before doing anything, per its own
+	docstring), so calling it on every migrate is safe and self-healing,
+	matching every other hook in this file.
+	"""
+	try:
+		workflow_dir = frappe.get_app_path("masar_diwan", "masar_diwan", "workflow")
+		if not os.path.isdir(workflow_dir):
+			return
+		for folder in sorted(os.listdir(workflow_dir)):
+			path = os.path.join(workflow_dir, folder, f"{folder}.json")
+			if os.path.exists(path):
+				import_file_by_path(path)
+		frappe.db.commit()
+	except Exception:
+		frappe.log_error(title="masar_diwan: failed to ensure Workflows")
 
 
 def ensure_workspace_sidebar():
@@ -139,6 +202,50 @@ def ensure_department_doctype():
 		frappe.db.commit()
 	except Exception:
 		frappe.log_error(title="masar_diwan: failed to ensure Department doctype")
+
+
+def ensure_department_read_access():
+	"""When ERPNext provides the real `Department` doctype, its own shipped
+	DocPerm rows only grant read to `Academics User`/`HR User`/`HR Manager` -
+	none of masar_diwan's own roles. Confirmed as a real, practical gap
+	2026-09-22: `test.diwan@masar-diwan.local` (Diwan Officer, no HR role)
+	got a genuine `PermissionError` from `frappe.desk.search.search_link`
+	trying to use the Department field's own link-search dropdown on
+	`bob.local` - not a hypothetical, reproduced live over HTTP. Fixed via
+	`Custom DocPerm` (Frappe's own standard mechanism for adding a
+	site-local permission row without editing another app's shipped
+	DocPerm) rather than touching ERPNext's own `department.json` - read
+	only, nothing else (masar_diwan never creates/edits a Department, ERPNext-
+	backed or not - that stays HR's job on a site that has ERPNext).
+
+	No-ops immediately when ERPNext isn't installed - our own fallback
+	`Department` (see `_create_masar_department_doctype()`) already grants
+	these same roles read access natively, in its own DocPerm, no Custom
+	DocPerm needed there.
+	"""
+	try:
+		if "erpnext" not in frappe.get_installed_apps():
+			return
+		if frappe.db.get_value("DocType", "Department", "module") != "Setup":
+			return  # not ERPNext's real Department (e.g. mid-transition) - leave it to the other hooks
+
+		for role in DEPARTMENT_READ_ROLES:
+			if frappe.db.exists("Custom DocPerm", {"parent": "Department", "role": role, "read": 1}):
+				continue
+			frappe.get_doc(
+				{
+					"doctype": "Custom DocPerm",
+					"parent": "Department",
+					"parenttype": "DocType",
+					"parentfield": "permissions",
+					"role": role,
+					"read": 1,
+				}
+			).insert(ignore_permissions=True)
+		frappe.db.commit()
+		frappe.clear_cache(doctype="Department")
+	except Exception:
+		frappe.log_error(title="masar_diwan: failed to ensure Department read access")
 
 
 def _create_masar_department_doctype():
