@@ -145,11 +145,13 @@ after_migrate = "masar_diwan.install.after_migrate"
 permission_query_conditions = {
 	"Correspondence": "masar_diwan.permissions.get_permission_query_conditions",
 	"Correspondence Request": "masar_diwan.permissions.get_permission_query_conditions_correspondence_request",
+	"Internal Mail Movement": "masar_diwan.permissions.get_permission_query_conditions_internal_mail_movement",
 }
 
 has_permission = {
 	"Correspondence": "masar_diwan.permissions.has_permission",
 	"Correspondence Request": "masar_diwan.permissions.has_permission_correspondence_request",
+	"Internal Mail Movement": "masar_diwan.permissions.has_permission_internal_mail_movement",
 }
 
 # Access Log (Phase 6)

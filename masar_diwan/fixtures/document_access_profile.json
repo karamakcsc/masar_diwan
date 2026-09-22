@@ -13,11 +13,15 @@
     "role": "System Manager"
    }
   ],
-  "department_field": "department",
+  "department_fields": [
+   {
+    "fieldname": "department"
+   }
+  ],
   "docstatus": 0,
   "doctype": "Document Access Profile",
   "document_type": "Correspondence",
-  "modified": "2026-09-22 02:05:28.662249",
+  "modified": "2026-09-22 20:40:42.679732",
   "name": "Correspondence",
   "numbering_prefix_source_doctype": "Correspondence Type",
   "numbering_prefix_source_field": "prefix",
@@ -39,5 +43,40 @@
   ],
   "status_field": "status",
   "supports_confidentiality": 1
+ },
+ {
+  "authorized_viewer_doctype": null,
+  "confidentiality_field": null,
+  "department_exempt_roles": [
+   {
+    "role": "Diwan Officer"
+   },
+   {
+    "role": "Senior Management"
+   },
+   {
+    "role": "System Manager"
+   }
+  ],
+  "department_fields": [
+   {
+    "fieldname": "from_department"
+   },
+   {
+    "fieldname": "to_department"
+   }
+  ],
+  "docstatus": 0,
+  "doctype": "Document Access Profile",
+  "document_type": "Internal Mail Movement",
+  "modified": "2026-09-22 20:44:30.343260",
+  "name": "Internal Mail Movement",
+  "numbering_prefix_source_doctype": null,
+  "numbering_prefix_source_field": null,
+  "owner_field": "owner",
+  "reference_field": "name",
+  "searchable_fields": [],
+  "status_field": "status",
+  "supports_confidentiality": 0
  }
 ]

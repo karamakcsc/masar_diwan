@@ -7,12 +7,14 @@ from frappe.model.document import Document
 
 class DocumentAccessProfile(Document):
 	def validate(self):
-		if self.department_field and self.department_field not in self._target_fieldnames():
-			frappe.throw(
-				frappe._("Department Field {0} does not exist on {1}").format(
-					self.department_field, self.document_type
+		valid_fieldnames = self._target_fieldnames()
+		for row in self.department_fields:
+			if row.fieldname not in valid_fieldnames:
+				frappe.throw(
+					frappe._("Department Field {0} does not exist on {1}").format(
+						row.fieldname, self.document_type
+					)
 				)
-			)
 		if self.supports_confidentiality:
 			if self.confidentiality_field not in self._target_fieldnames():
 				frappe.throw(

@@ -8,8 +8,14 @@ hardcoded around any one doctype:
 1. Department scoping: a user may only see a document belonging to a
    department they are explicitly linked to (via `User Permission` on
    Department), unless their role is in that document type's
-   `department_exempt_roles`. A profile with no `department_field` at all
-   skips this rule entirely for that type.
+   `department_exempt_roles`. A profile can list *more than one*
+   `department_fields` row (e.g. `from_department` + `to_department` on
+   Internal Mail Movement) - a document matches if the user belongs to
+   *any one* of them (logical OR). A profile with no department fields at
+   all skips this rule entirely for that type; a document where every
+   configured department field is empty is likewise treated as
+   unrestricted (matches this rule's original single-field behavior
+   exactly when there's only one field).
 
 2. Confidentiality tiering (only for profiles with `supports_confidentiality`
    set), evaluated independently of department, via the document's
@@ -127,15 +133,18 @@ def generic_has_permission(document_type: str, doc, ptype: str = "read", user: s
 	profile = _get_profile(document_type)
 	roles = set(frappe.get_roles(user))
 	dept_exempt_roles = {r.role for r in profile.department_exempt_roles}
-	department_field = profile.department_field
-	doc_department = doc.get(department_field) if department_field else None
+	department_fields = [row.fieldname for row in profile.department_fields]
 
 	def department_ok():
 		if roles & dept_exempt_roles:
 			return True
-		if not department_field or not doc_department:
+		if not department_fields:
 			return True
-		return doc_department in get_user_departments(user)
+		dept_values = [doc.get(fn) for fn in department_fields]
+		if not any(dept_values):
+			return True
+		user_departments = get_user_departments(user)
+		return any(v in user_departments for v in dept_values if v)
 
 	if ptype == "create":
 		# Confidentiality tiers protect who may *read* an existing document -
@@ -185,20 +194,25 @@ def generic_get_permission_query_conditions(document_type: str, user: str | None
 	profile = _get_profile(document_type)
 	roles = set(frappe.get_roles(user))
 	dept_exempt_roles = {r.role for r in profile.department_exempt_roles}
-	department_field = profile.department_field
+	department_fields = [row.fieldname for row in profile.department_fields]
 	escaped_user = frappe.db.escape(user)
 
 	def department_clause():
-		"""None means "not restrictive" (no department field, or user is
+		"""None means "not restrictive" (no department fields, or user is
 		department-exempt) - the caller must treat that as always-true,
-		not as an empty/false condition."""
-		if roles & dept_exempt_roles or not department_field:
+		not as an empty/false condition. With multiple department fields,
+		a row matches if ANY one of them holds one of the user's
+		departments (OR across fields) - or if every one of them is empty
+		(unrestricted, same fallback as the single-field case)."""
+		if roles & dept_exempt_roles or not department_fields:
 			return None
 		departments = get_user_departments(user)
 		department_list = ", ".join(frappe.db.escape(d) for d in departments) if departments else ""
-		if department_list:
-			return f"({department_field} is null or {department_field} in ({department_list}))"
-		return f"{department_field} is null"
+		all_empty_clause = " and ".join(f"{fn} is null" for fn in department_fields)
+		if not department_list:
+			return f"({all_empty_clause})"
+		field_match_clauses = [f"{fn} in ({department_list})" for fn in department_fields]
+		return "(" + " or ".join(field_match_clauses) + f" or ({all_empty_clause}))"
 
 	if not profile.supports_confidentiality:
 		clause = department_clause()
@@ -258,6 +272,14 @@ def has_permission(doc, ptype="read", user=None):
 
 def get_permission_query_conditions(user=None):
 	return generic_get_permission_query_conditions("Correspondence", user)
+
+
+def has_permission_internal_mail_movement(doc, ptype="read", user=None):
+	return generic_has_permission("Internal Mail Movement", doc, ptype, user)
+
+
+def get_permission_query_conditions_internal_mail_movement(user=None):
+	return generic_get_permission_query_conditions("Internal Mail Movement", user)
 
 
 def has_permission_correspondence_request(doc, ptype="read", user=None):

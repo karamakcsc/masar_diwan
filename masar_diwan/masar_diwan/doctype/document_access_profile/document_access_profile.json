@@ -8,12 +8,12 @@
  "engine": "InnoDB",
  "field_order": [
   "document_type",
-  "department_field",
   "owner_field",
   "column_break_fields",
   "status_field",
   "reference_field",
   "section_break_exempt",
+  "department_fields",
   "department_exempt_roles",
   "section_break_confidentiality",
   "supports_confidentiality",
@@ -34,12 +34,6 @@
    "options": "DocType",
    "reqd": 1,
    "unique": 1
-  },
-  {
-   "description": "Fieldname on Document Type that holds the department (Link field) used for department scoping. Leave blank if this type is not department-scoped at all.",
-   "fieldname": "department_field",
-   "fieldtype": "Data",
-   "label": "Department Field"
   },
   {
    "default": "owner",
@@ -68,6 +62,13 @@
    "fieldname": "section_break_exempt",
    "fieldtype": "Section Break",
    "label": "Department Scoping"
+  },
+  {
+   "description": "Link fields on Document Type that hold a department (or whichever doctype is currently providing 'Department') used for department scoping - e.g. 'department', or 'from_department'+'to_department' for a doctype with two. A user sees the document if ANY one of these fields' value is one of their own departments (logical OR across rows) - or if their role is in Department Exempt Roles below. Leave empty if this type is not department-scoped at all.",
+   "fieldname": "department_fields",
+   "fieldtype": "Table",
+   "label": "Department Fields",
+   "options": "Document Access Profile Department Field"
   },
   {
    "description": "Roles that see documents of this type across every department, regardless of their own User Permission department assignment. Confidentiality tiering (below) still applies independently.",
