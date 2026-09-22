@@ -1,6 +1,6 @@
 import frappe
 
-from masar_diwan.api.requests import get_submitter_context
+from masar_diwan.api.requests import get_confidentiality_levels, get_submitter_context
 from masar_diwan.utils.portal_nav import REQUESTER_PORTAL_NAV as PORTAL_NAV
 
 
@@ -23,4 +23,10 @@ def get_context(context):
 	context.portal_section_title = "Requester Portal"
 	context.active_route = "/diwan/submit"
 	context.submitter = get_submitter_context()
+	# Rendered server-side (like the rest of this page) rather than fetched
+	# by the page's own JS - the list is site-configurable (see Document
+	# Access Profile / Confidentiality Level), not a fixed set of 3, so the
+	# radio pillgroup below is built from whatever this call returns instead
+	# of 3 hardcoded options.
+	context.confidentiality_levels = get_confidentiality_levels()
 	return context

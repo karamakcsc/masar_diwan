@@ -23,3 +23,30 @@ def get_submitter_context():
 		"department": next(iter(departments), None),
 		"date": frappe.utils.today(),
 	}
+
+
+@frappe.whitelist(allow_guest=False)
+def get_confidentiality_levels():
+	"""Public, read-only list of the site's Confidentiality Level records,
+	ordered least -> most restrictive.
+
+	Confidentiality Level itself only grants DocPerm read to System Manager /
+	Diwan Officer / Senior Management (see its DocType JSON) - but every
+	submitter-facing picker (the "New Correspondence Request" Desk Page, and
+	the Requester Portal's /diwan/submit, reachable by a plain Website User)
+	needs to render whichever levels this site is actually configured with,
+	not a hardcoded three. This intentionally exposes only the display-safe
+	fields (name/label/rank) with ignore_permissions=True - never
+	bypass_roles or department_members_can_read/owner_can_read, which are
+	access-control configuration, not something a submitter needs to see.
+	Real enforcement of who may later read a document at a given level is
+	still done entirely by permissions.py; this endpoint only lets the UI
+	stop hardcoding level names/colors that the backend has been able to
+	vary per client since the Document Access Profile rewrite.
+	"""
+	return frappe.get_all(
+		"Confidentiality Level",
+		fields=["name", "level_name", "level_name_en", "rank"],
+		order_by="rank asc",
+		ignore_permissions=True,
+	)

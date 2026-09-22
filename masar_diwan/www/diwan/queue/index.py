@@ -2,6 +2,7 @@ import frappe
 
 from masar_diwan.access_log import log_event
 from masar_diwan.permissions import require_diwan_staff
+from masar_diwan.utils.pickers import correspondence_type_options
 from masar_diwan.utils.portal_nav import DIWAN_PORTAL_NAV
 
 QUEUE_STATUSES = ["Pending Review", "Under Review"]
@@ -67,9 +68,7 @@ def get_context(context):
 				reason="Diwan Portal review",
 			)
 		context.detail_json = frappe.as_json(context.detail)
-		context.correspondence_types = frappe.get_all(
-			"Correspondence Type", fields=["name", "title"]
-		)
+		context.correspondence_types = correspondence_type_options()
 	else:
 		context.title = frappe._("Queue")
 		# get_list applies masar_diwan.permissions.get_permission_query_conditions_correspondence_request -

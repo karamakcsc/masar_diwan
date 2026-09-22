@@ -8,13 +8,11 @@
 // standard owner/creation meta fields, which are already accurate (
 // register_correspondence() inserts as the approving Diwan Officer's own
 // session, not a generic system user - confirmed live).
-const CORRESPONDENCE_WORKFLOW_STEPS = [
-	"Draft",
-	"Under Review",
-	"Referred / In Progress",
-	"Completed",
-	"Archived",
-];
+//
+// The workflow-stepper rendering itself now lives in the shared
+// window.masarDiwanDesk helper (public/js/masar_diwan-desk.js, loaded
+// app-wide) rather than being hand-rolled again in this file - see that
+// file's header comment for the duplication this replaced.
 
 frappe.ui.form.on("Correspondence", {
 	onload(frm) {
@@ -49,42 +47,6 @@ function render_source_request_banner(frm) {
 	);
 }
 
-function render_workflow_stepper_html(current_status) {
-	// Colors reference the shared --md-* identity tokens (masar_diwan-desk.css,
-	// loaded app-wide via hooks.py app_include_css): done = --md-success,
-	// current = --md-brand, upcoming = neutral gray. Presentational only -
-	// the steps themselves are still read verbatim from the real Correspondence
-	// Workflow states (see CORRESPONDENCE_WORKFLOW_STEPS above), not guessed.
-	const idx = Math.max(0, CORRESPONDENCE_WORKFLOW_STEPS.indexOf(current_status));
-	return `
-		<div class="correspondence-registered-stepper" style="display:flex; align-items:flex-start;">
-			${CORRESPONDENCE_WORKFLOW_STEPS.map((step, i) => {
-				const done = i < idx;
-				const active = i === idx;
-				const circle_bg = done ? "var(--md-success, #187269)" : active ? "var(--md-brand, #1a375b)" : "var(--md-ink-100, #eff2f5)";
-				const circle_color = done || active ? "#fff" : "rgba(17,24,39,.55)";
-				const label_color = done || active ? "#111827" : "rgba(17,24,39,.55)";
-				const label_weight = done || active ? "600" : "400";
-				const line = i < CORRESPONDENCE_WORKFLOW_STEPS.length - 1
-					? `<div style="flex:1; height:2px; background:${i < idx ? "var(--md-success, #187269)" : "var(--md-ink-100, #eff2f5)"}; margin-top:11px;"></div>`
-					: "";
-				return `
-					<div style="display:flex; flex-direction:column; align-items:center; ${i === 0 ? "" : "flex:1;"}">
-						<div style="width:22px; height:22px; border-radius:50%; background:${circle_bg}; color:${circle_color};
-							display:flex; align-items:center; justify-content:center; font-size:11px;">
-							${done ? "&#10003;" : i + 1}
-						</div>
-						<div style="font-size:11px; margin-top:4px; text-align:center; color:${label_color}; font-weight:${label_weight};">
-							${__(step)}
-						</div>
-					</div>
-					${line}
-				`;
-			}).join("")}
-		</div>
-	`;
-}
-
 function render_registered_dashboard_section(frm) {
 	// Idempotent: remove any previously injected section before re-adding,
 	// since refresh() fires again after every save/workflow transition and
@@ -113,7 +75,7 @@ function render_registered_dashboard_section(frm) {
 			</div>
 			<div style="flex:1; min-width:260px;">
 				<div class="text-muted small mb-2">${__("Registered by")}: ${registered_by}</div>
-				${render_workflow_stepper_html(frm.doc.status)}
+				${window.masarDiwanDesk.renderCorrespondenceStepper(frm.doc.status)}
 			</div>
 		</div>
 	`;

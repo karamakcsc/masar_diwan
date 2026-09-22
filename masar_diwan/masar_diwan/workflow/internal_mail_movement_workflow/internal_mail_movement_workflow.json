@@ -23,6 +23,33 @@
    "state": "Draft"
   },
   {
+   "allow_edit": "Department Head",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Draft"
+  },
+  {
+   "allow_edit": "Diwan Officer",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Draft"
+  },
+  {
+   "allow_edit": "Senior Management",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Draft"
+  },
+  {
    "allow_edit": "Correspondence Employee",
    "avoid_status_override": 0,
    "doc_status": "0",
@@ -32,7 +59,61 @@
    "state": "In Transit"
   },
   {
+   "allow_edit": "Department Head",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "In Transit"
+  },
+  {
+   "allow_edit": "Diwan Officer",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "In Transit"
+  },
+  {
+   "allow_edit": "Senior Management",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "In Transit"
+  },
+  {
    "allow_edit": "Correspondence Employee",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Received"
+  },
+  {
+   "allow_edit": "Department Head",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Received"
+  },
+  {
+   "allow_edit": "Diwan Officer",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Received"
+  },
+  {
+   "allow_edit": "Senior Management",
    "avoid_status_override": 0,
    "doc_status": "0",
    "evaluate_as_expression": 0,

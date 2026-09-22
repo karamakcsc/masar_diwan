@@ -44,9 +44,9 @@
   "doctype": "Confidentiality Level",
   "level_name": "Highly Confidential",
   "level_name_en": "Highly Confidential",
-  "modified": "2026-09-22 02:05:28.620806",
+  "modified": "2026-09-23 03:22:40.802847",
   "name": "Highly Confidential",
-  "owner_can_read": 0,
+  "owner_can_read": 1,
   "rank": 2
  }
 ]

@@ -132,7 +132,7 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 					${confidentiality_badge_html(d.confidentiality)}
 				</div>
 				<div class="card-body">
-					${render_hstepper_html(d.status)}
+					${window.masarDiwanDesk.renderCorrespondenceStepper(d.status)}
 					<p><b>${__("Subject")}:</b> ${frappe.utils.escape_html(d.subject || "")}</p>
 					<p><b>${__("Status")}:</b> ${frappe.utils.escape_html(__(d.status || ""))}</p>
 					<p><b>${__("Department")}:</b> ${frappe.utils.escape_html(d.department || "")}</p>
@@ -148,30 +148,12 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 		return `<span class="correspondence-track-badge ${cls}">${frappe.utils.escape_html(__(confidentiality))}</span>`;
 	}
 
-	// Same 5 states as the Correspondence Workflow (see CLAUDE.md /
-	// correspondence_workflow.json) - horizontal done/current/upcoming bar,
-	// matching the vertical stepper on the Correspondence Desk form itself
-	// (correspondence.js::render_workflow_stepper_html) but laid out
-	// horizontally to fit this page's narrower detail card.
-	const TRACK_WORKFLOW_STEPS = ["Draft", "Under Review", "Referred / In Progress", "Completed", "Archived"];
-
-	function render_hstepper_html(status) {
-		const idx = Math.max(0, TRACK_WORKFLOW_STEPS.indexOf(status));
-		return `
-			<div class="correspondence-track-hstepper">
-				${TRACK_WORKFLOW_STEPS.map((step, i) => {
-					const cls = i < idx ? "is-done" : i === idx ? "is-current" : "";
-					const mark = i < idx ? "&#10003;" : i + 1;
-					return `
-						<div class="correspondence-track-hstepper__step ${cls}">
-							<div class="correspondence-track-hstepper__dot">${mark}</div>
-							<div class="correspondence-track-hstepper__label">${frappe.utils.escape_html(__(step))}</div>
-						</div>
-					`;
-				}).join("")}
-			</div>
-		`;
-	}
+	// The stepper itself is now rendered by the shared
+	// window.masarDiwanDesk.renderCorrespondenceStepper() helper
+	// (public/js/masar_diwan-desk.js, loaded app-wide) using the shared
+	// .md-hstepper* CSS in masar_diwan-desk.css, instead of a copy of the
+	// same 5-state array/markup kept in this file - see that helper's
+	// header comment for the duplication this replaced.
 
 	function inject_styles() {
 		if ($("#correspondence-track-style").length) return;
@@ -202,37 +184,6 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 			[data-page-route="correspondence-track"] .correspondence-track-restricted {
 				display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-radius: 9px;
 				background: color-mix(in srgb, var(--md-danger, #ba2c3c) 8%, white); color: var(--md-danger, #ba2c3c);
-			}
-			[data-page-route="correspondence-track"] .correspondence-track-hstepper {
-				display: flex; align-items: center; gap: 0; margin-block-end: 16px;
-			}
-			[data-page-route="correspondence-track"] .correspondence-track-hstepper__step {
-				display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1 1 0;
-				text-align: center; position: relative;
-			}
-			[data-page-route="correspondence-track"] .correspondence-track-hstepper__step:not(:first-child):before {
-				content: ""; position: absolute; inset-inline-end: 50%; top: 9px; width: 100%; height: 2px;
-				background: var(--md-ink-100, #eff2f5); z-index: 0;
-			}
-			[data-page-route="correspondence-track"] .correspondence-track-hstepper__step.is-done:not(:first-child):before,
-			[data-page-route="correspondence-track"] .correspondence-track-hstepper__step.is-current:not(:first-child):before {
-				background: var(--md-success, #187269);
-			}
-			[data-page-route="correspondence-track"] .correspondence-track-hstepper__dot {
-				width: 20px; height: 20px; border-radius: 999px; background: var(--md-ink-100, #eff2f5);
-				color: rgba(17,24,39,.55); display: flex; align-items: center; justify-content: center;
-				font-size: 10px; font-weight: 600; position: relative; z-index: 1; border: 2px solid #fff;
-			}
-			[data-page-route="correspondence-track"] .correspondence-track-hstepper__step.is-done .correspondence-track-hstepper__dot {
-				background: var(--md-success, #187269); color: #fff;
-			}
-			[data-page-route="correspondence-track"] .correspondence-track-hstepper__step.is-current .correspondence-track-hstepper__dot {
-				background: var(--md-brand, #1a375b); color: #fff;
-			}
-			[data-page-route="correspondence-track"] .correspondence-track-hstepper__label { font-size: 11px; color: rgba(17,24,39,.55); }
-			[data-page-route="correspondence-track"] .correspondence-track-hstepper__step.is-done .correspondence-track-hstepper__label,
-			[data-page-route="correspondence-track"] .correspondence-track-hstepper__step.is-current .correspondence-track-hstepper__label {
-				color: #111827; font-weight: 500;
 			}
 		</style>`).appendTo("head");
 	}

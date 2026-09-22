@@ -62,3 +62,77 @@ outside those page bodies render. */
 	background: var(--md-brand-strong);
 	border-color: var(--md-brand-strong);
 }
+
+/* ---------------------------------------------------------------------
+   Shared Correspondence Workflow stepper (.md-hstepper*) - one definition
+   for both Desk call sites that render it (the Correspondence Desk form's
+   "Registered Correspondence" section, and the "Correspondence Tracking"
+   Desk Page's result card). Rendered by
+   window.masarDiwanDesk.renderCorrespondenceStepper() in
+   public/js/masar_diwan-desk.js - see that file's header comment for why
+   this replaced two separately hand-rolled implementations. Deliberately
+   NOT scoped under a [data-page-route="..."] prefix (unlike the two
+   page-specific blocks above) since it is now meant to be reused
+   anywhere on the Desk side, not tied to one page's route.
+   --------------------------------------------------------------------- */
+.md-hstepper {
+	display: flex;
+	align-items: center;
+	gap: 0;
+	margin-block-end: 16px;
+}
+.md-hstepper__step {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	flex: 1 1 0;
+	text-align: center;
+	position: relative;
+}
+.md-hstepper__step:not(:first-child):before {
+	content: "";
+	position: absolute;
+	inset-inline-end: 50%;
+	top: 9px;
+	width: 100%;
+	height: 2px;
+	background: var(--md-ink-100);
+	z-index: 0;
+}
+.md-hstepper__step.is-done:not(:first-child):before,
+.md-hstepper__step.is-current:not(:first-child):before {
+	background: var(--md-success);
+}
+.md-hstepper__dot {
+	width: 20px;
+	height: 20px;
+	border-radius: 999px;
+	background: var(--md-ink-100);
+	color: rgba(17, 24, 39, .55);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 10px;
+	font-weight: 600;
+	position: relative;
+	z-index: 1;
+	border: 2px solid #fff;
+}
+.md-hstepper__step.is-done .md-hstepper__dot {
+	background: var(--md-success);
+	color: #fff;
+}
+.md-hstepper__step.is-current .md-hstepper__dot {
+	background: var(--md-brand);
+	color: #fff;
+}
+.md-hstepper__label {
+	font-size: 11px;
+	color: rgba(17, 24, 39, .55);
+}
+.md-hstepper__step.is-done .md-hstepper__label,
+.md-hstepper__step.is-current .md-hstepper__label {
+	color: #111827;
+	font-weight: 500;
+}

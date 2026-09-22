@@ -41,10 +41,13 @@ const CRN_STATUS_META = {
 	"Approved & Numbered": { label: "معتمدة ومرقّمة", color: "green" },
 };
 
-const CRN_CONFIDENTIALITY_META = {
+// Fallback shown only until the real Confidentiality Level list (which can
+// vary per client/site - see Document Access Profile) is fetched over
+// masar_diwan.api.requests.get_confidentiality_levels(). Never assume every
+// site has exactly these 3 levels; this object is replaced wholesale by
+// fetch_confidentiality_levels() as soon as that call returns.
+const CRN_CONFIDENTIALITY_FALLBACK = {
 	Normal: { label: "عادي", active_class: "btn-secondary" },
-	Confidential: { label: "سري", active_class: "btn-warning" },
-	"Highly Confidential": { label: "سري جداً", active_class: "btn-danger" },
 };
 
 class CorrespondenceRequestNew {
@@ -54,9 +57,53 @@ class CorrespondenceRequestNew {
 		this.pending_files = [];
 		this.request_type = null;
 		this.priority = "Normal";
+		this.confidentiality_meta = CRN_CONFIDENTIALITY_FALLBACK;
 		this.confidentiality = "Normal";
 		this.inject_styles();
 		this.render_form();
+	}
+
+	// Builds the button-group HTML for whichever levels are currently known
+	// (fallback on first paint, the real fetched list once it arrives).
+	build_confidentiality_pills_html() {
+		return Object.keys(this.confidentiality_meta)
+			.map((key) => {
+				const meta = this.confidentiality_meta[key];
+				const is_active = this.confidentiality === key;
+				const cls = is_active ? meta.active_class : "btn-outline-secondary";
+				return `<button type="button" class="btn ${cls} crn-confidentiality-pill" data-value="${key}">${frappe.utils.escape_html(
+					meta.label
+				)}</button>`;
+			})
+			.join("");
+	}
+
+	// Replaces the 3-hardcoded-levels assumption with whatever this site is
+	// actually configured with (Document Access Profile / Confidentiality
+	// Level are already N-level-capable server-side - see CLAUDE.md). The
+	// two extremes keep the original grey/red convention; anything in
+	// between gets the amber "confidential" treatment, generalizing the old
+	// fixed 3-tier color scheme to any number of levels.
+	fetch_confidentiality_levels($body) {
+		frappe.call({
+			method: "masar_diwan.api.requests.get_confidentiality_levels",
+			callback: (r) => {
+				const levels = r.message || [];
+				if (!levels.length) return; // keep the fallback rather than showing an empty group
+				const meta = {};
+				levels.forEach((lvl, i) => {
+					let active_class = "btn-warning";
+					if (i === 0) active_class = "btn-secondary";
+					else if (i === levels.length - 1) active_class = "btn-danger";
+					meta[lvl.name] = { label: lvl.level_name || lvl.name, active_class };
+				});
+				this.confidentiality_meta = meta;
+				if (!meta[this.confidentiality]) {
+					this.confidentiality = levels[0].name;
+				}
+				$body.find("#crn-confidentiality-group").html(this.build_confidentiality_pills_html());
+			},
+		});
 	}
 
 	inject_styles() {
@@ -345,15 +392,8 @@ class CorrespondenceRequestNew {
 								</div>
 								<div class="col-sm-6">
 									<label class="d-block">درجة السرية</label>
-									<div class="btn-group" role="group">
-										${Object.keys(CRN_CONFIDENTIALITY_META)
-											.map((key) => {
-												const meta = CRN_CONFIDENTIALITY_META[key];
-												const is_active = this.confidentiality === key;
-												const cls = is_active ? meta.active_class : "btn-outline-secondary";
-												return `<button type="button" class="btn ${cls} crn-confidentiality-pill" data-value="${key}">${meta.label}</button>`;
-											})
-											.join("")}
+									<div class="btn-group" id="crn-confidentiality-group" role="group">
+										${this.build_confidentiality_pills_html()}
 									</div>
 								</div>
 							</div>
@@ -410,6 +450,7 @@ class CorrespondenceRequestNew {
 
 		this.bind_events($body);
 		this.fetch_submitter_context($body);
+		this.fetch_confidentiality_levels($body);
 	}
 
 	fetch_submitter_context($body) {
@@ -439,15 +480,22 @@ class CorrespondenceRequestNew {
 			$(e.currentTarget).removeClass("btn-outline-secondary").addClass("btn-primary");
 		});
 
-		$body.find(".crn-confidentiality-pill").on("click", (e) => {
+		// Delegated (not bound directly to the .crn-confidentiality-pill
+		// buttons themselves) because fetch_confidentiality_levels() replaces
+		// #crn-confidentiality-group's innerHTML once the real level list
+		// arrives - a direct .on("click") binding would be lost on that swap.
+		$body.on("click", ".crn-confidentiality-pill", (e) => {
 			this.confidentiality = $(e.currentTarget).data("value");
 			$body.find(".crn-confidentiality-pill").each((_, el) => {
 				const $el = $(el);
-				const meta = CRN_CONFIDENTIALITY_META[$el.data("value")];
+				const meta = this.confidentiality_meta[$el.data("value")];
+				if (!meta) return;
 				$el.removeClass(`btn-outline-secondary ${meta.active_class}`).addClass("btn-outline-secondary");
 			});
-			const meta = CRN_CONFIDENTIALITY_META[this.confidentiality];
-			$(e.currentTarget).removeClass("btn-outline-secondary").addClass(meta.active_class);
+			const meta = this.confidentiality_meta[this.confidentiality];
+			if (meta) {
+				$(e.currentTarget).removeClass("btn-outline-secondary").addClass(meta.active_class);
+			}
 		});
 
 		const $dropzone = $body.find("#crn-dropzone");

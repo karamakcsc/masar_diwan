@@ -1,5 +1,6 @@
 import frappe
 
+from masar_diwan.access_log import log_event
 from masar_diwan.utils.portal_nav import REQUESTER_PORTAL_NAV as PORTAL_NAV
 
 LIST_FIELDS = [
@@ -59,6 +60,16 @@ def get_context(context):
 				"File",
 				filters={"attached_to_doctype": "Correspondence Request", "attached_to_name": name},
 				fields=["name", "file_name"],
+			)
+			# Matches queue/index.py's own detail branch, which already logs a
+			# "View" event here - a requester opening their own request detail
+			# is just as much a view worth auditing as a Diwan Officer opening
+			# it from the queue; this page had been silently skipping it.
+			log_event(
+				"View",
+				reference_doctype="Correspondence Request",
+				reference_name=name,
+				reason="Requester Portal view",
 			)
 		context.detail_json = frappe.as_json(context.detail)
 	else:

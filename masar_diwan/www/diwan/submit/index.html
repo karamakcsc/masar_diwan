@@ -58,13 +58,14 @@
 
 	<div class="diwan-field">
 		<label>{{ _("Suggested Confidentiality") }}</label>
+		{# Rendered from Confidentiality Level records (see submit/index.py) -
+		   not a hardcoded 3-option list, since the site's own configured
+		   levels can vary (Document Access Profile is N-level-capable). #}
 		<div class="diwan-pillgroup" data-pillgroup="suggested_confidentiality">
-			<input type="radio" name="suggested_confidentiality" id="cf-normal" value="Normal" checked>
-			<label for="cf-normal">{{ _("Normal") }}</label>
-			<input type="radio" name="suggested_confidentiality" id="cf-confidential" value="Confidential">
-			<label for="cf-confidential">{{ _("Confidential") }}</label>
-			<input type="radio" name="suggested_confidentiality" id="cf-highly" value="Highly Confidential">
-			<label for="cf-highly">{{ _("Highly Confidential") }}</label>
+			{% for level in confidentiality_levels %}
+			<input type="radio" name="suggested_confidentiality" id="cf-{{ loop.index0 }}" value="{{ level.name }}"{% if loop.first %} checked{% endif %}>
+			<label for="cf-{{ loop.index0 }}">{{ _(level.level_name) }}</label>
+			{% endfor %}
 		</div>
 	</div>
 

@@ -1,6 +1,7 @@
 import frappe
 
 from masar_diwan.permissions import require_diwan_staff
+from masar_diwan.utils.pickers import correspondence_type_options
 from masar_diwan.utils.portal_nav import DIWAN_PORTAL_NAV
 
 
@@ -39,5 +40,5 @@ def get_context(context):
 		order_by="request_date asc",
 		limit_page_length=200,
 	)
-	context.correspondence_types = frappe.get_all("Correspondence Type", fields=["name", "title"])
+	context.correspondence_types = correspondence_type_options()
 	return context

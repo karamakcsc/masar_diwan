@@ -34,7 +34,13 @@ app_include_css = [
 	"https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap",
 	"/assets/masar_diwan/css/masar_diwan-desk.css",
 ]
-# app_include_js = "/assets/masar_diwan/js/masar_diwan.js"
+# Shared Desk-side JS helpers (currently just the Correspondence Workflow
+# stepper renderer - see the file's own header comment for what this
+# replaced) - loaded app-wide so correspondence.js and correspondence_track.js
+# both call the same function instead of each keeping its own copy.
+app_include_js = [
+	"/assets/masar_diwan/js/masar_diwan-desk.js",
+]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/masar_diwan/css/masar_diwan.css"
@@ -161,35 +167,30 @@ on_session_creation = "masar_diwan.access_log.log_login"
 # Document Events
 # ---------------
 # Hook on document methods and events
-
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+#
+# Notifications only (see notifications.py's own module docstring for the
+# reasoning) - nothing here duplicates or changes the actual workflow logic
+# in correspondence_request.py / internal_mail_movement.py, which keep
+# owning validate()/on_update() for the real business rules. Every function
+# below is wrapped in its own try/except and never raises, so a notification
+# failure can never block the save/transition that triggered it.
+doc_events = {
+	"Correspondence Request": {
+		"on_update": "masar_diwan.notifications.on_correspondence_request_update",
+	},
+	"Internal Mail Movement": {
+		"on_update": "masar_diwan.notifications.on_internal_mail_movement_update",
+	},
+}
 
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"masar_diwan.tasks.all"
-# 	],
-# 	"daily": [
-# 		"masar_diwan.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"masar_diwan.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"masar_diwan.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"masar_diwan.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"daily": [
+		"masar_diwan.notifications.notify_overdue_correspondence",
+	],
+}
 
 # Testing
 # -------
