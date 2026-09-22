@@ -13,6 +13,14 @@ def get_next_reference_no(correspondence_type: str) -> str:
 	to lock with `FOR UPDATE`, so a MySQL named lock (`GET_LOCK`) keyed on
 	the type is held around the whole check-or-create step to serialize
 	concurrent first-time creations too.
+
+	Found-and-fixed 2026-09-22: the rule row's own `prefix` column used to
+	only be set once, at row creation - editing `Correspondence Type.prefix`
+	afterward silently had no effect on numbers actually issued, since every
+	later call read `rule.prefix`, never the live master value. Every call
+	now re-checks the rule's stored prefix against the Correspondence Type's
+	current one (inside the same lock) and updates it first if they've
+	drifted, so a prefix edit takes effect on the very next number issued.
 	"""
 	if not correspondence_type:
 		frappe.throw(frappe._("Correspondence Type is required to generate a reference number"))
@@ -41,6 +49,13 @@ def get_next_reference_no(correspondence_type: str) -> str:
 
 		if row:
 			rule = row[0]
+			live_prefix = frappe.db.get_value("Correspondence Type", correspondence_type, "prefix")
+			if live_prefix and live_prefix != rule.prefix:
+				frappe.db.sql(
+					"update `tabCorrespondence Numbering Rule` set prefix = %s where name = %s",
+					(live_prefix, rule.name),
+				)
+				rule.prefix = live_prefix
 		else:
 			rule = _create_numbering_rule(correspondence_type, year)
 

@@ -1,0 +1,116 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:level_name",
+ "creation": "2026-09-22 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "level_name",
+  "level_name_en",
+  "rank",
+  "column_break_rank",
+  "department_members_can_read",
+  "owner_can_read",
+  "section_break_bypass",
+  "bypass_roles"
+ ],
+ "fields": [
+  {
+   "fieldname": "level_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Level Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "level_name_en",
+   "fieldtype": "Data",
+   "label": "Level Name (English)"
+  },
+  {
+   "description": "Ordering only - 0 is the least restrictive level. Does not need to be contiguous.",
+   "fieldname": "rank",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Rank",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "column_break_rank",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "description": "If checked, any user in the document's own department may read a document at this level, even without an explicit bypass role or being an authorized viewer.",
+   "fieldname": "department_members_can_read",
+   "fieldtype": "Check",
+   "label": "Department Members Can Read"
+  },
+  {
+   "default": "1",
+   "description": "If checked, the document's own owner field (see Document Access Profile.owner_field) may always read it at this level, even outside their department.",
+   "fieldname": "owner_can_read",
+   "fieldtype": "Check",
+   "label": "Owner Can Read"
+  },
+  {
+   "fieldname": "section_break_bypass",
+   "fieldtype": "Section Break",
+   "label": "Bypass Roles"
+  },
+  {
+   "description": "Roles that may always read a document at this level, in any department, regardless of ownership or authorized-viewer status.",
+   "fieldname": "bypass_roles",
+   "fieldtype": "Table",
+   "label": "Bypass Roles",
+   "options": "Confidentiality Level Bypass Role"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-22 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Masar Diwan",
+ "name": "Confidentiality Level",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Diwan Officer"
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Senior Management"
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "rank",
+ "sort_order": "ASC",
+ "states": [],
+ "track_changes": 1
+}

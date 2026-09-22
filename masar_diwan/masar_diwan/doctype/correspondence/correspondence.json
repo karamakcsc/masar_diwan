@@ -38,8 +38,6 @@
   "related_document_type",
   "related_document",
   "column_break_related",
-  "company",
-  "branch",
   "source_request",
   "delivery_sheet",
   "envelope",
@@ -151,11 +149,11 @@
   {
    "default": "Normal",
    "fieldname": "confidentiality",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Confidentiality",
-   "options": "Normal\nConfidential\nHighly Confidential"
+   "options": "Confidentiality Level"
   },
   {
    "depends_on": "eval:doc.confidentiality != 'Normal'",
@@ -229,18 +227,6 @@
   {
    "fieldname": "column_break_related",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "company",
-   "fieldtype": "Link",
-   "label": "Company",
-   "options": "Company"
-  },
-  {
-   "fieldname": "branch",
-   "fieldtype": "Link",
-   "label": "Branch",
-   "options": "Branch"
   },
   {
    "fieldname": "source_request",

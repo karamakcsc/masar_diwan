@@ -20,8 +20,7 @@ from frappe import _
 
 from masar_diwan.access_log import log_event
 from masar_diwan.permissions import (
-	CONFIDENTIAL_BYPASS_ROLES,
-	DEPARTMENT_EXEMPT_ROLES,
+	get_department_exempt_roles,
 	get_user_departments,
 	has_permission,
 )
@@ -79,7 +78,7 @@ def search_correspondence(
 	conditions = []
 	values = {}
 
-	if not (roles & DEPARTMENT_EXEMPT_ROLES):
+	if not (roles & get_department_exempt_roles("Correspondence")):
 		departments = get_user_departments(user)
 		if departments:
 			placeholders = ", ".join(frappe.db.escape(d) for d in departments)

@@ -95,6 +95,7 @@ jinja = {
 # ------------
 
 after_install = "masar_diwan.install.after_install"
+before_migrate = "masar_diwan.install.before_migrate"
 after_migrate = "masar_diwan.install.after_migrate"
 
 # Uninstallation
@@ -298,5 +299,7 @@ fixtures = [
 	},
 	{"doctype": "Correspondence Type"},
 	{"doctype": "Correspondence Category"},
+	{"doctype": "Confidentiality Level"},
+	{"doctype": "Document Access Profile"},
 ]
 

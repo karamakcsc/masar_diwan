@@ -1,0 +1,179 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:document_type",
+ "creation": "2026-09-22 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "document_type",
+  "department_field",
+  "owner_field",
+  "column_break_fields",
+  "status_field",
+  "reference_field",
+  "section_break_exempt",
+  "department_exempt_roles",
+  "section_break_confidentiality",
+  "supports_confidentiality",
+  "confidentiality_field",
+  "authorized_viewer_doctype",
+  "section_break_numbering",
+  "numbering_prefix_source_doctype",
+  "numbering_prefix_source_field",
+  "section_break_search",
+  "searchable_fields"
+ ],
+ "fields": [
+  {
+   "fieldname": "document_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Document Type",
+   "options": "DocType",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "description": "Fieldname on Document Type that holds the department (Link field) used for department scoping. Leave blank if this type is not department-scoped at all.",
+   "fieldname": "department_field",
+   "fieldtype": "Data",
+   "label": "Department Field"
+  },
+  {
+   "default": "owner",
+   "description": "Fieldname on Document Type that identifies who currently owns/is responsible for the document (used for the Confidentiality Level 'Owner Can Read' rule). Defaults to the standard 'owner' meta field - override if the doctype tracks ownership under a different fieldname (e.g. Correspondence uses 'current_owner').",
+   "fieldname": "owner_field",
+   "fieldtype": "Data",
+   "label": "Owner Field"
+  },
+  {
+   "fieldname": "column_break_fields",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Fieldname on Document Type that holds its workflow/lifecycle status - used to build generic per-status Number Cards and reports.",
+   "fieldname": "status_field",
+   "fieldtype": "Data",
+   "label": "Status Field"
+  },
+  {
+   "description": "Fieldname on Document Type that holds its human-readable reference/document number - used by the unified search result display.",
+   "fieldname": "reference_field",
+   "fieldtype": "Data",
+   "label": "Reference Field"
+  },
+  {
+   "fieldname": "section_break_exempt",
+   "fieldtype": "Section Break",
+   "label": "Department Scoping"
+  },
+  {
+   "description": "Roles that see documents of this type across every department, regardless of their own User Permission department assignment. Confidentiality tiering (below) still applies independently.",
+   "fieldname": "department_exempt_roles",
+   "fieldtype": "Table",
+   "label": "Department Exempt Roles",
+   "options": "Document Access Profile Role"
+  },
+  {
+   "fieldname": "section_break_confidentiality",
+   "fieldtype": "Section Break",
+   "label": "Confidentiality"
+  },
+  {
+   "default": "0",
+   "fieldname": "supports_confidentiality",
+   "fieldtype": "Check",
+   "label": "Supports Confidentiality"
+  },
+  {
+   "depends_on": "eval:doc.supports_confidentiality",
+   "description": "Fieldname on Document Type holding a Link to Confidentiality Level.",
+   "fieldname": "confidentiality_field",
+   "fieldtype": "Data",
+   "label": "Confidentiality Field",
+   "mandatory_depends_on": "eval:doc.supports_confidentiality"
+  },
+  {
+   "depends_on": "eval:doc.supports_confidentiality",
+   "description": "Name of a child-table doctype, shaped like {parent, parenttype, user}, listing users explicitly authorized to read an otherwise-restricted document of this type - e.g. Correspondence Authorized Viewer. Leave blank if this type has no such mechanism (bypass roles + owner + department rules still apply).",
+   "fieldname": "authorized_viewer_doctype",
+   "fieldtype": "Data",
+   "label": "Authorized Viewer Doctype"
+  },
+  {
+   "fieldname": "section_break_numbering",
+   "fieldtype": "Section Break",
+   "label": "Reference Numbering (optional)"
+  },
+  {
+   "description": "Master doctype this type's reference-number prefix is configured on, e.g. Correspondence Type.",
+   "fieldname": "numbering_prefix_source_doctype",
+   "fieldtype": "Link",
+   "label": "Numbering Prefix Source Doctype",
+   "options": "DocType"
+  },
+  {
+   "description": "Fieldname on that master doctype holding the prefix string, e.g. 'prefix'.",
+   "fieldname": "numbering_prefix_source_field",
+   "fieldtype": "Data",
+   "label": "Numbering Prefix Source Field"
+  },
+  {
+   "fieldname": "section_break_search",
+   "fieldtype": "Section Break",
+   "label": "Unified Search"
+  },
+  {
+   "description": "Fields queried by the unified search across all registered document types.",
+   "fieldname": "searchable_fields",
+   "fieldtype": "Table",
+   "label": "Searchable Fields",
+   "options": "Document Access Profile Searchable Field"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-22 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Masar Diwan",
+ "name": "Document Access Profile",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Diwan Officer"
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Senior Management"
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

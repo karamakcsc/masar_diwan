@@ -106,9 +106,9 @@
   {
    "default": "Normal",
    "fieldname": "suggested_confidentiality",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "label": "Suggested Confidentiality",
-   "options": "Normal\nConfidential\nHighly Confidential"
+   "options": "Confidentiality Level"
   },
   {
    "fieldname": "note_to_registrar",

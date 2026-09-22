@@ -1,49 +1,56 @@
-"""Department + confidentiality access control for Correspondence.
+"""Generic department + confidentiality access control engine.
 
-Standard Frappe role permissions (Role Permission Manager / DocType
-`permissions`) only say which roles may touch the Correspondence doctype at
-all. The actual per-document decision - "can THIS user see THIS
-correspondence" - is entirely driven by two independent, stacked rules:
+Any doctype registered in the **Document Access Profile** master gets the
+same two independent, stacked rules, driven entirely by that master (and, for
+confidentiality, the **Confidentiality Level** master) instead of logic
+hardcoded around any one doctype:
 
-1. Department scoping: a user may only see correspondence belonging to a
+1. Department scoping: a user may only see a document belonging to a
    department they are explicitly linked to (via `User Permission` on
-   Department), unless their role is exempt (Diwan Officer, Senior
-   Management, System Manager always see across departments, subject to
-   rule 2 below). The `department` field on Correspondence has
-   `ignore_user_permissions=1` so Frappe's own automatic Link-field User
-   Permission enforcement never doubles up with (or silently overrides)
-   the logic below.
+   Department), unless their role is in that document type's
+   `department_exempt_roles`. A profile with no `department_field` at all
+   skips this rule entirely for that type.
 
-2. Confidentiality tiering, evaluated independently of department:
-   - Normal: department rule only.
-   - Confidential: current_owner, department members, authorized_viewers,
-     Diwan Officer, Senior Management, System Manager.
-   - Highly Confidential: only authorized_viewers + Senior Management
-     (even the assigned Department Head is excluded unless explicitly
-     added to authorized_viewers - System Manager deliberately does NOT
-     bypass this tier either, decided 2026-09-21 after being raised as an
-     open question: holding System Manager alone should not unlock every
-     department's most sensitive correspondence).
+2. Confidentiality tiering (only for profiles with `supports_confidentiality`
+   set), evaluated independently of department, via the document's
+   `confidentiality_field` value - a Link to **Confidentiality Level**.
+   Each level independently configures:
+   - `bypass_roles`: roles that read a document at this level from any
+     department, regardless of ownership or authorized-viewer status.
+   - `owner_can_read`: whether the document's own `owner_field` value
+     matching the requesting user grants access outside bypass_roles.
+   - `department_members_can_read`: whether plain department membership
+     (rule 1) is *also* sufficient at this level, on top of bypass/owner/
+     authorized-viewer.
+   A document with no confidentiality value set (or a profile that doesn't
+   support confidentiality at all) is governed by department scoping alone.
 
-Both `has_permission` (single document read/write/etc gate) and
-`get_permission_query_conditions` (List/Report View filtering) must agree,
-so the list never shows a row the form would then refuse to open.
+Both `generic_has_permission` (single document read/write/etc gate) and
+`generic_get_permission_query_conditions` (List/Report View filtering) must
+agree, so the list never shows a row the form would then refuse to open.
+
+`Correspondence`'s own `has_permission`/`get_permission_query_conditions`
+(the entry points wired in `hooks.py` - Frappe requires an explicit
+registration per doctype, this is the one place that can't be generalized
+away) are now thin wrappers over this engine, registered via a
+`Document Access Profile` record named "Correspondence". Its exact
+configuration (roles, field names, per-level rules) reproduces this app's
+original hand-written Correspondence-only logic exactly - see
+CLAUDE.md's "generalized permission engine" section for the full mapping
+and the verification that behavior didn't change.
 """
 
 import frappe
 
 from masar_diwan.access_log import log_event
 
-DEPARTMENT_EXEMPT_ROLES = {"Diwan Officer", "Senior Management", "System Manager"}
-CONFIDENTIAL_BYPASS_ROLES = {"Diwan Officer", "Senior Management", "System Manager"}
-# Deliberately NOT extended to System Manager - see the module docstring.
-HIGHLY_CONFIDENTIAL_BYPASS_ROLES = {"Senior Management"}
-
 # Who the Diwan Portal (queue/tray/print/access log) is for. Deliberately
 # narrower than "anyone with desk access to Correspondence Request" - a plain
 # Correspondence Employee/Department Head can submit requests but has no
 # workflow transition permission past Draft, so the review-side portal isn't
-# meant for them.
+# meant for them. Not part of the generic engine below - this one is
+# genuinely Correspondence-Request-specific UI gating, not a per-document
+# read/write decision.
 DIWAN_STAFF_ROLES = {"Diwan Officer", "Senior Management", "System Manager"}
 
 
@@ -65,15 +72,6 @@ def get_user_departments(user: str) -> set[str]:
 	)
 
 
-def _is_authorized_viewer(reference_name: str, user: str) -> bool:
-	return bool(
-		frappe.db.exists(
-			"Correspondence Authorized Viewer",
-			{"parent": reference_name, "parenttype": "Correspondence", "user": user},
-		)
-	)
-
-
 def _log_denial(doctype: str, name: str, user: str, reason: str):
 	log_event(
 		"View",
@@ -85,100 +83,181 @@ def _log_denial(doctype: str, name: str, user: str, reason: str):
 	)
 
 
-def has_permission(doc, ptype="read", user=None):
+def _get_profile(document_type: str):
+	"""Cached for the lifetime of the request - Document Access Profile is
+	config, not data, and doesn't change mid-request."""
+	return frappe.get_cached_doc("Document Access Profile", document_type)
+
+
+def get_department_exempt_roles(document_type: str) -> set[str]:
+	"""Public accessor for callers outside this module that need the same
+	role set used internally (e.g. `api/portal.py`'s own raw SQL department
+	filter for search results) without duplicating a hardcoded role list."""
+	return {r.role for r in _get_profile(document_type).department_exempt_roles}
+
+
+def _get_confidentiality_level(level_name: str):
+	if not level_name:
+		return None
+	try:
+		return frappe.get_cached_doc("Confidentiality Level", level_name)
+	except frappe.DoesNotExistError:
+		return None
+
+
+def _get_all_confidentiality_levels():
+	names = frappe.get_all("Confidentiality Level", pluck="name", order_by="rank asc")
+	return [frappe.get_cached_doc("Confidentiality Level", n) for n in names]
+
+
+def _is_authorized_viewer(authorized_viewer_doctype: str, parenttype: str, parent: str, user: str) -> bool:
+	return bool(
+		frappe.db.exists(
+			authorized_viewer_doctype,
+			{"parent": parent, "parenttype": parenttype, "user": user},
+		)
+	)
+
+
+def generic_has_permission(document_type: str, doc, ptype: str = "read", user: str | None = None) -> bool:
 	user = user or frappe.session.user
 	if user == "Administrator":
 		return True
 
+	profile = _get_profile(document_type)
 	roles = set(frappe.get_roles(user))
+	dept_exempt_roles = {r.role for r in profile.department_exempt_roles}
+	department_field = profile.department_field
+	doc_department = doc.get(department_field) if department_field else None
+
+	def department_ok():
+		if roles & dept_exempt_roles:
+			return True
+		if not department_field or not doc_department:
+			return True
+		return doc_department in get_user_departments(user)
 
 	if ptype == "create":
 		# Confidentiality tiers protect who may *read* an existing document -
 		# they don't apply to the act of creating/registering a new one (the
 		# creator necessarily already knows the content; there is nothing to
-		# leak). Only department scoping applies here, same as the Normal
-		# tier below. Without this, e.g. a Diwan Officer directly creating a
-		# Highly Confidential Correspondence outside the diwan-tray approval
-		# path (which uses ignore_permissions=True) would be wrongly denied,
-		# since they aren't in HIGHLY_CONFIDENTIAL_BYPASS_ROLES for *reading*.
-		if roles & DEPARTMENT_EXEMPT_ROLES:
-			return True
-		if not doc.department:
-			return True
-		if doc.department in get_user_departments(user):
+		# leak). Only department scoping applies here.
+		if department_ok():
 			return True
 		_log_denial(doc.doctype, doc.name or "(new)", user, "Create: outside user's department")
 		return False
 
-	if doc.confidentiality == "Highly Confidential":
-		if roles & HIGHLY_CONFIDENTIAL_BYPASS_ROLES:
+	level = None
+	if profile.supports_confidentiality:
+		level = _get_confidentiality_level(doc.get(profile.confidentiality_field))
+
+	if level:
+		bypass_roles = {r.role for r in level.bypass_roles}
+		if roles & bypass_roles:
 			return True
-		if _is_authorized_viewer(doc.name, user):
+		owner_field = profile.owner_field or "owner"
+		if level.owner_can_read and doc.get(owner_field) == user:
 			return True
-		_log_denial(doc.doctype, doc.name, user, "Highly Confidential: not an authorized viewer")
+		if profile.authorized_viewer_doctype and _is_authorized_viewer(
+			profile.authorized_viewer_doctype, doc.doctype, doc.name, user
+		):
+			return True
+		if level.department_members_can_read and department_ok():
+			return True
+		_log_denial(
+			doc.doctype, doc.name, user, f"{level.name}: not owner/department/authorized/bypass"
+		)
 		return False
 
-	if doc.confidentiality == "Confidential":
-		if roles & CONFIDENTIAL_BYPASS_ROLES:
-			return True
-		if doc.current_owner == user:
-			return True
-		if _is_authorized_viewer(doc.name, user):
-			return True
-		if doc.department and doc.department in get_user_departments(user):
-			return True
-		_log_denial(doc.doctype, doc.name, user, "Confidential: not owner/department/authorized")
-		return False
-
-	# Normal
-	if roles & DEPARTMENT_EXEMPT_ROLES:
+	# No confidentiality value set, or the profile doesn't support tiering -
+	# plain department scoping.
+	if department_ok():
 		return True
-	if not doc.department:
-		return True
-	if doc.department in get_user_departments(user):
-		return True
-	_log_denial(doc.doctype, doc.name, user, "Normal: outside user's department")
+	_log_denial(doc.doctype, doc.name, user, "Outside user's department")
 	return False
 
 
-def get_permission_query_conditions(user=None):
+def generic_get_permission_query_conditions(document_type: str, user: str | None = None) -> str:
 	user = user or frappe.session.user
 	if user == "Administrator":
 		return ""
 
+	profile = _get_profile(document_type)
 	roles = set(frappe.get_roles(user))
-	departments = get_user_departments(user)
+	dept_exempt_roles = {r.role for r in profile.department_exempt_roles}
+	department_field = profile.department_field
 	escaped_user = frappe.db.escape(user)
 
-	if roles & HIGHLY_CONFIDENTIAL_BYPASS_ROLES:
-		# Senior Management: unrestricted.
-		return ""
+	def department_clause():
+		"""None means "not restrictive" (no department field, or user is
+		department-exempt) - the caller must treat that as always-true,
+		not as an empty/false condition."""
+		if roles & dept_exempt_roles or not department_field:
+			return None
+		departments = get_user_departments(user)
+		department_list = ", ".join(frappe.db.escape(d) for d in departments) if departments else ""
+		if department_list:
+			return f"({department_field} is null or {department_field} in ({department_list}))"
+		return f"{department_field} is null"
 
-	authorized_viewer_exists = (
-		"exists (select 1 from `tabCorrespondence Authorized Viewer` cav "
-		"where cav.parenttype = 'Correspondence' and cav.parent = `tabCorrespondence`.name "
-		f"and cav.user = {escaped_user})"
+	if not profile.supports_confidentiality:
+		clause = department_clause()
+		return clause or ""
+
+	conf_field = profile.confidentiality_field
+	owner_field = profile.owner_field or "owner"
+	levels = _get_all_confidentiality_levels()
+	dept_clause = department_clause()
+
+	def authorized_viewer_sql():
+		if not profile.authorized_viewer_doctype:
+			return None
+		return (
+			f"exists (select 1 from `tab{profile.authorized_viewer_doctype}` av "
+			f"where av.parenttype = {frappe.db.escape(document_type)} and av.parent = `tab{document_type}`.name "
+			f"and av.user = {escaped_user})"
+		)
+
+	per_level_clauses = []
+	for level in levels:
+		bypass_roles = {r.role for r in level.bypass_roles}
+		escaped_level = frappe.db.escape(level.name)
+		if roles & bypass_roles:
+			per_level_clauses.append(f"{conf_field} = {escaped_level}")
+			continue
+
+		sub_conditions = []
+		if level.owner_can_read:
+			sub_conditions.append(f"{owner_field} = {escaped_user}")
+		av_sql = authorized_viewer_sql()
+		if av_sql:
+			sub_conditions.append(av_sql)
+		if level.department_members_can_read:
+			sub_conditions.append(dept_clause if dept_clause is not None else "1=1")
+
+		if sub_conditions:
+			per_level_clauses.append(f"({conf_field} = {escaped_level} and ({' or '.join(sub_conditions)}))")
+		# else: no path grants access at this level for this user - omit,
+		# rows at this level are excluded entirely.
+
+	known_levels_sql = ", ".join(frappe.db.escape(l.name) for l in levels)
+	no_tiering_condition = (
+		f"({conf_field} is null or {conf_field} not in ({known_levels_sql}))" if known_levels_sql else "1=1"
+	)
+	no_tiering_clause = (
+		f"({no_tiering_condition} and {dept_clause})" if dept_clause is not None else no_tiering_condition
 	)
 
-	highly_confidential_clause = f"(confidentiality != 'Highly Confidential' or {authorized_viewer_exists})"
+	all_clauses = per_level_clauses + [no_tiering_clause]
+	return "(" + " or ".join(all_clauses) + ")"
 
-	if roles & CONFIDENTIAL_BYPASS_ROLES:
-		# Diwan Officer: sees Normal + Confidential everywhere, Highly Confidential only if authorized.
-		return highly_confidential_clause
 
-	department_list = ", ".join(frappe.db.escape(d) for d in departments) if departments else ""
-	department_clause = (
-		f"(department is null or department in ({department_list}))"
-		if department_list
-		else "department is null"
-	)
+def has_permission(doc, ptype="read", user=None):
+	return generic_has_permission("Correspondence", doc, ptype, user)
 
-	confidential_clause = (
-		"(confidentiality != 'Confidential' or "
-		f"current_owner = {escaped_user} or {authorized_viewer_exists} or {department_clause})"
-	)
 
-	return f"({department_clause}) and {confidential_clause} and {highly_confidential_clause}"
+def get_permission_query_conditions(user=None):
+	return generic_get_permission_query_conditions("Correspondence", user)
 
 
 def has_permission_correspondence_request(doc, ptype="read", user=None):
@@ -190,13 +269,22 @@ def has_permission_correspondence_request(doc, ptype="read", user=None):
 	this only needs to say when to deny, mirroring the Correspondence model
 	in this same module for the Diwan Portal queue to be scoped the same
 	way the Correspondence list already is.
+
+	Not yet migrated onto the generic Document Access Profile engine above -
+	Correspondence Request has no confidentiality tiering at all, and its own
+	department-exempt role set has always been identical to Correspondence's
+	by coincidence, not by shared config. Left as its own small function
+	rather than forcing a confidentiality-less doctype through the same
+	profile shape; a natural follow-up if a future confidentiality-less type
+	needs the exact same department-only pattern a third time.
 	"""
 	user = user or frappe.session.user
 	if user == "Administrator":
 		return True
 
 	roles = set(frappe.get_roles(user))
-	if roles & DEPARTMENT_EXEMPT_ROLES:
+	department_exempt_roles = {r.role for r in _get_profile("Correspondence").department_exempt_roles}
+	if roles & department_exempt_roles:
 		return True
 	if doc.owner == user:
 		return True
@@ -215,7 +303,8 @@ def get_permission_query_conditions_correspondence_request(user=None):
 		return ""
 
 	roles = set(frappe.get_roles(user))
-	if roles & DEPARTMENT_EXEMPT_ROLES:
+	department_exempt_roles = {r.role for r in _get_profile("Correspondence").department_exempt_roles}
+	if roles & department_exempt_roles:
 		return ""
 
 	departments = get_user_departments(user)

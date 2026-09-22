@@ -1,0 +1,52 @@
+[
+ {
+  "bypass_roles": [],
+  "department_members_can_read": 1,
+  "docstatus": 0,
+  "doctype": "Confidentiality Level",
+  "level_name": "Normal",
+  "level_name_en": "Normal",
+  "modified": "2026-09-22 02:05:28.457850",
+  "name": "Normal",
+  "owner_can_read": 1,
+  "rank": 0
+ },
+ {
+  "bypass_roles": [
+   {
+    "role": "Diwan Officer"
+   },
+   {
+    "role": "Senior Management"
+   },
+   {
+    "role": "System Manager"
+   }
+  ],
+  "department_members_can_read": 1,
+  "docstatus": 0,
+  "doctype": "Confidentiality Level",
+  "level_name": "Confidential",
+  "level_name_en": "Confidential",
+  "modified": "2026-09-22 02:05:28.595906",
+  "name": "Confidential",
+  "owner_can_read": 1,
+  "rank": 1
+ },
+ {
+  "bypass_roles": [
+   {
+    "role": "Senior Management"
+   }
+  ],
+  "department_members_can_read": 0,
+  "docstatus": 0,
+  "doctype": "Confidentiality Level",
+  "level_name": "Highly Confidential",
+  "level_name_en": "Highly Confidential",
+  "modified": "2026-09-22 02:05:28.620806",
+  "name": "Highly Confidential",
+  "owner_can_read": 0,
+  "rank": 2
+ }
+]
