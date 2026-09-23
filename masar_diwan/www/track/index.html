@@ -35,10 +35,20 @@
 			<span id="result-confidentiality-pill"></span>
 		</div>
 		<div id="result-hstepper"></div>
-		<p><b>{{ _("Subject") }}:</b> {{ d.subject or "-" }}</p>
-		<p><b>{{ _("Party") }}:</b> {{ d.party or "-" }}</p>
-		<p><b>{{ _("Department") }}:</b> {{ d.department or "-" }}</p>
-		<p><b>{{ _("Document Date") }}:</b> {{ frappe.utils.format_date(d.document_date) if d.document_date else "-" }}</p>
+		<div style="display:flex; gap:20px; flex-wrap:wrap-reverse; align-items:flex-start; margin-block-start:8px;">
+			<div style="flex:1 1 260px;">
+				<p><b>{{ _("Subject") }}:</b> {{ d.subject or "-" }}</p>
+				<p><b>{{ _("Party") }}:</b> {{ d.party or "-" }}</p>
+				<p><b>{{ _("Department") }}:</b> {{ d.department or "-" }}</p>
+				<p><b>{{ _("Document Date") }}:</b> {{ frappe.utils.format_date(d.document_date) if d.document_date else "-" }}</p>
+			</div>
+			{% if d.qr_code %}
+			<div style="flex:0 0 auto; text-align:center;">
+				<img src="{{ d.qr_code }}" alt="{{ _('Tracking QR Code') }}"
+					style="width:140px; height:140px; object-fit:contain; border:1px solid var(--md-ink-100); border-radius:var(--radius-sm);">
+			</div>
+			{% endif %}
+		</div>
 		{% if result.attachments %}
 		<p><b>{{ _("Attachments") }}:</b></p>
 		{% for f in result.attachments %}

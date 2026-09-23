@@ -40,6 +40,7 @@ RESULT_FIELDS = [
 	"current_owner",
 	"document_date",
 	"modified",
+	"qr_code",
 ]
 
 

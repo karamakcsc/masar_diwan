@@ -125,6 +125,9 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 					)}" target="_blank">${frappe.utils.escape_html(f.file_name)}</a></li>`
 			)
 			.join("");
+		const qr_html = d.qr_code
+			? `<div style="flex:0 0 auto; text-align:center;"><img src="${frappe.utils.escape_html(d.qr_code)}" alt="${__("Tracking QR Code")}" style="width:110px; height:110px; object-fit:contain; border:1px solid var(--md-ink-100, #eff2f5); border-radius:9px;"></div>`
+			: "";
 		detail_wrapper.html(`
 			<div class="card correspondence-track-card">
 				<div class="correspondence-track-card__header">
@@ -133,9 +136,14 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 				</div>
 				<div class="card-body">
 					${window.masarDiwanDesk.renderCorrespondenceStepper(d.status)}
-					<p><b>${__("Subject")}:</b> ${frappe.utils.escape_html(d.subject || "")}</p>
-					<p><b>${__("Status")}:</b> ${frappe.utils.escape_html(__(d.status || ""))}</p>
-					<p><b>${__("Department")}:</b> ${frappe.utils.escape_html(d.department || "")}</p>
+					<div style="display:flex; gap:16px; flex-wrap:wrap-reverse; align-items:flex-start;">
+						<div style="flex:1 1 220px;">
+							<p><b>${__("Subject")}:</b> ${frappe.utils.escape_html(d.subject || "")}</p>
+							<p><b>${__("Status")}:</b> ${frappe.utils.escape_html(__(d.status || ""))}</p>
+							<p><b>${__("Department")}:</b> ${frappe.utils.escape_html(d.department || "")}</p>
+						</div>
+						${qr_html}
+					</div>
 					${attachments ? `<p><b>${__("Attachments")}:</b></p><ul>${attachments}</ul>` : ""}
 				</div>
 			</div>
