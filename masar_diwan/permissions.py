@@ -310,9 +310,9 @@ def has_permission_correspondence_request(doc, ptype="read", user=None):
 		return True
 	if doc.owner == user:
 		return True
-	if not doc.department:
+	if not doc.requesting_department:
 		return True
-	if doc.department in get_user_departments(user):
+	if doc.requesting_department in get_user_departments(user):
 		return True
 
 	_log_denial(doc.doctype, doc.name or "(new)", user, "Outside user's department")
@@ -333,9 +333,9 @@ def get_permission_query_conditions_correspondence_request(user=None):
 	escaped_user = frappe.db.escape(user)
 	department_list = ", ".join(frappe.db.escape(d) for d in departments) if departments else ""
 	department_clause = (
-		f"(department is null or department in ({department_list}))"
+		f"(requesting_department is null or requesting_department in ({department_list}))"
 		if department_list
-		else "department is null"
+		else "requesting_department is null"
 	)
 
 	return f"(owner = {escaped_user} or {department_clause})"

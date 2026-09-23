@@ -40,7 +40,7 @@
 					<td>{{ r.subject }}</td>
 					<td>{{ _(r.request_type) }}</td>
 					<td>{{ r.requested_by }}</td>
-					<td>{{ r.department or "-" }}</td>
+					<td>{{ r.requesting_department or "-" }}</td>
 					<td><span class="request-status-pill" data-status="{{ r.status }}"></span></td>
 					<td><span class="conf-pill" data-conf="{{ r.suggested_confidentiality }}"></span></td>
 					<td>{{ frappe.utils.format_date(r.request_date) if r.request_date else "-" }}</td>
@@ -63,7 +63,7 @@
 				<div class="diwan-card__title">{{ _("Details") }}</div>
 				<p><b>{{ _("Type") }}:</b> {{ _(detail.request_type) }}</p>
 				<p><b>{{ _("Requester") }}:</b> {{ detail.requested_by }}</p>
-				<p><b>{{ _("Department") }}:</b> {{ detail.department or "-" }}</p>
+				<p><b>{{ _("Department") }}:</b> {{ detail.requesting_department or "-" }}</p>
 				{% if detail.party_or_department %}<p><b>{{ _("Party / Department") }}:</b> {{ detail.party_or_department }}</p>{% endif %}
 				{% if detail.draft_text %}<p><b>{{ _("Draft Text") }}:</b><br>{{ detail.draft_text | safe }}</p>{% endif %}
 				<p><b>{{ _("Suggested Priority") }}:</b> {{ _(detail.suggested_priority) }}</p>

@@ -14,7 +14,7 @@ LIST_FIELDS = [
 	"status",
 	"request_date",
 	"requested_by",
-	"department",
+	"requesting_department",
 	"suggested_confidentiality",
 ]
 

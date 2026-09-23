@@ -18,10 +18,10 @@ class CorrespondenceRequest(Document):
 			self.requested_by = frappe.session.user
 		if not self.request_date:
 			self.request_date = now_datetime()
-		if not self.department:
+		if not self.requesting_department:
 			departments = get_user_departments(self.requested_by or frappe.session.user)
 			if departments:
-				self.department = next(iter(departments))
+				self.requesting_department = next(iter(departments))
 
 	def on_update(self):
 		before = self.get_doc_before_save()
@@ -57,7 +57,7 @@ class CorrespondenceRequest(Document):
 				"document_date": self.request_date,
 				"confidentiality": self.suggested_confidentiality or "Normal",
 				"priority": self.suggested_priority or "Normal",
-				"department": self.department,
+				"department": self.requesting_department,
 				"current_owner": self.requested_by,
 				"source_request": self.name,
 			}

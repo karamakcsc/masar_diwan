@@ -32,7 +32,7 @@ def get_context(context):
 			"request_type",
 			"subject",
 			"requested_by",
-			"department",
+			"requesting_department",
 			"suggested_confidentiality",
 			"suggested_priority",
 			"request_date",

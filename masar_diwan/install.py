@@ -19,7 +19,7 @@ LEGACY_DEPARTMENT_DOCTYPE = "Masar Diwan Legacy Department"
 # ensure_department_doctype() below).
 DEPARTMENT_LINK_FIELDS = [
 	("Correspondence", "department"),
-	("Correspondence Request", "department"),
+	("Correspondence Request", "requesting_department"),
 	("Correspondence Transfer Log", "to_department"),
 ]
 
@@ -254,7 +254,7 @@ def ensure_desktop_icon():
 
 def ensure_department_doctype():
 	"""`Department` (the doctype `Correspondence.department`,
-	`Correspondence Request.department`, and
+	`Correspondence Request.requesting_department`, and
 	`Correspondence Transfer Log.to_department` all Link to, and the one
 	`get_user_departments()`/the whole department-scoping layer of the
 	permission engine is built around) is itself an **ERPNext** doctype

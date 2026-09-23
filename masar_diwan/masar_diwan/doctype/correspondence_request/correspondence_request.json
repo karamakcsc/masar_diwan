@@ -2,17 +2,17 @@
  "actions": [],
  "allow_bulk_edit": 1,
  "allow_rename": 1,
- "autoname": "hash",
+ "autoname": "format:{YYYY}-{subject}-{####}",
  "creation": "2026-09-15 23:39:57.817252",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "request_type",
-  "correspondence_type",
+  "requesting_department",
   "column_break_1",
   "requested_by",
-  "department",
+  "correspondence_type",
   "request_date",
   "section_break_content",
   "subject",
@@ -57,13 +57,6 @@
    "label": "Requested By",
    "options": "User",
    "read_only": 1
-  },
-  {
-   "fieldname": "department",
-   "fieldtype": "Link",
-   "in_standard_filter": 1,
-   "label": "Department",
-   "options": "Department"
   },
   {
    "fieldname": "request_date",
@@ -140,16 +133,23 @@
    "label": "Resulting Correspondence",
    "options": "Correspondence",
    "read_only": 1
+  },
+  {
+   "fieldname": "requesting_department",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Requesting Department",
+   "options": "Department"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-15 23:39:57.817252",
+ "modified": "2026-09-24 03:30:06.541960",
  "modified_by": "Administrator",
  "module": "Masar Diwan",
  "name": "Correspondence Request",
- "naming_rule": "Random",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
