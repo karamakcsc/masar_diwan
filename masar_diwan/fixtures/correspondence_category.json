@@ -1,37 +1,68 @@
 [
  {
+  "disabled": 0,
   "docstatus": 0,
   "doctype": "Correspondence Category",
+  "is_group": 0,
+  "modified": "2026-09-24 03:50:18.755113",
+  "name": "Invoices",
+  "old_parent": null,
+  "parent_correspondence_category": "Financial",
+  "title": "Invoices"
+ },
+ {
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Correspondence Category",
+  "is_group": 0,
   "modified": "2026-09-15 23:09:42.467090",
   "name": "General",
+  "old_parent": null,
+  "parent_correspondence_category": null,
   "title": "General"
  },
  {
+  "disabled": 0,
   "docstatus": 0,
   "doctype": "Correspondence Category",
-  "modified": "2026-09-16 00:00:58.840884",
+  "is_group": 1,
+  "modified": "2026-09-24 04:01:49.668960",
   "name": "Financial",
+  "old_parent": null,
+  "parent_correspondence_category": null,
   "title": "Financial"
  },
  {
+  "disabled": 0,
   "docstatus": 0,
   "doctype": "Correspondence Category",
+  "is_group": 0,
   "modified": "2026-09-16 00:00:58.852932",
   "name": "Administrative",
+  "old_parent": null,
+  "parent_correspondence_category": null,
   "title": "Administrative"
  },
  {
+  "disabled": 0,
   "docstatus": 0,
   "doctype": "Correspondence Category",
+  "is_group": 0,
   "modified": "2026-09-16 00:00:58.854924",
   "name": "Legal",
+  "old_parent": null,
+  "parent_correspondence_category": null,
   "title": "Legal"
  },
  {
+  "disabled": 0,
   "docstatus": 0,
   "doctype": "Correspondence Category",
+  "is_group": 0,
   "modified": "2026-09-16 00:00:58.856941",
   "name": "Human Resources",
+  "old_parent": null,
+  "parent_correspondence_category": null,
   "title": "Human Resources"
  }
 ]

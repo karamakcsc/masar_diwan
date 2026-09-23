@@ -11,6 +11,31 @@ from masar_diwan.permissions import get_user_departments
 
 
 class CorrespondenceRequest(Document):
+	def validate(self):
+		# category_is_group backs correspondence_sub_category's
+		# depends_on/mandatory_depends_on. Its docfield fetch_from
+		# (correspondence_category.is_group) only ever runs client-side, the
+		# moment a real browser session changes the field - any server-side
+		# path (frappe.client.insert, a script, the portal/Desk-Page custom
+		# forms that build their own payload) never triggers it at all, so
+		# this recomputes it directly on every save regardless of how the
+		# document got here, rather than trusting whatever the client sent.
+		self.category_is_group = (
+			frappe.db.get_value("Correspondence Category", self.correspondence_category, "is_group")
+			if self.correspondence_category
+			else 0
+		)
+
+		# mandatory_depends_on (set on this field in the DocType JSON) is
+		# Desk-form-JS-only - confirmed directly against Frappe core
+		# (BaseDocument._get_missing_mandatory_fields() only ever looks at
+		# the static `reqd` flag, never mandatory_depends_on) - so without an
+		# explicit check here, any non-Desk-form save (the portal, the
+		# custom "New Request" Desk Page, a script) could save a group
+		# category with no sub-category chosen at all.
+		if self.category_is_group and not self.correspondence_sub_category:
+			frappe.throw(_("Select a Correspondence Sub Category - the chosen category has sub-categories."))
+
 	def before_insert(self):
 		# docfield default="user" is only resolved by the Desk new-doc flow;
 		# server-side frappe.get_doc(...).insert() needs it set explicitly.

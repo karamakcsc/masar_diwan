@@ -8,7 +8,15 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "title"
+  "title",
+  "column_break_yccx",
+  "disabled",
+  "is_group",
+  "lft",
+  "rgt",
+  "is_group",
+  "old_parent",
+  "parent_correspondence_category"
  ],
  "fields": [
   {
@@ -18,16 +26,70 @@
    "label": "Title",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "fieldname": "column_break_yccx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_group",
+   "fieldtype": "Check",
+   "label": "Is Group"
+  },
+  {
+   "fieldname": "lft",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Left",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "rgt",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Right",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_group",
+   "fieldtype": "Check",
+   "label": "Is Group"
+  },
+  {
+   "fieldname": "old_parent",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Old Parent",
+   "options": "Correspondence Category"
+  },
+  {
+   "fieldname": "parent_correspondence_category",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "label": "Parent Correspondence Category",
+   "options": "Correspondence Category"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
+ "is_tree": 1,
  "links": [],
- "modified": "2026-09-15 23:08:27.242977",
+ "modified": "2026-09-24 03:49:35.644779",
  "modified_by": "Administrator",
  "module": "Masar Diwan",
  "name": "Correspondence Category",
  "naming_rule": "By fieldname",
+ "nsm_parent_field": "parent_correspondence_category",
  "owner": "Administrator",
  "permissions": [
   {
