@@ -42,6 +42,23 @@ class CorrespondenceCategory(Document):
 		row.options = existing.options
 		row.link_scope = existing.link_scope
 
+	def on_update(self):
+		# The whole point of this screen (per the brief that asked for it) is
+		# that a user never touches Customize Form or waits for a migrate -
+		# ensure_dynamic_fields() must run the moment they actually save a
+		# category, not only on the next bench migrate (which is where every
+		# other self-healing hook in install.py runs, since those all fix
+		# install-time gaps, not something a normal user changes live).
+		# Confirmed missing live: a real "note" field saved cleanly here with
+		# no error, but no Custom Field was ever created for it until this
+		# was added. Cheap and idempotent (this app has a handful of
+		# categories), so just re-running the whole sync on every save is
+		# simpler and safer than trying to diff only what this one category
+		# changed.
+		from masar_diwan.install import ensure_dynamic_fields
+
+		ensure_dynamic_fields()
+
 	def _generate_fieldname_slug(self, label):
 		for _attempt in range(5):
 			ascii_part = re.sub(r"[^a-zA-Z0-9]+", "_", label or "").strip("_").lower()

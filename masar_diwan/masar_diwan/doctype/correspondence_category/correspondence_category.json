@@ -11,12 +11,12 @@
   "title",
   "column_break_yccx",
   "disabled",
-  "is_group",
   "lft",
   "rgt",
   "is_group",
   "old_parent",
   "parent_correspondence_category",
+  "section_break_ksdo",
   "dynamic_fields"
  ],
  "fields": [
@@ -86,13 +86,17 @@
    "fieldtype": "Table",
    "label": "Dynamic Fields",
    "options": "Correspondence Category Field"
+  },
+  {
+   "fieldname": "section_break_ksdo",
+   "fieldtype": "Section Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2026-09-24 03:49:35.644779",
+ "modified": "2026-09-24 05:08:14.340070",
  "modified_by": "Administrator",
  "module": "Masar Diwan",
  "name": "Correspondence Category",
