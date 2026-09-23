@@ -36,6 +36,28 @@ class CorrespondenceRequest(Document):
 		if self.category_is_group and not self.correspondence_sub_category:
 			frappe.throw(_("Select a Correspondence Sub Category - the chosen category has sub-categories."))
 
+		# link_filters (parent = correspondence_category, is_group = 0) are
+		# the same Desk-form-JS-only story as mandatory_depends_on/fetch_from
+		# above - Frappe never checks a Link field's link_filters server-side,
+		# only that the target document exists (see _validate_links()). So a
+		# non-Desk-form path could otherwise save any Correspondence Category
+		# here at all - a top-level one, a sub-category of a different
+		# parent, or a group node - not just an actual leaf child of the
+		# selected category.
+		if self.correspondence_sub_category:
+			sub = frappe.db.get_value(
+				"Correspondence Category",
+				self.correspondence_sub_category,
+				["parent_correspondence_category", "is_group"],
+				as_dict=True,
+			)
+			if sub.parent_correspondence_category != self.correspondence_category or sub.is_group:
+				frappe.throw(
+					_("{0} is not a valid sub-category of {1}.").format(
+						frappe.bold(self.correspondence_sub_category), frappe.bold(self.correspondence_category)
+					)
+				)
+
 	def before_insert(self):
 		# docfield default="user" is only resolved by the Desk new-doc flow;
 		# server-side frappe.get_doc(...).insert() needs it set explicitly.

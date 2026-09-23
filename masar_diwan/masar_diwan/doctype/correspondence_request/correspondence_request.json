@@ -166,7 +166,7 @@
    "fieldname": "correspondence_sub_category",
    "fieldtype": "Link",
    "label": "Correspondence Sub Category",
-   "link_filters": "[[\"Correspondence Category\",\"disabled\",\"=\",0],[\"Correspondence Category\",\"parent_correspondence_category\",\"=\",\"doc.correspondence_category\"]]",
+   "link_filters": "[[\"Correspondence Category\",\"disabled\",\"=\",0],[\"Correspondence Category\",\"is_group\",\"=\",0],[\"Correspondence Category\",\"parent_correspondence_category\",\"=\",\"doc.correspondence_category\"]]",
    "mandatory_depends_on": "eval:doc.category_is_group",
    "options": "Correspondence Category"
   }
