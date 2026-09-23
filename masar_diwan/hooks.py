@@ -40,6 +40,7 @@ app_include_css = [
 # both call the same function instead of each keeping its own copy.
 app_include_js = [
 	"/assets/masar_diwan/js/masar_diwan-desk.js",
+	"/assets/masar_diwan/js/masar_diwan-dynamic-fields.js",
 ]
 
 # include js, css files in header of web template

@@ -13,6 +13,8 @@ import frappe
 
 from masar_diwan.permissions import get_user_departments
 
+DYNAMIC_FIELD_ROW_FIELDS = ["label", "fieldname_slug", "fieldtype", "options", "reqd", "sort_order"]
+
 
 @frappe.whitelist()
 def get_submitter_context():
@@ -50,3 +52,53 @@ def get_confidentiality_levels():
 		order_by="rank asc",
 		ignore_permissions=True,
 	)
+
+
+@frappe.whitelist(allow_guest=False)
+def get_top_level_categories():
+	"""Both hand-built request-creation surfaces (the Desk "New Request" page
+	and /diwan/submit's portal form) need to render the same category/
+	sub-category pickers the standard Desk form's link_filters already give
+	it for free - this and the two functions below are that one shared
+	source, called from both instead of each re-querying Correspondence
+	Category on its own.
+	"""
+	return frappe.get_all(
+		"Correspondence Category",
+		filters=[["disabled", "=", 0], ["parent_correspondence_category", "is", "not set"]],
+		fields=["name", "title", "is_group"],
+		order_by="title asc",
+		ignore_permissions=True,
+	)
+
+
+@frappe.whitelist(allow_guest=False)
+def get_sub_categories(correspondence_category: str):
+	return frappe.get_all(
+		"Correspondence Category",
+		filters=[
+			["disabled", "=", 0],
+			["is_group", "=", 0],
+			["parent_correspondence_category", "=", correspondence_category],
+		],
+		fields=["name", "title"],
+		order_by="title asc",
+		ignore_permissions=True,
+	)
+
+
+@frappe.whitelist(allow_guest=False)
+def get_dynamic_fields(correspondence_category: str | None = None, correspondence_sub_category: str | None = None):
+	"""Active dynamic-field definitions for whichever category is actually
+	selected - the sub-category if one was chosen, else the top-level
+	category itself when it has no children (see
+	CorrespondenceRequest._copy_dynamic_field_values() for why this is the
+	same "effective category" rule used at Approve & Register time).
+	"""
+	effective_category = correspondence_sub_category or correspondence_category
+	if not effective_category or not frappe.db.exists("Correspondence Category", effective_category):
+		return []
+	category = frappe.get_cached_doc("Correspondence Category", effective_category)
+	rows = [row.as_dict() for row in category.dynamic_fields if row.is_active]
+	rows.sort(key=lambda r: (r.get("sort_order") or 0, r.get("idx") or 0))
+	return [{k: r.get(k) for k in DYNAMIC_FIELD_ROW_FIELDS} for r in rows]

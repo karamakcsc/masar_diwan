@@ -58,6 +58,21 @@ class CorrespondenceRequest(Document):
 					)
 				)
 
+		self._validate_dynamic_fields()
+
+	def _validate_dynamic_fields(self):
+		"""Custom Fields created by ensure_dynamic_fields() carry
+		mandatory_depends_on too - same Desk-form-JS-only limitation already
+		hit twice above, confirmed the same way (BaseDocument's mandatory
+		check never looks at it). Enforced here for real instead."""
+		effective_category = self.correspondence_sub_category or self.correspondence_category
+		if not effective_category or not frappe.db.exists("Correspondence Category", effective_category):
+			return
+		category = frappe.get_cached_doc("Correspondence Category", effective_category)
+		for row in category.dynamic_fields:
+			if row.is_active and row.reqd and not self.get(f"csf_{row.fieldname_slug}"):
+				frappe.throw(_("{0} is required.").format(frappe.bold(row.label)))
+
 	def before_insert(self):
 		# docfield default="user" is only resolved by the Desk new-doc flow;
 		# server-side frappe.get_doc(...).insert() needs it set explicitly.
@@ -109,5 +124,24 @@ class CorrespondenceRequest(Document):
 				"source_request": self.name,
 			}
 		)
+		self._copy_dynamic_field_values(correspondence)
 		correspondence.insert(ignore_permissions=True)
 		self.db_set("resulting_correspondence", correspondence.name)
+
+	def _copy_dynamic_field_values(self, correspondence):
+		"""Dynamic fields (masar_diwan.install.ensure_dynamic_fields()) are
+		defined once per Correspondence Category and mirrored onto both this
+		doctype and Correspondence with the same csf_<slug> fieldname - read
+		back the same category's field list to know which values to move,
+		rather than hardcoding any field name here."""
+		effective_category = self.correspondence_sub_category or self.correspondence_category
+		if not effective_category:
+			return
+		category = frappe.get_cached_doc("Correspondence Category", effective_category)
+		for row in category.dynamic_fields:
+			if not row.is_active:
+				continue
+			fieldname = f"csf_{row.fieldname_slug}"
+			value = self.get(fieldname)
+			if value is not None:
+				correspondence.set(fieldname, value)

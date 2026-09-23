@@ -6,3 +6,20 @@
 
 // 	},
 // });
+
+
+
+frappe.ui.form.on('Correspondence Request', {
+    refresh: function(frm) {
+
+        frm.set_query('correspondence_sub_category', function(doc) {
+            return {
+                filters: [
+                    ['Correspondence Category', 'parent_correspondence_category', '=', doc.correspondence_category],
+                    ['Correspondence Category', 'is_group', '=', 0]
+                ]
+            };
+        });
+
+    }
+});

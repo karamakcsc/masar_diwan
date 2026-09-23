@@ -372,6 +372,21 @@ class CorrespondenceRequestNew {
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body">
+							<h6 class="card-title">التصنيف</h6>
+							<div class="row">
+								<div class="col-sm-6 form-group">
+									<label>الفئة</label>
+									<select class="form-control" id="crn-category"><option value="">-</option></select>
+								</div>
+								<div class="col-sm-6 form-group" id="crn-subcategory-group" style="display:none;">
+									<label>الفئة الفرعية</label>
+									<select class="form-control" id="crn-subcategory"><option value="">-</option></select>
+								</div>
+							</div>
+							<div id="crn-dynamic-fields"></div>
+						</div></div>
+
+						<div class="card mb-3"><div class="card-body">
 							<h6 class="card-title">نص المسودة</h6>
 							<div id="crn-draft-text-wrapper"></div>
 						</div></div>
@@ -451,6 +466,66 @@ class CorrespondenceRequestNew {
 		this.bind_events($body);
 		this.fetch_submitter_context($body);
 		this.fetch_confidentiality_levels($body);
+		this.fetch_categories($body);
+	}
+
+	// Category/sub-category + their dynamic fields (masar_diwan.install.
+	// ensure_dynamic_fields()) - the standard Desk form's link_filters/
+	// depends_on do this for free, but this page builds its own controls by
+	// hand, so it needs the same three shared endpoints
+	// (get_top_level_categories/get_sub_categories/get_dynamic_fields) and
+	// the shared window.masarDiwanDynamicFields renderer instead of
+	// re-implementing either.
+	fetch_categories($body) {
+		frappe.call({
+			method: "masar_diwan.api.requests.get_top_level_categories",
+			callback: (r) => {
+				this.categories_meta = {};
+				const $select = $body.find("#crn-category");
+				(r.message || []).forEach((cat) => {
+					this.categories_meta[cat.name] = cat;
+					$select.append(`<option value="${frappe.utils.escape_html(cat.name)}">${frappe.utils.escape_html(cat.title)}</option>`);
+				});
+			},
+		});
+	}
+
+	on_category_change($body) {
+		const category = $body.find("#crn-category").val();
+		this.correspondence_category = category || null;
+		this.correspondence_sub_category = null;
+		const meta = this.categories_meta && this.categories_meta[category];
+		const $subGroup = $body.find("#crn-subcategory-group");
+		const $subSelect = $body.find("#crn-subcategory").empty().append('<option value="">-</option>');
+
+		if (meta && meta.is_group) {
+			$subGroup.show();
+			frappe.call({
+				method: "masar_diwan.api.requests.get_sub_categories",
+				args: { correspondence_category: category },
+				callback: (r) => {
+					(r.message || []).forEach((sub) => {
+						$subSelect.append(`<option value="${frappe.utils.escape_html(sub.name)}">${frappe.utils.escape_html(sub.title)}</option>`);
+					});
+				},
+			});
+		} else {
+			$subGroup.hide();
+		}
+		this.fetch_dynamic_fields($body);
+	}
+
+	fetch_dynamic_fields($body) {
+		frappe.call({
+			method: "masar_diwan.api.requests.get_dynamic_fields",
+			args: {
+				correspondence_category: this.correspondence_category,
+				correspondence_sub_category: this.correspondence_sub_category,
+			},
+			callback: (r) => {
+				window.masarDiwanDynamicFields.render($body.find("#crn-dynamic-fields")[0], r.message || []);
+			},
+		});
 	}
 
 	fetch_submitter_context($body) {
@@ -496,6 +571,12 @@ class CorrespondenceRequestNew {
 			if (meta) {
 				$(e.currentTarget).removeClass("btn-outline-secondary").addClass(meta.active_class);
 			}
+		});
+
+		$body.find("#crn-category").on("change", () => this.on_category_change($body));
+		$body.find("#crn-subcategory").on("change", (e) => {
+			this.correspondence_sub_category = $(e.currentTarget).val() || null;
+			this.fetch_dynamic_fields($body);
 		});
 
 		const $dropzone = $body.find("#crn-dropzone");
@@ -575,15 +656,20 @@ class CorrespondenceRequestNew {
 			return;
 		}
 
-		const fields = {
-			request_type: this.request_type,
-			subject: subject,
-			party_or_department: $body.find("#crn-party").val().trim(),
-			draft_text: this.draft_text_control.get_value() || "",
-			suggested_priority: this.priority,
-			suggested_confidentiality: this.confidentiality,
-			note_to_registrar: $body.find("#crn-note").val().trim(),
-		};
+		const fields = Object.assign(
+			{
+				request_type: this.request_type,
+				subject: subject,
+				party_or_department: $body.find("#crn-party").val().trim(),
+				draft_text: this.draft_text_control.get_value() || "",
+				suggested_priority: this.priority,
+				suggested_confidentiality: this.confidentiality,
+				note_to_registrar: $body.find("#crn-note").val().trim(),
+				correspondence_category: this.correspondence_category || null,
+				correspondence_sub_category: this.correspondence_sub_category || null,
+			},
+			window.masarDiwanDynamicFields.collectValues($body.find("#crn-dynamic-fields")[0])
+		);
 
 		frappe.dom.freeze(action === "submit" ? __("جارٍ الإرسال للمراجعة...") : __("جارٍ حفظ المسودة..."));
 

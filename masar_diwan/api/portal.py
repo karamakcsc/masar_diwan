@@ -58,6 +58,17 @@ def _mask_if_restricted(row, user):
 	row["subject"] = MASK
 	row["subject_en"] = MASK if row.get("subject_en") else None
 	row["party"] = MASK
+	# Dynamic fields (masar_diwan.install.ensure_dynamic_fields()) are real
+	# columns a client can add per Correspondence Category with no fixed
+	# list to check against here (a bank account number, an invoice value -
+	# whatever they configure) - stripped generically by the csf_ prefix
+	# every one of them shares, rather than hardcoding the three fields this
+	# function used to know about. No caller currently puts a csf_ key into
+	# `row` (RESULT_FIELDS/DETAIL_FIELDS predate this feature), so this is a
+	# no-op today - added so it's already correct the moment one does.
+	for key in list(row.keys()):
+		if key.startswith("csf_"):
+			row[key] = None
 	return row
 
 

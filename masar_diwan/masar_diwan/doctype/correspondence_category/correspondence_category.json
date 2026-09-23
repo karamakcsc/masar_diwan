@@ -16,7 +16,8 @@
   "rgt",
   "is_group",
   "old_parent",
-  "parent_correspondence_category"
+  "parent_correspondence_category",
+  "dynamic_fields"
  ],
  "fields": [
   {
@@ -78,6 +79,13 @@
    "ignore_user_permissions": 1,
    "label": "Parent Correspondence Category",
    "options": "Correspondence Category"
+  },
+  {
+   "description": "Only meaningful on a leaf category (Is Group unchecked, or a category with no sub-categories) - a category a request can actually be filed under. Fields defined here appear on Correspondence Request/Correspondence the moment this exact category (top-level or sub-category) is selected.",
+   "fieldname": "dynamic_fields",
+   "fieldtype": "Table",
+   "label": "Dynamic Fields",
+   "options": "Correspondence Category Field"
   }
  ],
  "grid_page_length": 50,

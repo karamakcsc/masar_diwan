@@ -42,6 +42,18 @@
 	</div>
 
 	<div class="diwan-field">
+		<label>{{ _("Category") }}</label>
+		<select id="field-category"><option value="">-</option></select>
+	</div>
+
+	<div class="diwan-field" id="subcategory-field" style="display:none;">
+		<label>{{ _("Sub Category") }}</label>
+		<select id="field-subcategory"><option value="">-</option></select>
+	</div>
+
+	<div id="dynamic-fields"></div>
+
+	<div class="diwan-field">
 		<label>{{ _("Draft Text") }}</label>
 		<textarea id="field-draft-text" rows="6"></textarea>
 	</div>
@@ -128,6 +140,62 @@ frappe.ready(function () {
 		renderAttachments();
 	});
 
+	// Category/sub-category + their dynamic fields (masar_diwan.install.
+	// ensure_dynamic_fields()) - same three shared endpoints and the same
+	// window.masarDiwanDynamicFields renderer the Desk "New Request" page
+	// uses, not a second copy of either.
+	var categoriesMeta = {};
+
+	function fetchDynamicFields() {
+		frappe.call({
+			method: "masar_diwan.api.requests.get_dynamic_fields",
+			args: {
+				correspondence_category: fieldValue("field-category") || null,
+				correspondence_sub_category: fieldValue("field-subcategory") || null,
+			},
+		}).then(function (r) {
+			window.masarDiwanDynamicFields.render(document.getElementById("dynamic-fields"), r.message || []);
+		});
+	}
+
+	frappe.call({ method: "masar_diwan.api.requests.get_top_level_categories" }).then(function (r) {
+		var select = document.getElementById("field-category");
+		(r.message || []).forEach(function (cat) {
+			categoriesMeta[cat.name] = cat;
+			var opt = document.createElement("option");
+			opt.value = cat.name;
+			opt.textContent = cat.title;
+			select.appendChild(opt);
+		});
+	});
+
+	document.getElementById("field-category").addEventListener("change", function () {
+		var category = this.value;
+		var subGroup = document.getElementById("subcategory-field");
+		var subSelect = document.getElementById("field-subcategory");
+		subSelect.innerHTML = '<option value="">-</option>';
+
+		if (category && categoriesMeta[category] && categoriesMeta[category].is_group) {
+			subGroup.style.display = "";
+			frappe.call({
+				method: "masar_diwan.api.requests.get_sub_categories",
+				args: { correspondence_category: category },
+			}).then(function (r) {
+				(r.message || []).forEach(function (sub) {
+					var opt = document.createElement("option");
+					opt.value = sub.name;
+					opt.textContent = sub.title;
+					subSelect.appendChild(opt);
+				});
+			});
+		} else {
+			subGroup.style.display = "none";
+		}
+		fetchDynamicFields();
+	});
+
+	document.getElementById("field-subcategory").addEventListener("change", fetchDynamicFields);
+
 	function uploadStagedFiles(docname) {
 		var uploads = stagedFiles.map(function (file) {
 			var fd = new FormData();
@@ -145,16 +213,21 @@ frappe.ready(function () {
 	}
 
 	function buildDoc() {
-		return {
-			doctype: "Correspondence Request",
-			request_type: pillValue("request_type"),
-			subject: fieldValue("field-subject"),
-			party_or_department: fieldValue("field-party"),
-			draft_text: fieldValue("field-draft-text"),
-			suggested_priority: pillValue("suggested_priority"),
-			suggested_confidentiality: pillValue("suggested_confidentiality"),
-			note_to_registrar: fieldValue("field-note"),
-		};
+		return Object.assign(
+			{
+				doctype: "Correspondence Request",
+				request_type: pillValue("request_type"),
+				subject: fieldValue("field-subject"),
+				party_or_department: fieldValue("field-party"),
+				draft_text: fieldValue("field-draft-text"),
+				suggested_priority: pillValue("suggested_priority"),
+				suggested_confidentiality: pillValue("suggested_confidentiality"),
+				note_to_registrar: fieldValue("field-note"),
+				correspondence_category: fieldValue("field-category") || null,
+				correspondence_sub_category: fieldValue("field-subcategory") || null,
+			},
+			window.masarDiwanDynamicFields.collectValues(document.getElementById("dynamic-fields"))
+		);
 	}
 
 	function saveDoc(callback) {

@@ -154,6 +154,7 @@
    "options": "Correspondence Category"
   },
   {
+   "default": "0",
    "fetch_from": "correspondence_category.is_group",
    "fieldname": "category_is_group",
    "fieldtype": "Check",
@@ -166,7 +167,6 @@
    "fieldname": "correspondence_sub_category",
    "fieldtype": "Link",
    "label": "Correspondence Sub Category",
-   "link_filters": "[[\"Correspondence Category\",\"disabled\",\"=\",0],[\"Correspondence Category\",\"is_group\",\"=\",0],[\"Correspondence Category\",\"parent_correspondence_category\",\"=\",\"doc.correspondence_category\"]]",
    "mandatory_depends_on": "eval:doc.category_is_group",
    "options": "Correspondence Category"
   }
@@ -174,7 +174,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-24 03:53:40.500590",
+ "modified": "2026-09-24 04:13:24.147794",
  "modified_by": "Administrator",
  "module": "Masar Diwan",
  "name": "Correspondence Request",

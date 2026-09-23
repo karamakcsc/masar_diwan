@@ -40,6 +40,7 @@ def after_install():
 	ensure_department_read_access()
 	ensure_workflows()
 	ensure_workflow_states()
+	ensure_dynamic_fields()
 
 
 def before_migrate():
@@ -56,6 +57,7 @@ def after_migrate():
 	ensure_department_read_access()
 	ensure_workflows()
 	ensure_workflow_states()
+	ensure_dynamic_fields()
 	try:
 		migrate_legacy_department_to_erpnext()
 	except Exception:
@@ -201,6 +203,105 @@ def ensure_workflow_states():
 		frappe.db.commit()
 	except Exception:
 		frappe.log_error(title="masar_diwan: failed to ensure Workflow States")
+
+
+DYNAMIC_FIELD_TARGET_DOCTYPES = ["Correspondence Request", "Correspondence"]
+DYNAMIC_FIELD_PREFIX = "csf_"
+
+
+def ensure_dynamic_fields():
+	"""Self-healing sync for the per-category dynamic-field engine, matching
+	ensure_workflows()/ensure_workflow_states()'s own pattern: a user defines
+	fields in a simple screen (Correspondence Category's own `dynamic_fields`
+	child table) instead of touching Customize Form directly, and this turns
+	each active row into a real Custom Field on both Correspondence Request
+	and Correspondence (mirrored so a value survives Approve & Register) -
+	real columns, so reports/filters/print all work on them for free.
+
+	Read every category once, group its active rows by `fieldname_slug`
+	(several categories can legitimately share one column via the "Reuse
+	Existing Field" mode - see correspondence_category.py's own validate()),
+	and build one Custom Field per distinct slug, visible/mandatory exactly
+	when the request's *effective* category selection - its
+	correspondence_sub_category if set, else its own correspondence_category
+	when that one has no children - is one of the categories using that
+	slug. Idempotent: compares the Custom Field's actual stored properties
+	against what's wanted and only writes when they differ, the same
+	discipline as ensure_workflows()'s own hash/timestamp check.
+	"""
+	try:
+		by_slug = {}
+		for category_name in frappe.get_all("Correspondence Category", pluck="name"):
+			category = frappe.get_cached_doc("Correspondence Category", category_name)
+			for row in category.dynamic_fields:
+				if not row.fieldname_slug:
+					continue
+				entry = by_slug.setdefault(
+					row.fieldname_slug,
+					{"row": row, "active_categories": []},
+				)
+				if row.is_active:
+					entry["active_categories"].append(category_name)
+
+		for slug, info in by_slug.items():
+			_ensure_dynamic_custom_field(slug, info["row"], info["active_categories"])
+
+		for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
+			frappe.clear_cache(doctype=doctype)
+	except Exception:
+		frappe.log_error(title="masar_diwan: failed to ensure dynamic fields")
+
+
+def _ensure_dynamic_custom_field(slug, row, active_categories):
+	if row.fieldtype == "Link" and row.link_scope == "erpnext":
+		if not frappe.db.exists("DocType", row.options):
+			frappe.log_error(
+				title="masar_diwan: dynamic field skipped, target DocType missing",
+				message=(
+					f"Field '{row.label}' (csf_{slug}) targets '{row.options}', which doesn't exist on this "
+					"site (likely no ERPNext installed here). Skipped this sync - will retry on the next "
+					"migrate once/if the target DocType exists."
+				),
+			)
+			return
+
+	fieldname = f"{DYNAMIC_FIELD_PREFIX}{slug}"
+	visible_categories_json = frappe.as_json(active_categories, indent=None) if active_categories else "[]"
+	condition = f"eval:{visible_categories_json}.includes(doc.correspondence_sub_category || doc.correspondence_category)"
+
+	for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
+		# On Correspondence, the request's own category/sub-category context
+		# no longer exists as such a field - the value was already copied
+		# over at Approve & Register (see register_correspondence()). Shown
+		# unconditionally there rather than reconstructing the same
+		# condition against a field this doctype doesn't have.
+		depends_on = condition if doctype == "Correspondence Request" else ("eval:1" if active_categories else "eval:0")
+		mandatory_depends_on = depends_on if row.reqd and active_categories else None
+
+		wanted = {
+			"label": row.label,
+			"fieldtype": row.fieldtype,
+			"options": row.options,
+			"depends_on": depends_on,
+			"mandatory_depends_on": mandatory_depends_on,
+			"insert_after": "resulting_correspondence" if doctype == "Correspondence Request" else "confidentiality",
+		}
+
+		existing_name = frappe.db.exists("Custom Field", {"dt": doctype, "fieldname": fieldname})
+		if not existing_name:
+			cf = frappe.get_doc({"doctype": "Custom Field", "dt": doctype, "fieldname": fieldname, **wanted})
+			cf.insert(ignore_permissions=True)
+			continue
+
+		current = frappe.db.get_value(
+			"Custom Field", existing_name, list(wanted.keys()), as_dict=True
+		)
+		if any(current.get(k) != v for k, v in wanted.items()):
+			cf = frappe.get_doc("Custom Field", existing_name)
+			cf.update(wanted)
+			cf.save(ignore_permissions=True)
+
+	frappe.db.commit()
 
 
 def ensure_workspace_sidebar():
