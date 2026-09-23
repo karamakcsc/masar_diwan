@@ -118,8 +118,18 @@
 			{% elif detail.resulting_correspondence %}
 			<div class="diwan-card">
 				<div class="diwan-card__title">{{ _("Outcome") }}</div>
-				<p><b>{{ _("Reference Number") }}:</b> <span class="ref-code">{{ detail.resulting_correspondence }}</span></p>
-				{% if detail.decision_note %}<p><b>{{ _("Decision Note") }}:</b> {{ detail.decision_note }}</p>{% endif %}
+				<div style="display:flex; gap:16px; flex-wrap:wrap-reverse; align-items:flex-start;">
+					<div style="flex:1 1 180px;">
+						<p><b>{{ _("Reference Number") }}:</b> <span class="ref-code">{{ detail.resulting_correspondence }}</span></p>
+						{% if detail.decision_note %}<p><b>{{ _("Decision Note") }}:</b> {{ detail.decision_note }}</p>{% endif %}
+					</div>
+					{% if detail.qr_code %}
+					<div style="flex:0 0 auto; text-align:center;">
+						<img src="{{ detail.qr_code }}" alt="{{ _('Tracking QR Code') }}"
+							style="width:120px; height:120px; object-fit:contain; border:1px solid var(--md-ink-100); border-radius:var(--radius-sm);">
+					</div>
+					{% endif %}
+				</div>
 			</div>
 			{% elif detail.decision_note %}
 			<div class="diwan-card">

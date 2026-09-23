@@ -53,9 +53,11 @@ def get_context(context):
 			context.detail = {f: doc.get(f) for f in DETAIL_FIELDS}
 			context.detail["not_found"] = False
 			if doc.resulting_correspondence:
-				context.detail["reference_no"] = frappe.db.get_value(
-					"Correspondence", doc.resulting_correspondence, "reference_no"
+				ref_no, qr_code = frappe.db.get_value(
+					"Correspondence", doc.resulting_correspondence, ["reference_no", "qr_code"]
 				)
+				context.detail["reference_no"] = ref_no
+				context.detail["qr_code"] = qr_code
 			context.attachments = frappe.get_all(
 				"File",
 				filters={"attached_to_doctype": "Correspondence Request", "attached_to_name": name},

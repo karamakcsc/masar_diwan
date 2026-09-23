@@ -62,14 +62,24 @@
 		<div style="flex:2 1 380px;">
 			<div class="diwan-card">
 				<div class="diwan-card__title">{{ _("Details") }}</div>
-				<p><b>{{ _("Type") }}:</b> {{ _(detail.request_type) }}</p>
-				{% if detail.party_or_department %}<p><b>{{ _("Party / Department") }}:</b> {{ detail.party_or_department }}</p>{% endif %}
-				{% if detail.draft_text %}<p><b>{{ _("Draft Text") }}:</b><br>{{ detail.draft_text | safe }}</p>{% endif %}
-				<p><b>{{ _("Suggested Priority") }}:</b> {{ _(detail.suggested_priority) }}</p>
-				<p><b>{{ _("Suggested Confidentiality") }}:</b> {{ _(detail.suggested_confidentiality) }}</p>
-				{% if detail.note_to_registrar %}<p><b>{{ _("Note to Registrar") }}:</b> {{ detail.note_to_registrar }}</p>{% endif %}
-				{% if detail.decision_note %}<p><b>{{ _("Decision Note") }}:</b> {{ detail.decision_note }}</p>{% endif %}
-				{% if detail.reference_no %}<p><b>{{ _("Reference Number") }}:</b> <span class="ref-code">{{ detail.reference_no }}</span></p>{% endif %}
+				<div style="display:flex; gap:20px; flex-wrap:wrap-reverse; align-items:flex-start;">
+					<div style="flex:1 1 260px;">
+						<p><b>{{ _("Type") }}:</b> {{ _(detail.request_type) }}</p>
+						{% if detail.party_or_department %}<p><b>{{ _("Party / Department") }}:</b> {{ detail.party_or_department }}</p>{% endif %}
+						{% if detail.draft_text %}<p><b>{{ _("Draft Text") }}:</b><br>{{ detail.draft_text | safe }}</p>{% endif %}
+						<p><b>{{ _("Suggested Priority") }}:</b> {{ _(detail.suggested_priority) }}</p>
+						<p><b>{{ _("Suggested Confidentiality") }}:</b> {{ _(detail.suggested_confidentiality) }}</p>
+						{% if detail.note_to_registrar %}<p><b>{{ _("Note to Registrar") }}:</b> {{ detail.note_to_registrar }}</p>{% endif %}
+						{% if detail.decision_note %}<p><b>{{ _("Decision Note") }}:</b> {{ detail.decision_note }}</p>{% endif %}
+						{% if detail.reference_no %}<p><b>{{ _("Reference Number") }}:</b> <span class="ref-code">{{ detail.reference_no }}</span></p>{% endif %}
+					</div>
+					{% if detail.qr_code %}
+					<div style="flex:0 0 auto; text-align:center;">
+						<img src="{{ detail.qr_code }}" alt="{{ _('Tracking QR Code') }}"
+							style="width:140px; height:140px; object-fit:contain; border:1px solid var(--md-ink-100); border-radius:var(--radius-sm);">
+					</div>
+					{% endif %}
+				</div>
 
 				{% if attachments %}
 				<p><b>{{ _("Attachments") }}:</b></p>
