@@ -733,6 +733,10 @@ While investigating, found the user had already made the correct fix live throug
 
 **Not applied to `Correspondence`'s own `qr_code` field, which has the identical `read_only: 1` and therefore the identical underlying rendering limitation** - not asked about, and Correspondence's QR is already shown as a real inline `<img>` elsewhere on the same form (the "Registered Correspondence" `frm.dashboard.add_section()` card, see the 2026-09-21 section above), so the same practical gap doesn't present there today. Worth remembering if that dashboard section is ever removed or changed: the plain `qr_code` field by itself would show the same raw-text symptom Envelope just had.
 
+## 2026-09-24 (same day, twelfth follow-up): moved QR link/image into a new "More Info" tab on Envelope
+
+The user added a `more_info_tab` (Tab Break, "More Info") live through the Desk DocType editor, asking that it hold only the QR link field and the QR image field. Moved `qr_code`/`qr_code_img` in `field_order` from their old spot (between `linked_delivery_sheet` and `section_break_docs`, in the main tab) to right after `more_info_tab`, so the main tab now shows only `Envelope No`/`Status`/`Creation Date`/`Linked Delivery Sheet`/`Documents`, with QR Code + QR Code Img living in their own tab. Verified live via `frappe.get_meta("Envelope")` after `bench migrate` on both sites that the field order matches exactly; all 8 portal routes re-swept for `200`.
+
 ## Documented assumptions / deviations from the spec
 
 - Site default language was **not** changed to Arabic (System Settings) — a global, shared-effect toggle on a dev site used for other testing too; per-user language switching works regardless and the translation file (`translations/ar.csv`, ~180 lines) is complete either way.

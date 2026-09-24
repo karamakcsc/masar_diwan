@@ -13,10 +13,11 @@
   "column_break_1",
   "creation_date",
   "linked_delivery_sheet",
-  "qr_code",
-  "qr_code_img",
   "section_break_docs",
-  "envelope_documents"
+  "envelope_documents",
+  "more_info_tab",
+  "qr_code",
+  "qr_code_img"
  ],
  "fields": [
   {
@@ -72,12 +73,17 @@
    "fieldtype": "Image",
    "label": "QR Code Img",
    "options": "qr_code"
+  },
+  {
+   "fieldname": "more_info_tab",
+   "fieldtype": "Tab Break",
+   "label": "More Info"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-24 16:37:38.589836",
+ "modified": "2026-09-24 16:47:48.682541",
  "modified_by": "Administrator",
  "module": "Masar Diwan",
  "name": "Envelope",
