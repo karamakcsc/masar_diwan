@@ -134,6 +134,60 @@ def search_correspondence(
 	return [_mask_if_restricted(r, user) for r in rows]
 
 
+ENVELOPE_RESULT_FIELDS = ["name", "envelope_no", "status", "creation_date", "linked_delivery_sheet"]
+
+
+@frappe.whitelist()
+def search_envelopes(text=None):
+	"""Envelope's own counterpart to search_correspondence() - added
+	2026-09-24 once the Desk "Correspondence Tracking" page's search box was
+	found to only ever query Correspondence, even though the page (and its
+	scan-a-reference field) has supported Envelope references since the
+	get_tracking_detail() dispatch was generalized. Envelope has no
+	department/confidentiality tiering of its own (see
+	_get_envelope_tracking_detail()'s own note) and no custom
+	permission_query_conditions hook registered in hooks.py - a plain
+	frappe.get_list() (not ignore_permissions) already enforces exactly the
+	same real DocPerm rows frappe.has_permission("Envelope", ...) does
+	elsewhere in this module, so no bespoke scoping/masking is needed here
+	the way Correspondence's own search requires.
+	"""
+	user = frappe.session.user
+	if user == "Guest":
+		frappe.throw(_("Please log in"), frappe.PermissionError)
+
+	# frappe.get_list() raises PermissionError outright for a user with no
+	# read DocPerm on the doctype at all (unlike Correspondence's raw SQL
+	# query here, which does its own manual department/confidentiality
+	# masking and never hits that all-or-nothing check) - a plain
+	# Correspondence Employee has no Envelope DocPerm row whatsoever, so
+	# without this guard every search from this page would throw for them
+	# the moment Envelope results were added alongside Correspondence's own.
+	# Degrades to an empty list instead, same as "nothing found", rather
+	# than surfacing a raw permission error for half of every search.
+	if not frappe.has_permission("Envelope", "read", user=user):
+		return []
+
+	or_filters = None
+	if text:
+		or_filters = [
+			["envelope_no", "like", f"%{text}%"],
+			["linked_delivery_sheet", "like", f"%{text}%"],
+		]
+
+	rows = frappe.get_list(
+		"Envelope",
+		or_filters=or_filters,
+		fields=ENVELOPE_RESULT_FIELDS,
+		order_by="modified desc",
+		limit_page_length=100,
+	)
+
+	log_event("View", reason="Envelope search")
+
+	return rows
+
+
 @frappe.whitelist(allow_guest=True)
 def get_tracking_detail(ref: str, via: str = "qr"):
 	user = frappe.session.user

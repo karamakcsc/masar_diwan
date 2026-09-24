@@ -45,21 +45,41 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 	const results_wrapper = $('<div class="correspondence-track-results" style="margin-top: 15px;"></div>').appendTo(
 		page.body
 	);
+	const envelope_results_wrapper = $(
+		'<div class="correspondence-track-results" style="margin-top: 15px;"></div>'
+	).appendTo(page.body);
 
 	function run_search() {
+		const text = search_text.get_value();
 		frappe.call({
 			method: "masar_diwan.api.portal.search_correspondence",
-			args: { text: search_text.get_value() },
+			args: { text },
 			callback(r) {
-				render_results(r.message || []);
+				render_correspondence_results(r.message || []);
+			},
+		});
+		// Envelope has always been a real, separate reference type
+		// get_tracking_detail()/the scan field already handle (see the
+		// Envelope-tracking follow-up above) - this search box only ever
+		// queried Correspondence until now, a real inconsistency: scanning
+		// an envelope's exact reference worked, but searching for one by
+		// partial text/envelope number here silently found nothing.
+		frappe.call({
+			method: "masar_diwan.api.portal.search_envelopes",
+			args: { text },
+			callback(r) {
+				render_envelope_results(r.message || []);
 			},
 		});
 	}
 
-	function render_results(rows) {
+	function render_correspondence_results(rows) {
 		results_wrapper.empty();
+		$(`<div class="text-muted small" style="margin-bottom:4px;">${__("Correspondence")} (${rows.length})</div>`).appendTo(
+			results_wrapper
+		);
 		if (!rows.length) {
-			results_wrapper.html(`<div class="text-muted">${__("No results")}</div>`);
+			$(`<div class="text-muted">${__("No results")}</div>`).appendTo(results_wrapper);
 			return;
 		}
 		const table = $(`
@@ -80,6 +100,43 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 				<td>${frappe.utils.escape_html(row.subject || "")}</td>
 				<td>${frappe.utils.escape_html(row.status || "")}</td>
 				<td>${frappe.utils.escape_html(row.department || "")}</td>
+			</tr>`)
+				.appendTo(tbody)
+				.find(".track-row-link")
+				.on("click", (e) => {
+					e.preventDefault();
+					lookup_ref(row.name);
+				});
+		});
+	}
+
+	function render_envelope_results(rows) {
+		envelope_results_wrapper.empty();
+		$(`<div class="text-muted small" style="margin-bottom:4px;">${__("Envelopes")} (${rows.length})</div>`).appendTo(
+			envelope_results_wrapper
+		);
+		if (!rows.length) {
+			$(`<div class="text-muted">${__("No results")}</div>`).appendTo(envelope_results_wrapper);
+			return;
+		}
+		const table = $(`
+			<table class="table table-bordered">
+				<thead><tr>
+					<th>${__("Envelope No")}</th>
+					<th>${__("Status")}</th>
+					<th>${__("Creation Date")}</th>
+					<th>${__("Linked Delivery Sheet")}</th>
+				</tr></thead>
+				<tbody></tbody>
+			</table>
+		`).appendTo(envelope_results_wrapper);
+		const tbody = table.find("tbody");
+		rows.forEach((row) => {
+			$(`<tr>
+				<td><a href="#" class="track-row-link ref-code">${frappe.utils.escape_html(row.envelope_no)}</a></td>
+				<td>${frappe.utils.escape_html(__(row.status || ""))}</td>
+				<td>${row.creation_date ? frappe.datetime.str_to_user(row.creation_date) : "-"}</td>
+				<td>${row.linked_delivery_sheet ? `<span class="ref-code">${frappe.utils.escape_html(row.linked_delivery_sheet)}</span>` : "-"}</td>
 			</tr>`)
 				.appendTo(tbody)
 				.find(".track-row-link")
