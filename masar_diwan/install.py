@@ -209,6 +209,19 @@ DYNAMIC_FIELD_TARGET_DOCTYPES = ["Correspondence Request", "Correspondence"]
 DYNAMIC_FIELD_PREFIX = "csf_"
 
 
+DYNAMIC_FIELD_SECTION_FIELDNAME = f"{DYNAMIC_FIELD_PREFIX}section"
+DYNAMIC_FIELD_COLUMN_BREAK_FIELDNAME = f"{DYNAMIC_FIELD_PREFIX}column_break"
+# Anchor point for each target doctype's own Section Break - "right after
+# correspondence_sub_category" was asked for explicitly on Correspondence
+# Request; Correspondence has no such field (the category context ends at
+# Approve & Register), so its own confidentiality field is the closest
+# equivalent anchor already used before this pass.
+DYNAMIC_FIELD_SECTION_ANCHOR = {
+	"Correspondence Request": "correspondence_sub_category",
+	"Correspondence": "confidentiality",
+}
+
+
 def ensure_dynamic_fields():
 	"""Self-healing sync for the per-category dynamic-field engine, matching
 	ensure_workflows()/ensure_workflow_states()'s own pattern: a user defines
@@ -228,6 +241,12 @@ def ensure_dynamic_fields():
 	slug. Idempotent: compares the Custom Field's actual stored properties
 	against what's wanted and only writes when they differ, the same
 	discipline as ensure_workflows()'s own hash/timestamp check.
+
+	Every sync also removes any csf_ Custom Field whose slug no longer
+	appears in any category's dynamic_fields at all (not even an inactive
+	row) - found necessary live: deleting a row outright (as opposed to
+	unchecking Active) left its Custom Field behind forever, since nothing
+	else ever re-examined a slug once it stopped appearing anywhere.
 	"""
 	try:
 		by_slug = {}
@@ -243,8 +262,45 @@ def ensure_dynamic_fields():
 				if row.is_active:
 					entry["active_categories"].append(category_name)
 
-		for slug, info in by_slug.items():
-			_ensure_dynamic_custom_field(slug, info["row"], info["active_categories"])
+		# Stable order (by label) so the two-column split doesn't reshuffle
+		# on every sync just because dict iteration order isn't guaranteed
+		# to match insertion order across a full server restart.
+		ordered_slugs = sorted(by_slug.keys(), key=lambda s: (by_slug[s]["row"].label or "", s))
+		half = -(-len(ordered_slugs) // 2)  # ceil division - the extra field (if odd) goes in column 1
+
+		any_active = any(info["active_categories"] for info in by_slug.values())
+		all_active_categories = sorted({c for info in by_slug.values() for c in info["active_categories"]})
+
+		for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
+			_ensure_dynamic_fields_section(doctype, any_active, all_active_categories)
+
+		# The column break's own position - the last field of column 1, or
+		# the section break itself when column 1 is empty (no fields at
+		# all) - is computed and applied unconditionally on every sync, not
+		# just when a field actually lands in column 2. Confirmed live this
+		# was a real gap: shrinking from 4 fields down to 1 left the column
+		# break anchored to a field _remove_orphaned_dynamic_fields() had
+		# just deleted, since nothing ever revisited it once column 2 was
+		# empty.
+		column1_slugs = ordered_slugs[:half]
+		for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
+			column_break_anchor = (
+				f"{DYNAMIC_FIELD_PREFIX}{column1_slugs[-1]}" if column1_slugs else DYNAMIC_FIELD_SECTION_FIELDNAME
+			)
+			_ensure_column_break(doctype, column_break_anchor)
+
+		previous_field = dict.fromkeys(DYNAMIC_FIELD_TARGET_DOCTYPES, DYNAMIC_FIELD_SECTION_FIELDNAME)
+		for i, slug in enumerate(ordered_slugs):
+			if i == half:
+				for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
+					previous_field[doctype] = DYNAMIC_FIELD_COLUMN_BREAK_FIELDNAME
+			info = by_slug[slug]
+			created_at = _ensure_dynamic_custom_field(slug, info["row"], info["active_categories"], previous_field)
+			for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
+				if created_at.get(doctype):
+					previous_field[doctype] = f"{DYNAMIC_FIELD_PREFIX}{slug}"
+
+		_remove_orphaned_dynamic_fields(set(by_slug.keys()))
 
 		for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
 			frappe.clear_cache(doctype=doctype)
@@ -252,7 +308,58 @@ def ensure_dynamic_fields():
 		frappe.log_error(title="masar_diwan: failed to ensure dynamic fields")
 
 
-def _ensure_dynamic_custom_field(slug, row, active_categories):
+def _ensure_dynamic_fields_section(doctype, any_active, all_active_categories):
+	"""The one shared Section Break per target doctype - every dynamic
+	field, regardless of which category defines it, lives in this one
+	section (right after correspondence_sub_category on Correspondence
+	Request, as asked for explicitly) instead of wherever
+	insert_after="resulting_correspondence" happened to leave it before this
+	pass. The matching Column Break (for the two-even-columns layout also
+	asked for) is handled separately, by _ensure_column_break() - its own
+	position depends on how many fields end up in column 1, which isn't
+	known yet at this point."""
+	visible_categories_json = frappe.as_json(all_active_categories, indent=None) if all_active_categories else "[]"
+	section_depends_on = (
+		f"eval:{visible_categories_json}.includes(doc.correspondence_sub_category || doc.correspondence_category)"
+		if doctype == "Correspondence Request"
+		else ("eval:1" if any_active else "eval:0")
+	)
+
+	wanted = {
+		"fieldtype": "Section Break",
+		"label": "Additional Fields",
+		"depends_on": section_depends_on,
+		"insert_after": DYNAMIC_FIELD_SECTION_ANCHOR[doctype],
+	}
+	existing_name = frappe.db.exists("Custom Field", {"dt": doctype, "fieldname": DYNAMIC_FIELD_SECTION_FIELDNAME})
+	if not existing_name:
+		frappe.get_doc(
+			{"doctype": "Custom Field", "dt": doctype, "fieldname": DYNAMIC_FIELD_SECTION_FIELDNAME, **wanted}
+		).insert(ignore_permissions=True)
+		return
+	current = frappe.db.get_value("Custom Field", existing_name, list(wanted.keys()), as_dict=True)
+	if any(current.get(k) != v for k, v in wanted.items()):
+		cf = frappe.get_doc("Custom Field", existing_name)
+		cf.update(wanted)
+		cf.save(ignore_permissions=True)
+
+
+def _ensure_column_break(doctype, insert_after):
+	wanted = {"fieldtype": "Column Break", "insert_after": insert_after}
+	existing_name = frappe.db.exists("Custom Field", {"dt": doctype, "fieldname": DYNAMIC_FIELD_COLUMN_BREAK_FIELDNAME})
+	if not existing_name:
+		frappe.get_doc(
+			{"doctype": "Custom Field", "dt": doctype, "fieldname": DYNAMIC_FIELD_COLUMN_BREAK_FIELDNAME, **wanted}
+		).insert(ignore_permissions=True)
+		return
+	current = frappe.db.get_value("Custom Field", existing_name, list(wanted.keys()), as_dict=True)
+	if any(current.get(k) != v for k, v in wanted.items()):
+		cf = frappe.get_doc("Custom Field", existing_name)
+		cf.update(wanted)
+		cf.save(ignore_permissions=True)
+
+
+def _ensure_dynamic_custom_field(slug, row, active_categories, previous_field):
 	if row.fieldtype == "Link" and row.link_scope == "erpnext":
 		if not frappe.db.exists("DocType", row.options):
 			frappe.log_error(
@@ -263,12 +370,13 @@ def _ensure_dynamic_custom_field(slug, row, active_categories):
 					"migrate once/if the target DocType exists."
 				),
 			)
-			return
+			return {}
 
 	fieldname = f"{DYNAMIC_FIELD_PREFIX}{slug}"
 	visible_categories_json = frappe.as_json(active_categories, indent=None) if active_categories else "[]"
 	condition = f"eval:{visible_categories_json}.includes(doc.correspondence_sub_category || doc.correspondence_category)"
 
+	created_at = {}
 	for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
 		# On Correspondence, the request's own category/sub-category context
 		# no longer exists as such a field - the value was already copied
@@ -284,15 +392,17 @@ def _ensure_dynamic_custom_field(slug, row, active_categories):
 			"options": row.options,
 			"depends_on": depends_on,
 			"mandatory_depends_on": mandatory_depends_on,
-			"insert_after": "resulting_correspondence" if doctype == "Correspondence Request" else "confidentiality",
+			"insert_after": previous_field[doctype],
 		}
 
 		existing_name = frappe.db.exists("Custom Field", {"dt": doctype, "fieldname": fieldname})
 		if not existing_name:
 			cf = frappe.get_doc({"doctype": "Custom Field", "dt": doctype, "fieldname": fieldname, **wanted})
 			cf.insert(ignore_permissions=True)
+			created_at[doctype] = True
 			continue
 
+		created_at[doctype] = True
 		current = frappe.db.get_value(
 			"Custom Field", existing_name, list(wanted.keys()), as_dict=True
 		)
@@ -301,6 +411,23 @@ def _ensure_dynamic_custom_field(slug, row, active_categories):
 			cf.update(wanted)
 			cf.save(ignore_permissions=True)
 
+	frappe.db.commit()
+	return created_at
+
+
+def _remove_orphaned_dynamic_fields(current_slugs):
+	for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
+		existing = frappe.get_all(
+			"Custom Field",
+			filters={"dt": doctype, "fieldname": ["like", f"{DYNAMIC_FIELD_PREFIX}%"]},
+			fields=["name", "fieldname"],
+		)
+		for cf in existing:
+			if cf.fieldname in (DYNAMIC_FIELD_SECTION_FIELDNAME, DYNAMIC_FIELD_COLUMN_BREAK_FIELDNAME):
+				continue
+			slug = cf.fieldname[len(DYNAMIC_FIELD_PREFIX) :]
+			if slug not in current_slugs:
+				frappe.delete_doc("Custom Field", cf.name, force=True, ignore_permissions=True)
 	frappe.db.commit()
 
 
