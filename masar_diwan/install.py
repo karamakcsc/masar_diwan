@@ -215,23 +215,24 @@ DYNAMIC_FIELD_COLUMN_BREAK_FIELDNAME = f"{DYNAMIC_FIELD_PREFIX}column_break"
 # Break always forces a new full-width row, ending whatever multi-column
 # layout was already in progress right there.
 #
-# On Correspondence Request this is a deliberate, explicitly-requested
-# tradeoff, not an oversight: correspondence_sub_category sits inside the
-# form's own pre-existing two-column block (request_type/.../
-# correspondence_sub_category is one column, requested_by/
-# correspondence_type/request_date the other, both closed by the same
-# column_break_1), so anchoring here does end that block early, right
-# where the confirmation happened live (a real screenshot) that this exact
-# spot - not further down after note_to_registrar, tried in between - is
-# what was actually wanted, once seeing the un-ideal-but-acceptable visual
-# result of doing so.
+# On Correspondence Request, anchoring directly to correspondence_sub_category
+# was tried and confirmed live to actually break the form, not just look
+# unusual: column_break_1 (starting the requested_by/correspondence_type/
+# request_date column) *also* has insert_after=correspondence_sub_category -
+# two fields both claiming the same anchor - and Frappe's tie-break left
+# that whole second column stranded, rendered disconnected off to the side
+# with visible empty space around it (a real screenshot showed exactly
+# this). Anchored instead to request_date - the true last field of that
+# same row/section, after both columns finish - which still starts the
+# new section immediately below Correspondence Sub Category from the
+# user's point of view, without cutting the column pairing itself apart.
 #
 # Correspondence has no such request pinning it to a specific field - its
 # own confidentiality anchor sat mid-section next to authorized_viewers,
 # so it stays anchored to the end of that section (authorized_viewers)
 # instead, avoiding the same disruption there without being asked to.
 DYNAMIC_FIELD_SECTION_ANCHOR = {
-	"Correspondence Request": "correspondence_sub_category",
+	"Correspondence Request": "request_date",
 	"Correspondence": "authorized_viewers",
 }
 

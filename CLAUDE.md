@@ -671,6 +671,12 @@ After the previous pass moved the anchor away from `correspondence_sub_category`
 
 Verified live via a real `getdoctype` fetch: the new section now sits directly after `correspondence_sub_category`/`column_break_1`, before `requested_by`, exactly as asked.
 
+## 2026-09-24 (same day, fifth follow-up): the previous anchor genuinely broke the form - found the real cause and fixed it properly this time
+
+The previous pass's `correspondence_sub_category` anchor was reported back immediately as visibly broken - a real screenshot showing `Requested By`/`Suggested Priority`/`Suggested Confidentiality`/`Note to Registrar` floating disconnected in empty space to the right. Read the actual field list rather than assuming this was just "the accepted tradeoff" restated: `column_break_1` - the field that starts that exact column, pre-existing, not managed by this feature - *also* has `insert_after=correspondence_sub_category`. Two Custom-owned/native fields both claiming the same anchor is a real conflict, not a cosmetic side effect, and Frappe's tie-break left the whole second column stranded rather than merging the two cleanly.
+
+Fixed by anchoring to `request_date` instead - the true last field of that same row, after both columns finish - which still starts the new section immediately below `Correspondence Sub Category` (nothing else renders in between) without breaking the column pairing that produced the reported bug. Verified live via a real `getdoctype` fetch: `column_break_1`/`requested_by`/`correspondence_type`/`request_date` now render as one intact, paired block exactly as the form originally shipped, with the new `Additional Fields` section appearing directly after it, before `section_break_content`.
+
 ## Documented assumptions / deviations from the spec
 
 - Site default language was **not** changed to Arabic (System Settings) — a global, shared-effect toggle on a dev site used for other testing too; per-user language switching works regardless and the translation file (`translations/ar.csv`, ~180 lines) is complete either way.
