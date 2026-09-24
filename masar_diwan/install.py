@@ -211,14 +211,24 @@ DYNAMIC_FIELD_PREFIX = "csf_"
 
 DYNAMIC_FIELD_SECTION_FIELDNAME = f"{DYNAMIC_FIELD_PREFIX}section"
 DYNAMIC_FIELD_COLUMN_BREAK_FIELDNAME = f"{DYNAMIC_FIELD_PREFIX}column_break"
-# Anchor point for each target doctype's own Section Break - "right after
-# correspondence_sub_category" was asked for explicitly on Correspondence
-# Request; Correspondence has no such field (the category context ends at
-# Approve & Register), so its own confidentiality field is the closest
-# equivalent anchor already used before this pass.
+# Anchor point for each target doctype's own Section Break. A Section
+# Break always forces a new full-width row, ending whatever multi-column
+# layout was already in progress right there - inserting one after
+# correspondence_sub_category (asked for once) landed *inside*
+# Correspondence Request's own existing two-column block (request_type/
+# requested_by/.../correspondence_sub_category are one column, requested_by/
+# correspondence_type/request_date the other, both closed off by the same
+# column_break_1) and broke it, exactly as reported live with a real
+# screenshot. Anchored instead to the last field of the section
+# correspondence_sub_category already belongs to (note_to_registrar for
+# Correspondence Request, authorized_viewers for Correspondence - its own
+# confidentiality field sits mid-section next to authorized_viewers, same
+# risk, fixed the same way pre-emptively rather than waiting for a second
+# report) - a new section only ever starts cleanly between two already-
+# complete sections this way, regardless of how many dynamic fields exist.
 DYNAMIC_FIELD_SECTION_ANCHOR = {
-	"Correspondence Request": "correspondence_sub_category",
-	"Correspondence": "confidentiality",
+	"Correspondence Request": "note_to_registrar",
+	"Correspondence": "authorized_viewers",
 }
 
 
