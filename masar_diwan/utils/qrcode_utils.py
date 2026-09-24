@@ -7,11 +7,17 @@ from frappe.utils import get_url
 from frappe.utils.file_manager import save_file
 
 
-def attach_tracking_qr_code(doc, url_path="/track"):
+def attach_tracking_qr_code(doc, url_path="/track", ref=None):
 	"""Generate a QR code encoding the tracking URL for `doc` and attach it
 	as a private file, storing the file URL on `doc.qr_code`.
+
+	`ref` is the reference value the QR/URL should encode - defaults to
+	`doc.reference_no` (Correspondence's own convention); callers whose
+	tracking reference lives under a different fieldname (e.g. Envelope's
+	`envelope_no`) pass it explicitly instead.
 	"""
-	tracking_url = get_url(f"{url_path}?ref={doc.reference_no}")
+	ref = ref or doc.reference_no
+	tracking_url = get_url(f"{url_path}?ref={ref}")
 
 	img = qrcode.make(tracking_url)
 	buffer = io.BytesIO()
@@ -19,7 +25,7 @@ def attach_tracking_qr_code(doc, url_path="/track"):
 	content = buffer.getvalue()
 
 	file_doc = save_file(
-		fname=f"{frappe.scrub(doc.reference_no)}-qr.png",
+		fname=f"{frappe.scrub(ref)}-qr.png",
 		content=content,
 		dt=doc.doctype,
 		dn=doc.name,

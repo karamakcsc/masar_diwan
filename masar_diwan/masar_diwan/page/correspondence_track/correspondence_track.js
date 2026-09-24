@@ -164,14 +164,22 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 				</tr>`
 			)
 			.join("");
+		const qr_html = e.qr_code
+			? `<div style="flex:0 0 auto; text-align:center;"><img src="${frappe.utils.escape_html(e.qr_code)}" alt="${__("Tracking QR Code")}" style="width:110px; height:110px; object-fit:contain; border:1px solid var(--md-ink-100, #eff2f5); border-radius:9px;"></div>`
+			: "";
 		detail_wrapper.html(`
 			<div class="card correspondence-track-card">
 				<div class="correspondence-track-card__header">
 					<a class="ref-code" href="/app/envelope/${encodeURIComponent(e.name)}">${frappe.utils.escape_html(e.envelope_no)}</a>
 				</div>
 				<div class="card-body">
-					<p><b>${__("Status")}:</b> ${frappe.utils.escape_html(__(e.status || ""))}</p>
-					${e.linked_delivery_sheet ? `<p><b>${__("Linked Delivery Sheet")}:</b> <span class="ref-code">${frappe.utils.escape_html(e.linked_delivery_sheet)}</span></p>` : ""}
+					<div style="display:flex; gap:16px; flex-wrap:wrap-reverse; align-items:flex-start;">
+						<div style="flex:1 1 220px;">
+							<p><b>${__("Status")}:</b> ${frappe.utils.escape_html(__(e.status || ""))}</p>
+							${e.linked_delivery_sheet ? `<p><b>${__("Linked Delivery Sheet")}:</b> <span class="ref-code">${frappe.utils.escape_html(e.linked_delivery_sheet)}</span></p>` : ""}
+						</div>
+						${qr_html}
+					</div>
 					<p><b>${__("Documents")} (${(e.documents || []).length}):</b></p>
 					${
 						rows

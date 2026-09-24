@@ -13,6 +13,7 @@
   "column_break_1",
   "creation_date",
   "linked_delivery_sheet",
+  "qr_code",
   "section_break_docs",
   "envelope_documents"
  ],
@@ -48,6 +49,12 @@
    "fieldtype": "Link",
    "label": "Linked Delivery Sheet",
    "options": "Delivery Sheet"
+  },
+  {
+   "fieldname": "qr_code",
+   "fieldtype": "Attach Image",
+   "label": "QR Code",
+   "read_only": 1
   },
   {
    "fieldname": "section_break_docs",

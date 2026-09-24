@@ -4,6 +4,8 @@
 import frappe
 from frappe.model.document import Document
 
+from masar_diwan.utils.qrcode_utils import attach_tracking_qr_code
+
 
 class Envelope(Document):
 	def validate(self):
@@ -33,6 +35,7 @@ class Envelope(Document):
 
 	def after_insert(self):
 		self.db_set("envelope_no", self.name, update_modified=False)
+		attach_tracking_qr_code(self, ref=self.name)
 
 	def on_update(self):
 		current = {row.correspondence for row in self.envelope_documents}

@@ -42,6 +42,7 @@ def after_install():
 	ensure_workflow_states()
 	ensure_correspondence_categories()
 	ensure_dynamic_fields()
+	ensure_envelope_qr_codes()
 
 
 def before_migrate():
@@ -60,6 +61,7 @@ def after_migrate():
 	ensure_workflow_states()
 	ensure_correspondence_categories()
 	ensure_dynamic_fields()
+	ensure_envelope_qr_codes()
 	try:
 		migrate_legacy_department_to_erpnext()
 	except Exception:
@@ -506,6 +508,30 @@ def _remove_orphaned_dynamic_fields(current_slugs):
 			if slug not in current_slugs:
 				frappe.delete_doc("Custom Field", cf.name, force=True, ignore_permissions=True)
 	frappe.db.commit()
+
+
+def ensure_envelope_qr_codes():
+	"""`Envelope.after_insert()` generates a real tracking QR the same way
+	`Correspondence.after_insert()` always has - but that only covers
+	envelopes created after the qr_code field/logic existed. Backfills any
+	existing Envelope still missing one (found 2026-09-24 while adding QR
+	display to the /track Envelope result - a real, pre-existing envelope
+	like ENV-2026-0043 predates this and would otherwise show no QR
+	forever). Idempotent: only touches rows where qr_code is empty.
+	"""
+	from masar_diwan.utils.qrcode_utils import attach_tracking_qr_code
+
+	try:
+		missing = frappe.get_all(
+			"Envelope", filters={"qr_code": ["in", ["", None]]}, pluck="name"
+		)
+		for name in missing:
+			doc = frappe.get_doc("Envelope", name)
+			attach_tracking_qr_code(doc, ref=doc.name)
+		if missing:
+			frappe.db.commit()
+	except Exception:
+		frappe.log_error(title="masar_diwan: ensure_envelope_qr_codes failed")
 
 
 def ensure_workspace_sidebar():

@@ -235,6 +235,7 @@ def _get_envelope_tracking_detail(ref, user, event_type):
 			"status": doc.status,
 			"creation_date": doc.creation_date,
 			"linked_delivery_sheet": doc.linked_delivery_sheet,
+			"qr_code": doc.qr_code,
 			"documents": documents,
 		},
 	}

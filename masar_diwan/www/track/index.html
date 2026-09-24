@@ -33,8 +33,18 @@
 			<div class="diwan-card__title"><span class="ref-code">{{ e.envelope_no }}</span></div>
 			<span class="env-status-pill" data-status="{{ e.status }}"></span>
 		</div>
-		<p><b>{{ _("Creation Date") }}:</b> {{ frappe.utils.format_date(e.creation_date) if e.creation_date else "-" }}</p>
-		{% if e.linked_delivery_sheet %}<p><b>{{ _("Linked Delivery Sheet") }}:</b> <span class="ref-code">{{ e.linked_delivery_sheet }}</span></p>{% endif %}
+		<div style="display:flex; gap:20px; flex-wrap:wrap-reverse; align-items:flex-start; margin-block-start:8px;">
+			<div style="flex:1 1 260px;">
+				<p><b>{{ _("Creation Date") }}:</b> {{ frappe.utils.format_date(e.creation_date) if e.creation_date else "-" }}</p>
+				{% if e.linked_delivery_sheet %}<p><b>{{ _("Linked Delivery Sheet") }}:</b> <span class="ref-code">{{ e.linked_delivery_sheet }}</span></p>{% endif %}
+			</div>
+			{% if e.qr_code %}
+			<div style="flex:0 0 auto; text-align:center;">
+				<img src="{{ e.qr_code }}" alt="{{ _('Tracking QR Code') }}"
+					style="width:140px; height:140px; object-fit:contain; border:1px solid var(--md-ink-100); border-radius:var(--radius-sm);">
+			</div>
+			{% endif %}
+		</div>
 		<p><b>{{ _("Documents") }} ({{ e.documents | length }}):</b></p>
 		{% if e.documents %}
 		<div class="diwan-card" style="padding:0; margin-block-start:6px;">
