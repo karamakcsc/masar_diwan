@@ -41,9 +41,9 @@
 			input.type = "number";
 			if (field.fieldtype === "Currency") input.step = "any";
 		} else {
-			// Data, Link - a plain text input; an invalid Link value is
-			// still rejected server-side by Frappe's own standard
-			// _validate_links() check on save, same as any other Link field.
+			// Data - a plain text input. Link is handled separately below
+			// (needs a real search/pick UI, not a bare text box - a portal
+			// user has no way to guess a valid docname otherwise).
 			input = document.createElement("input");
 			input.type = "text";
 		}
@@ -56,8 +56,115 @@
 		input.style.boxSizing = "border-box";
 		input.style.padding = "6px 8px";
 
-		wrapper.appendChild(input);
+		if (field.fieldtype === "Link") {
+			wrapper.appendChild(buildLinkAutocomplete(field, input));
+		} else {
+			wrapper.appendChild(input);
+		}
 		return wrapper;
+	}
+
+	// A real search-as-you-type picker for Link fields, using the same
+	// frappe.desk.search.search_link endpoint Frappe's own Desk Link
+	// control calls - respects normal read permissions (a plain text box
+	// left a portal user with no way to find a valid value at all, and an
+	// invalid one was only ever caught server-side, after the fact, by
+	// Frappe's standard _validate_links() on save).
+	function buildLinkAutocomplete(field, input) {
+		var box = document.createElement("div");
+		box.style.position = "relative";
+		input.autocomplete = "off";
+		box.appendChild(input);
+
+		var menu = document.createElement("div");
+		menu.style.cssText =
+			"position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #d1d8dd;" +
+			"border-radius:4px;max-height:200px;overflow-y:auto;z-index:100;display:none;" +
+			"box-shadow:0 2px 6px rgba(0,0,0,.12);";
+		box.appendChild(menu);
+
+		var debounceTimer;
+		function renderMenu(items) {
+			menu.innerHTML = "";
+			items.forEach(function (item) {
+				var el = document.createElement("div");
+				el.textContent = item.label;
+				el.style.cssText = "padding:6px 8px;cursor:pointer;color:" + (item.muted ? "#8d99a6" : "inherit") + ";";
+				if (item.value) {
+					el.addEventListener("mouseenter", function () {
+						el.style.background = "#f4f5f6";
+					});
+					el.addEventListener("mouseleave", function () {
+						el.style.background = "";
+					});
+					el.addEventListener("mousedown", function (e) {
+						e.preventDefault();
+						input.value = item.value;
+						menu.style.display = "none";
+					});
+				}
+				menu.appendChild(el);
+			});
+			menu.style.display = items.length ? "block" : "none";
+		}
+
+		function search(txt) {
+			// Deliberately a raw fetch(), not frappe.call() - search_link
+			// enforces normal read permission on the target doctype, and a
+			// portal (Website User) session genuinely lacks it for most
+			// ERPNext-internal doctypes (confirmed live: a real 403/
+			// PermissionError, not just an empty result, searching Sales
+			// Invoice as test.portal). frappe.call's own response handling
+			// pops a default error dialog for that; fetch() lets this stay
+			// a quiet, in-place "no matches" instead of an intrusive popup
+			// for something the user can't do anything about anyway.
+			fetch(
+				"/api/method/frappe.desk.search.search_link?" +
+					new URLSearchParams({ doctype: field.options, txt: txt || "" }),
+				{ headers: { "X-Frappe-CSRF-Token": frappe.csrf_token } }
+			)
+				.then(function (resp) {
+					if (!resp.ok) {
+						renderMenu([{ label: __("You don't have access to search this."), muted: true }]);
+						return null;
+					}
+					return resp.json();
+				})
+				.then(function (data) {
+					if (!data) return;
+					var results = data.message || [];
+					if (!results.length) {
+						menu.style.display = "none";
+						return;
+					}
+					renderMenu(
+						results.map(function (res) {
+							return { value: res.value, label: res.description ? res.value + " — " + res.description : res.value };
+						})
+					);
+				})
+				.catch(function () {
+					menu.style.display = "none";
+				});
+		}
+
+		input.addEventListener("input", function () {
+			clearTimeout(debounceTimer);
+			var txt = input.value;
+			debounceTimer = setTimeout(function () {
+				search(txt);
+			}, 300);
+		});
+		input.addEventListener("focus", function () {
+			search(input.value);
+		});
+		input.addEventListener("blur", function () {
+			setTimeout(function () {
+				menu.style.display = "none";
+			}, 150);
+		});
+
+		return box;
 	}
 
 	function render(containerEl, fields) {
