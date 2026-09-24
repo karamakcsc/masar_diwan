@@ -16,8 +16,8 @@
   "section_break_docs",
   "envelope_documents",
   "more_info_tab",
-  "qr_code",
-  "qr_code_img"
+  "qr_code_img",
+  "qr_code"
  ],
  "fields": [
   {
@@ -55,6 +55,7 @@
   {
    "fieldname": "qr_code",
    "fieldtype": "Attach Image",
+   "hidden": 1,
    "label": "QR Code",
    "read_only": 1
   },
@@ -83,7 +84,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-24 16:47:48.682541",
+ "modified": "2026-09-24 16:50:57.905629",
  "modified_by": "Administrator",
  "module": "Masar Diwan",
  "name": "Envelope",
