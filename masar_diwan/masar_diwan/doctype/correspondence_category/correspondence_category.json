@@ -11,9 +11,9 @@
   "title",
   "column_break_yccx",
   "disabled",
+  "is_group",
   "lft",
   "rgt",
-  "is_group",
   "old_parent",
   "parent_correspondence_category",
   "section_break_ksdo",
@@ -59,12 +59,6 @@
    "label": "Right",
    "no_copy": 1,
    "read_only": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "is_group",
-   "fieldtype": "Check",
-   "label": "Is Group"
   },
   {
    "fieldname": "old_parent",

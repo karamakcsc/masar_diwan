@@ -677,6 +677,10 @@ The previous pass's `correspondence_sub_category` anchor was reported back immed
 
 Fixed by anchoring to `request_date` instead - the true last field of that same row, after both columns finish - which still starts the new section immediately below `Correspondence Sub Category` (nothing else renders in between) without breaking the column pairing that produced the reported bug. Verified live via a real `getdoctype` fetch: `column_break_1`/`requested_by`/`correspondence_type`/`request_date` now render as one intact, paired block exactly as the form originally shipped, with the new `Additional Fields` section appearing directly after it, before `section_break_content`.
 
+## 2026-09-24 (same day, sixth follow-up): removed the duplicate is_group field, repositioned under Disabled
+
+`Correspondence Category`'s live tree-conversion (an earlier same-day live Desk edit, noted at the time but left alone since it was cosmetic and already working) had left two identical `is_group` field definitions in the DocType JSON - harmless in practice (`field_order` only ever listed it once, so only one ever actually rendered), but genuinely duplicate metadata all the same, asked about directly. Removed the second definition and moved `is_group` in `field_order` to sit directly after `disabled` (previously after the hidden tree-internal `lft`/`rgt` fields). Verified live on `bob.local`: the served Desk form meta now lists `is_group` exactly once, positioned right after `disabled`, and every category's real `is_group` value (including `Financial`, the one category actually using it) is unchanged.
+
 ## Documented assumptions / deviations from the spec
 
 - Site default language was **not** changed to Arabic (System Settings) — a global, shared-effect toggle on a dev site used for other testing too; per-user language switching works regardless and the translation file (`translations/ar.csv`, ~180 lines) is complete either way.
