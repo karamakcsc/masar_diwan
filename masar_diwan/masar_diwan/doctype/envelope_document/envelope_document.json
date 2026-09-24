@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "correspondence",
+  "party_type",
   "party"
  ],
  "fields": [
@@ -20,17 +21,29 @@
    "reqd": 1
   },
   {
+   "fetch_from": "correspondence.party",
    "fieldname": "party",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Party"
+   "in_standard_filter": 1,
+   "label": "Party",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "correspondence.party_type",
+   "fieldname": "party_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Party Type",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-09-15 23:50:33.955567",
+ "modified": "2026-09-24 06:39:22.993089",
  "modified_by": "Administrator",
  "module": "Masar Diwan",
  "name": "Envelope Document",

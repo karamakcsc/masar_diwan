@@ -142,16 +142,23 @@ def get_tracking_detail(ref: str, via: str = "qr"):
 
 	event_type = "Barcode Scan" if via == "barcode" else "QR Scan"
 
-	if not frappe.db.exists("Correspondence", ref):
-		log_event(
-			event_type,
-			result="Denied",
-			reason="Reference not found",
-			reference_doctype="Correspondence",
-			reference_name=ref,
-		)
-		return {"found": False}
+	if frappe.db.exists("Correspondence", ref):
+		return _get_correspondence_tracking_detail(ref, user, event_type)
 
+	if frappe.db.exists("Envelope", ref):
+		return _get_envelope_tracking_detail(ref, user, event_type)
+
+	log_event(
+		event_type,
+		result="Denied",
+		reason="Reference not found",
+		reference_doctype="Correspondence",
+		reference_name=ref,
+	)
+	return {"found": False}
+
+
+def _get_correspondence_tracking_detail(ref, user, event_type):
 	doc = frappe.get_doc("Correspondence", ref)
 	allowed = has_permission(doc, "read", user)
 
@@ -164,7 +171,7 @@ def get_tracking_detail(ref: str, via: str = "qr"):
 	)
 
 	if not allowed:
-		return {"found": True, "restricted": True}
+		return {"found": True, "restricted": True, "doctype": "Correspondence"}
 
 	attachments = frappe.get_all(
 		"File",
@@ -175,8 +182,61 @@ def get_tracking_detail(ref: str, via: str = "qr"):
 	return {
 		"found": True,
 		"restricted": False,
+		"doctype": "Correspondence",
 		"data": {f: doc.get(f) for f in RESULT_FIELDS},
 		"attachments": attachments,
+	}
+
+
+def _get_envelope_tracking_detail(ref, user, event_type):
+	# Envelope has no per-document department/confidentiality tiering of
+	# its own (it was never registered with the generic Document Access
+	# Profile engine, unlike Correspondence) - deferring to the doctype's
+	# own real DocPerm via frappe.has_permission() rather than inventing a
+	# separate rule here keeps /track consistent with what the same user
+	# could already do by opening the Envelope directly in Desk: if they
+	# can't open it there, tracking it here shouldn't reveal anything
+	# either, and if they can, tracking should just work.
+	allowed = frappe.has_permission("Envelope", "read", doc=ref, user=user)
+
+	log_event(
+		event_type,
+		result="Success" if allowed else "Denied",
+		reason=None if allowed else "No read permission",
+		reference_doctype="Envelope",
+		reference_name=ref,
+	)
+
+	if not allowed:
+		return {"found": True, "restricted": True, "doctype": "Envelope"}
+
+	doc = frappe.get_doc("Envelope", ref)
+	documents = []
+	for row in doc.envelope_documents:
+		reference_no, confidentiality = frappe.db.get_value(
+			"Correspondence", row.correspondence, ["reference_no", "confidentiality"]
+		) or (row.correspondence, None)
+		documents.append(
+			{
+				"correspondence": row.correspondence,
+				"reference_no": reference_no,
+				"party": row.party,
+				"party_type": row.party_type,
+			}
+		)
+
+	return {
+		"found": True,
+		"restricted": False,
+		"doctype": "Envelope",
+		"data": {
+			"name": doc.name,
+			"envelope_no": doc.envelope_no,
+			"status": doc.status,
+			"creation_date": doc.creation_date,
+			"linked_delivery_sheet": doc.linked_delivery_sheet,
+			"documents": documents,
+		},
 	}
 
 

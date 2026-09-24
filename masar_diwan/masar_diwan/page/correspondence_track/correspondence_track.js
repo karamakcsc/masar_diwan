@@ -111,9 +111,13 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
 						<rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
 					</svg>
-					<span>${__("Restricted content")} — ${__("You are not authorized to view this correspondence")}</span>
+					<span>${__("Restricted content")} — ${__("You are not authorized to view this document")}</span>
 				</div>
 			`);
+			return;
+		}
+		if (data.doctype === "Envelope") {
+			render_envelope_detail(data.data);
 			return;
 		}
 		const d = data.data;
@@ -145,6 +149,35 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 						${qr_html}
 					</div>
 					${attachments ? `<p><b>${__("Attachments")}:</b></p><ul>${attachments}</ul>` : ""}
+				</div>
+			</div>
+		`);
+	}
+
+	function render_envelope_detail(e) {
+		const rows = (e.documents || [])
+			.map(
+				(doc) => `<tr>
+					<td><span class="ref-code">${frappe.utils.escape_html(doc.reference_no || doc.correspondence)}</span></td>
+					<td>${frappe.utils.escape_html(doc.party_type || "-")}</td>
+					<td>${frappe.utils.escape_html(doc.party || "-")}</td>
+				</tr>`
+			)
+			.join("");
+		detail_wrapper.html(`
+			<div class="card correspondence-track-card">
+				<div class="correspondence-track-card__header">
+					<a class="ref-code" href="/app/envelope/${encodeURIComponent(e.name)}">${frappe.utils.escape_html(e.envelope_no)}</a>
+				</div>
+				<div class="card-body">
+					<p><b>${__("Status")}:</b> ${frappe.utils.escape_html(__(e.status || ""))}</p>
+					${e.linked_delivery_sheet ? `<p><b>${__("Linked Delivery Sheet")}:</b> <span class="ref-code">${frappe.utils.escape_html(e.linked_delivery_sheet)}</span></p>` : ""}
+					<p><b>${__("Documents")} (${(e.documents || []).length}):</b></p>
+					${
+						rows
+							? `<table class="table table-bordered"><thead><tr><th>${__("Reference No")}</th><th>${__("Party Type")}</th><th>${__("Party")}</th></tr></thead><tbody>${rows}</tbody></table>`
+							: `<div class="text-muted">${__("No documents in this envelope.")}</div>`
+					}
 				</div>
 			</div>
 		`);

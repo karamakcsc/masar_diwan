@@ -21,12 +21,43 @@
 {% if ref %}
 <div class="diwan-card" id="result-card">
 	{% if not result.found %}
-		<div class="diwan-empty">{{ _("No correspondence found for this reference.") }}</div>
+		<div class="diwan-empty">{{ _("No correspondence or envelope found for this reference.") }}</div>
 	{% elif result.restricted %}
 		<div class="diwan-restricted">
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
 			<span>{{ _("This reference exists, but you are not authorized to view its details.") }}</span>
 		</div>
+	{% elif result.doctype == "Envelope" %}
+		{% set e = result.data %}
+		<div class="diwan-result-header">
+			<div class="diwan-card__title"><span class="ref-code">{{ e.envelope_no }}</span></div>
+			<span class="env-status-pill" data-status="{{ e.status }}"></span>
+		</div>
+		<p><b>{{ _("Creation Date") }}:</b> {{ frappe.utils.format_date(e.creation_date) if e.creation_date else "-" }}</p>
+		{% if e.linked_delivery_sheet %}<p><b>{{ _("Linked Delivery Sheet") }}:</b> <span class="ref-code">{{ e.linked_delivery_sheet }}</span></p>{% endif %}
+		<p><b>{{ _("Documents") }} ({{ e.documents | length }}):</b></p>
+		{% if e.documents %}
+		<div class="diwan-card" style="padding:0; margin-block-start:6px;">
+			<table class="diwan-table">
+				<thead><tr>
+					<th>{{ _("Reference No") }}</th>
+					<th>{{ _("Party Type") }}</th>
+					<th>{{ _("Party") }}</th>
+				</tr></thead>
+				<tbody>
+					{% for doc in e.documents %}
+					<tr>
+						<td><span class="ref-code">{{ doc.reference_no }}</span></td>
+						<td>{{ doc.party_type or "-" }}</td>
+						<td>{{ doc.party or "-" }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		{% else %}
+		<div class="diwan-empty">{{ _("No documents in this envelope.") }}</div>
+		{% endif %}
 	{% else %}
 		{% set d = result.data %}
 		<div class="diwan-result-header">
@@ -68,13 +99,22 @@
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 frappe.ready(function () {
-	{% if ref and result and result.found and not result.restricted %}
+	{% if ref and result and result.found and not result.restricted and result.doctype != "Envelope" %}
 	var pillHost = document.getElementById("result-status-pill");
 	if (pillHost) pillHost.innerHTML = diwanPortal.statusPillHtml({{ (result.data.status or "") | tojson }}, diwanPortal.CORRESPONDENCE_STATUS_CLASS);
 	var confHost = document.getElementById("result-confidentiality-pill");
 	if (confHost) confHost.innerHTML = diwanPortal.confidentialityPillHtml({{ (result.data.confidentiality or "") | tojson }});
 	var hstepperHost = document.getElementById("result-hstepper");
 	if (hstepperHost) hstepperHost.innerHTML = diwanPortal.correspondenceHstepperHtml({{ (result.data.status or "") | tojson }});
+	{% endif %}
+
+	{% if ref and result and result.found and not result.restricted and result.doctype == "Envelope" %}
+	// Same status vocabulary/class mapping www/diwan/envelopes/index.html
+	// already uses - kept identical here rather than inventing a second one.
+	var ENVELOPE_STATUS_CLASS = { "Open": "pending", "Sent": "review", "Archived": "approved" };
+	document.querySelectorAll(".env-status-pill").forEach(function (el) {
+		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.status, ENVELOPE_STATUS_CLASS);
+	});
 	{% endif %}
 
 	var input = document.getElementById("ref-input");
