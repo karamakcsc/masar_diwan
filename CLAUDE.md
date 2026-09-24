@@ -665,6 +665,12 @@ The user's own framing of this fix mattered more than the literal anchor point a
 
 Verified live on `bob.local` via a real `frappe.desk.form.load.getdoctype` fetch with an active dynamic field present: the entire original field order through `note_to_registrar` came back byte-for-byte unchanged, with the new `Additional Fields` section only appearing after it, before `section_break_decision`. A duplicate test field accidentally created while re-verifying (my own script append, not the user's) was found and removed by inspecting each row's own timestamp/position rather than guessing which one was disposable, leaving only the user's own real field in place.
 
+## 2026-09-24 (same day, fourth follow-up): moved back to directly under correspondence_sub_category - an explicit, informed tradeoff, not a reversal of the previous fix
+
+After the previous pass moved the anchor away from `correspondence_sub_category` specifically to avoid splitting `Correspondence Request`'s own pre-existing two-column block, asked directly (again, with a real screenshot) to put it right back there anyway, as its own separate section. Not a contradiction of the earlier finding - the visual tradeoff that finding described (the form's original right-hand column getting pushed down, disconnected from its left-hand pairing) is real and still happens at this position; the user saw it and decided that's what they actually want, having now seen the alternative (anchored after `note_to_registrar`) too. Reverted `Correspondence Request`'s anchor to `correspondence_sub_category`; left `Correspondence`'s own anchor at `authorized_viewers` untouched, since nothing about that one was ever part of this request.
+
+Verified live via a real `getdoctype` fetch: the new section now sits directly after `correspondence_sub_category`/`column_break_1`, before `requested_by`, exactly as asked.
+
 ## Documented assumptions / deviations from the spec
 
 - Site default language was **not** changed to Arabic (System Settings) — a global, shared-effect toggle on a dev site used for other testing too; per-user language switching works regardless and the translation file (`translations/ar.csv`, ~180 lines) is complete either way.
