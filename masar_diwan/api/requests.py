@@ -12,6 +12,7 @@ directly from the page's JS via the standard `frappe.client.insert` and
 import frappe
 
 from masar_diwan.permissions import get_user_departments
+from masar_diwan.utils.dynamic_fields import get_active_dynamic_field_rows
 
 DYNAMIC_FIELD_ROW_FIELDS = ["label", "fieldname_slug", "fieldtype", "options", "reqd", "sort_order"]
 
@@ -96,9 +97,5 @@ def get_dynamic_fields(correspondence_category: str | None = None, correspondenc
 	same "effective category" rule used at Approve & Register time).
 	"""
 	effective_category = correspondence_sub_category or correspondence_category
-	if not effective_category or not frappe.db.exists("Correspondence Category", effective_category):
-		return []
-	category = frappe.get_cached_doc("Correspondence Category", effective_category)
-	rows = [row.as_dict() for row in category.dynamic_fields if row.is_active]
-	rows.sort(key=lambda r: (r.get("sort_order") or 0, r.get("idx") or 0))
-	return [{k: r.get(k) for k in DYNAMIC_FIELD_ROW_FIELDS} for r in rows]
+	rows = get_active_dynamic_field_rows(effective_category)
+	return [{k: row.get(k) for k in DYNAMIC_FIELD_ROW_FIELDS} for row in rows]

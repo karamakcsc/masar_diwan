@@ -40,6 +40,7 @@ def after_install():
 	ensure_department_read_access()
 	ensure_workflows()
 	ensure_workflow_states()
+	ensure_correspondence_categories()
 	ensure_dynamic_fields()
 
 
@@ -57,6 +58,7 @@ def after_migrate():
 	ensure_department_read_access()
 	ensure_workflows()
 	ensure_workflow_states()
+	ensure_correspondence_categories()
 	ensure_dynamic_fields()
 	try:
 		migrate_legacy_department_to_erpnext()
@@ -235,6 +237,66 @@ DYNAMIC_FIELD_SECTION_ANCHOR = {
 	"Correspondence Request": "request_date",
 	"Correspondence": "authorized_viewers",
 }
+
+
+def ensure_correspondence_categories():
+	"""Correspondence Category used to be a fixture, re-synced on every
+	migrate from fixtures/correspondence_category.json - fine for the other
+	fixture-tracked masters in this app (Correspondence Type, Confidentiality
+	Level, Document Access Profile), which real users only ever edit rarely,
+	but wrong for this one specific doctype the moment it gained its own
+	dynamic_fields child table (ensure_dynamic_fields()'s whole reason to
+	exist): a System Manager is *meant* to edit categories - add a field,
+	change Is Group, delete a field - as ordinary, frequent, live usage of
+	the feature, not a rare admin task. A stale fixture export silently
+	reverting that on every migrate was found and fixed once already today
+	(Financial.is_group reverting to 0), then hit again for real the same
+	day - a live-added dynamic field ("hgfj"/"jhgjk" on Invoices) was wiped
+	by a later migrate, and that time the automatic orphan-cleanup in
+	ensure_dynamic_fields() had also already deleted the resulting Custom
+	Fields before the mistake was caught.
+
+	Removing the doctype from hooks.py's `fixtures` list alone turned out
+	to not be enough, confirmed by testing every single migrate step in
+	isolation until the real cause was found: `sync_fixtures()`'s own
+	`import_fixtures()` never actually reads the `fixtures` hook at import
+	time at all - it just re-imports *every* `.json` file physically
+	present in the app's `fixtures/` folder on every migrate, regardless of
+	whether hooks.py still declares it. The hook only governs what a future
+	`export-fixtures` would overwrite; it never stops a stale file already
+	sitting there from being re-imported. The JSON file itself had to move
+	out of `fixtures/` entirely - to `seed_data/`, so it can no longer be
+	picked up by that directory scan no matter what hooks.py says - not
+	just be deregistered from the hook.
+
+	What's left: a one-time, idempotent seed reusing that same JSON file
+	(now genuinely just a seed source, read by nothing else) purely to give
+	a fresh install its initial category set - creates a category only if a
+	record of that exact name doesn't already exist, and never touches an
+	existing one's fields (dynamic_fields included) again after that first
+	creation.
+	"""
+	try:
+		path = frappe.get_app_path("masar_diwan", "masar_diwan", "seed_data", "correspondence_category_seed.json")
+		if not os.path.exists(path):
+			return
+		with open(path) as f:
+			seed_records = json.load(f)
+		for record in seed_records:
+			if frappe.db.exists("Correspondence Category", record["name"]):
+				continue
+			frappe.get_doc(
+				{
+					"doctype": "Correspondence Category",
+					"title": record["title"],
+					"parent_correspondence_category": record.get("parent_correspondence_category"),
+					"is_group": record.get("is_group", 0),
+					"disabled": record.get("disabled", 0),
+				}
+			).insert(ignore_permissions=True)
+		frappe.db.commit()
+	except Exception:
+		frappe.log_error(title="masar_diwan: failed to seed initial Correspondence Categories")
 
 
 def ensure_dynamic_fields():

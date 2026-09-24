@@ -466,7 +466,13 @@ class CorrespondenceRequestNew {
 		this.bind_events($body);
 		this.fetch_submitter_context($body);
 		this.fetch_confidentiality_levels($body);
-		this.fetch_categories($body);
+		// Carries any csf_ values from a just-saved draft (see save()'s own
+		// render_form(Object.assign({}, fields, {...})) call) through to
+		// fetch_dynamic_fields() below, once the category/sub-category
+		// restore path re-renders the controls - render_form() itself has
+		// no other place to stash them.
+		this._prefill_dynamic_values = prefill;
+		this.fetch_categories($body, prefill.correspondence_category, prefill.correspondence_sub_category);
 	}
 
 	// Category/sub-category + their dynamic fields (masar_diwan.install.
@@ -476,7 +482,14 @@ class CorrespondenceRequestNew {
 	// (get_top_level_categories/get_sub_categories/get_dynamic_fields) and
 	// the shared window.masarDiwanDynamicFields renderer instead of
 	// re-implementing either.
-	fetch_categories($body) {
+	//
+	// restoreCategory/restoreSubCategory: re-selecting these after a
+	// Save-as-Draft round trip (render_form() re-runs with the just-saved
+	// fields as prefill) was a real gap found live - without this, the
+	// pickers and dynamic fields silently reset to empty the moment the
+	// form re-rendered, even though the draft itself still had the right
+	// values saved server-side.
+	fetch_categories($body, restoreCategory, restoreSubCategory) {
 		frappe.call({
 			method: "masar_diwan.api.requests.get_top_level_categories",
 			callback: (r) => {
@@ -486,14 +499,18 @@ class CorrespondenceRequestNew {
 					this.categories_meta[cat.name] = cat;
 					$select.append(`<option value="${frappe.utils.escape_html(cat.name)}">${frappe.utils.escape_html(cat.title)}</option>`);
 				});
+				if (restoreCategory && this.categories_meta[restoreCategory]) {
+					$select.val(restoreCategory);
+					this.on_category_change($body, restoreSubCategory);
+				}
 			},
 		});
 	}
 
-	on_category_change($body) {
+	on_category_change($body, restoreSubCategory) {
 		const category = $body.find("#crn-category").val();
 		this.correspondence_category = category || null;
-		this.correspondence_sub_category = null;
+		this.correspondence_sub_category = restoreSubCategory || null;
 		const meta = this.categories_meta && this.categories_meta[category];
 		const $subGroup = $body.find("#crn-subcategory-group");
 		const $subSelect = $body.find("#crn-subcategory").empty().append('<option value="">-</option>');
@@ -507,12 +524,14 @@ class CorrespondenceRequestNew {
 					(r.message || []).forEach((sub) => {
 						$subSelect.append(`<option value="${frappe.utils.escape_html(sub.name)}">${frappe.utils.escape_html(sub.title)}</option>`);
 					});
+					if (restoreSubCategory) $subSelect.val(restoreSubCategory);
+					this.fetch_dynamic_fields($body);
 				},
 			});
 		} else {
 			$subGroup.hide();
+			this.fetch_dynamic_fields($body);
 		}
-		this.fetch_dynamic_fields($body);
 	}
 
 	fetch_dynamic_fields($body) {
@@ -523,7 +542,11 @@ class CorrespondenceRequestNew {
 				correspondence_sub_category: this.correspondence_sub_category,
 			},
 			callback: (r) => {
-				window.masarDiwanDynamicFields.render($body.find("#crn-dynamic-fields")[0], r.message || []);
+				window.masarDiwanDynamicFields.render(
+					$body.find("#crn-dynamic-fields")[0],
+					r.message || [],
+					this._prefill_dynamic_values
+				);
 			},
 		});
 	}

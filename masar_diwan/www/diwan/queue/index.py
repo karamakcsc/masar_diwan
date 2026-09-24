@@ -2,6 +2,7 @@ import frappe
 
 from masar_diwan.access_log import log_event
 from masar_diwan.permissions import require_diwan_staff
+from masar_diwan.utils.dynamic_fields import get_dynamic_field_values_for_display
 from masar_diwan.utils.pickers import correspondence_type_options
 from masar_diwan.utils.portal_nav import DIWAN_PORTAL_NAV
 
@@ -19,6 +20,8 @@ LIST_FIELDS = [
 ]
 
 DETAIL_FIELDS = LIST_FIELDS + [
+	"correspondence_category",
+	"correspondence_sub_category",
 	"party_or_department",
 	"draft_text",
 	"suggested_priority",
@@ -56,6 +59,7 @@ def get_context(context):
 			doc = frappe.get_doc("Correspondence Request", name)
 			context.detail = {f: doc.get(f) for f in DETAIL_FIELDS}
 			context.detail["not_found"] = False
+			context.dynamic_field_values = get_dynamic_field_values_for_display(doc)
 			if doc.resulting_correspondence:
 				context.detail["qr_code"] = frappe.db.get_value(
 					"Correspondence", doc.resulting_correspondence, "qr_code"

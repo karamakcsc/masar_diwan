@@ -302,7 +302,6 @@ fixtures = [
 		],
 	},
 	{"doctype": "Correspondence Type"},
-	{"doctype": "Correspondence Category"},
 	{"doctype": "Confidentiality Level"},
 	{"doctype": "Document Access Profile"},
 ]

@@ -64,10 +64,23 @@
 				<p><b>{{ _("Type") }}:</b> {{ _(detail.request_type) }}</p>
 				<p><b>{{ _("Requester") }}:</b> {{ detail.requested_by }}</p>
 				<p><b>{{ _("Department") }}:</b> {{ detail.requesting_department or "-" }}</p>
+				{% if detail.correspondence_category %}<p><b>{{ _("Category") }}:</b> {{ detail.correspondence_category }}</p>{% endif %}
+				{% if detail.correspondence_sub_category %}<p><b>{{ _("Sub Category") }}:</b> {{ detail.correspondence_sub_category }}</p>{% endif %}
 				{% if detail.party_or_department %}<p><b>{{ _("Party / Department") }}:</b> {{ detail.party_or_department }}</p>{% endif %}
 				{% if detail.draft_text %}<p><b>{{ _("Draft Text") }}:</b><br>{{ detail.draft_text | safe }}</p>{% endif %}
 				<p><b>{{ _("Suggested Priority") }}:</b> {{ _(detail.suggested_priority) }}</p>
 				{% if detail.note_to_registrar %}<p><b>{{ _("Note to Registrar") }}:</b> {{ detail.note_to_registrar }}</p>{% endif %}
+
+				{% if dynamic_field_values %}
+				<div style="margin-block-start:14px; padding-block-start:12px; border-top:1px solid var(--md-ink-100);">
+					<p style="font-weight:600; margin-block-end:6px;">{{ _("Additional Fields") }}</p>
+					<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px 20px;">
+						{% for f in dynamic_field_values %}
+						<p style="margin:0;"><b>{{ f.label }}:</b> {{ f.value }}</p>
+						{% endfor %}
+					</div>
+				</div>
+				{% endif %}
 
 				{% if attachments %}
 				<p><b>{{ _("Attachments") }}:</b></p>

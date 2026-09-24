@@ -8,6 +8,7 @@ from frappe.utils import now_datetime
 
 from masar_diwan.access_log import log_event
 from masar_diwan.permissions import get_user_departments
+from masar_diwan.utils.dynamic_fields import get_active_dynamic_field_rows, get_effective_category
 
 
 class CorrespondenceRequest(Document):
@@ -65,12 +66,8 @@ class CorrespondenceRequest(Document):
 		mandatory_depends_on too - same Desk-form-JS-only limitation already
 		hit twice above, confirmed the same way (BaseDocument's mandatory
 		check never looks at it). Enforced here for real instead."""
-		effective_category = self.correspondence_sub_category or self.correspondence_category
-		if not effective_category or not frappe.db.exists("Correspondence Category", effective_category):
-			return
-		category = frappe.get_cached_doc("Correspondence Category", effective_category)
-		for row in category.dynamic_fields:
-			if row.is_active and row.reqd and not self.get(f"csf_{row.fieldname_slug}"):
+		for row in get_active_dynamic_field_rows(get_effective_category(self)):
+			if row.reqd and not self.get(f"csf_{row.fieldname_slug}"):
 				frappe.throw(_("{0} is required.").format(frappe.bold(row.label)))
 
 	def before_insert(self):
@@ -134,13 +131,7 @@ class CorrespondenceRequest(Document):
 		doctype and Correspondence with the same csf_<slug> fieldname - read
 		back the same category's field list to know which values to move,
 		rather than hardcoding any field name here."""
-		effective_category = self.correspondence_sub_category or self.correspondence_category
-		if not effective_category:
-			return
-		category = frappe.get_cached_doc("Correspondence Category", effective_category)
-		for row in category.dynamic_fields:
-			if not row.is_active:
-				continue
+		for row in get_active_dynamic_field_rows(get_effective_category(self)):
 			fieldname = f"csf_{row.fieldname_slug}"
 			value = self.get(fieldname)
 			if value is not None:

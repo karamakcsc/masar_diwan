@@ -1,6 +1,7 @@
 import frappe
 
 from masar_diwan.access_log import log_event
+from masar_diwan.utils.dynamic_fields import get_dynamic_field_values_for_display
 from masar_diwan.utils.portal_nav import REQUESTER_PORTAL_NAV as PORTAL_NAV
 
 LIST_FIELDS = [
@@ -52,6 +53,9 @@ def get_context(context):
 			doc = frappe.get_doc("Correspondence Request", name)
 			context.detail = {f: doc.get(f) for f in DETAIL_FIELDS}
 			context.detail["not_found"] = False
+			context.detail["category"] = doc.correspondence_category
+			context.detail["sub_category"] = doc.correspondence_sub_category
+			context.dynamic_field_values = get_dynamic_field_values_for_display(doc)
 			if doc.resulting_correspondence:
 				ref_no, qr_code = frappe.db.get_value(
 					"Correspondence", doc.resulting_correspondence, ["reference_no", "qr_code"]

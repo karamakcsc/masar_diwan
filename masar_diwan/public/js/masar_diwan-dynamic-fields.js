@@ -7,7 +7,7 @@
 // small file, loaded by both (see hooks.py's app_include_js and
 // diwan_shell.html's own <script> tag).
 (function () {
-	function buildControl(field) {
+	function buildControl(field, currentValue) {
 		var wrapper = document.createElement("div");
 		wrapper.className = "masar-dyn-field";
 		wrapper.style.marginBottom = "10px";
@@ -55,6 +55,14 @@
 		input.style.width = "100%";
 		input.style.boxSizing = "border-box";
 		input.style.padding = "6px 8px";
+
+		if (currentValue !== undefined && currentValue !== null) {
+			if (field.fieldtype === "Check") {
+				input.checked = !!(currentValue === 1 || currentValue === "1" || currentValue === true);
+			} else {
+				input.value = currentValue;
+			}
+		}
 
 		if (field.fieldtype === "Link") {
 			wrapper.appendChild(buildLinkAutocomplete(field, input));
@@ -167,10 +175,11 @@
 		return box;
 	}
 
-	function render(containerEl, fields) {
+	function render(containerEl, fields, currentValues) {
 		containerEl.innerHTML = "";
 		(fields || []).forEach(function (field) {
-			containerEl.appendChild(buildControl(field));
+			var value = currentValues ? currentValues["csf_" + field.fieldname_slug] : undefined;
+			containerEl.appendChild(buildControl(field, value));
 		});
 	}
 
