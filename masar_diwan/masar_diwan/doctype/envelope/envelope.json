@@ -14,6 +14,7 @@
   "creation_date",
   "linked_delivery_sheet",
   "qr_code",
+  "qr_code_img",
   "section_break_docs",
   "envelope_documents"
  ],
@@ -65,12 +66,18 @@
    "fieldtype": "Table",
    "label": "Documents",
    "options": "Envelope Document"
+  },
+  {
+   "fieldname": "qr_code_img",
+   "fieldtype": "Image",
+   "label": "QR Code Img",
+   "options": "qr_code"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-24 06:37:12.966618",
+ "modified": "2026-09-24 16:37:38.589836",
  "modified_by": "Administrator",
  "module": "Masar Diwan",
  "name": "Envelope",
