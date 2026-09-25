@@ -30,6 +30,23 @@ frappe.ui.form.on("Correspondence", {
 	},
 
 	refresh(frm) {
+		// Same cascading filter Correspondence Request's own client script
+		// already uses for this exact field pair - kept here rather than in
+		// link_filters (which is Desk-form-JS-only anyway, so this Client
+		// Script is already the only real enforcement layer) so both
+		// doctypes' pickers behave identically. Applies regardless of
+		// is_new(): a direct Correspondence's category is editable up until
+		// it's locked by a source_request (see correspondence.py's own
+		// validate()), not just at creation time.
+		frm.set_query("correspondence_sub_category", function (doc) {
+			return {
+				filters: [
+					["Correspondence Category", "parent_correspondence_category", "=", doc.correspondence_category],
+					["Correspondence Category", "is_group", "=", 0],
+				],
+			};
+		});
+
 		if (frm.is_new()) {
 			return;
 		}

@@ -26,6 +26,7 @@
   "section_break_confidentiality",
   "confidentiality",
   "correspondence_category",
+  "category_is_group",
   "correspondence_sub_category",
   "authorized_viewers",
   "section_break_routing",
@@ -161,19 +162,31 @@
    "options": "Confidentiality Level"
   },
   {
-   "description": "Set automatically at Approve & Register from the source request's own category - not user-editable. Drives which fields appear in Additional Fields below.",
+   "description": "Editable on a direct Correspondence (no source_request yet); auto-filled and locked once one is approved into this record from the tray. Drives which fields appear in Additional Fields below.",
    "fieldname": "correspondence_category",
    "fieldtype": "Link",
    "label": "Correspondence Category",
+   "link_filters": "[[\"Correspondence Category\",\"disabled\",\"=\",0],[\"Correspondence Category\",\"parent_correspondence_category\",\"is\",\"not set\"]]",
    "options": "Correspondence Category",
+   "read_only_depends_on": "eval:doc.source_request"
+  },
+  {
+   "default": "0",
+   "fetch_from": "correspondence_category.is_group",
+   "fieldname": "category_is_group",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Category Is Group",
    "read_only": 1
   },
   {
+   "depends_on": "eval:doc.category_is_group",
    "fieldname": "correspondence_sub_category",
    "fieldtype": "Link",
    "label": "Correspondence Sub Category",
+   "mandatory_depends_on": "eval:doc.category_is_group",
    "options": "Correspondence Category",
-   "read_only": 1
+   "read_only_depends_on": "eval:doc.source_request"
   },
   {
    "depends_on": "eval:doc.confidentiality != 'Normal'",

@@ -18,7 +18,56 @@ class Correspondence(Document):
 
 	def validate(self):
 		self.log_status_transition()
+		self._validate_category()
 		self._validate_dynamic_fields()
+
+	def _validate_category(self):
+		"""Same server-side enforcement as Correspondence Request's own
+		validate() for this exact field pair (category_is_group recompute,
+		group-without-sub-category, sub-category leaf/parent mismatch) -
+		link_filters/fetch_from/mandatory_depends_on are all Desk-form-JS-only,
+		confirmed there and equally true here, needed now that these fields
+		are genuinely user-editable on a direct Correspondence (2026-09-25),
+		not just read-only display copies.
+
+		The one rule with no equivalent on Correspondence Request: once a
+		source_request is set, category/sub-category are locked - editable
+		on the very insert that sets both together (register_correspondence()),
+		never after. read_only_depends_on already hides the fields in the
+		Desk form at that point, but (same Desk-JS-only story) that alone
+		can't stop a script/API save from changing them after the fact."""
+		self.category_is_group = (
+			frappe.db.get_value("Correspondence Category", self.correspondence_category, "is_group")
+			if self.correspondence_category
+			else 0
+		)
+
+		if self.category_is_group and not self.correspondence_sub_category:
+			frappe.throw(_("Select a Correspondence Sub Category - the chosen category has sub-categories."))
+
+		if self.correspondence_sub_category:
+			sub = frappe.db.get_value(
+				"Correspondence Category",
+				self.correspondence_sub_category,
+				["parent_correspondence_category", "is_group"],
+				as_dict=True,
+			)
+			if sub.parent_correspondence_category != self.correspondence_category or sub.is_group:
+				frappe.throw(
+					_("{0} is not a valid sub-category of {1}.").format(
+						frappe.bold(self.correspondence_sub_category), frappe.bold(self.correspondence_category)
+					)
+				)
+
+		if self.source_request and not self.is_new():
+			before = self.get_doc_before_save()
+			if before and (
+				before.correspondence_category != self.correspondence_category
+				or before.correspondence_sub_category != self.correspondence_sub_category
+			):
+				frappe.throw(
+					_("Category cannot be changed - this Correspondence was registered from an approved request.")
+				)
 
 	def _validate_dynamic_fields(self):
 		"""Same server-side enforcement as Correspondence Request's own
