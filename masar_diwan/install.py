@@ -361,11 +361,10 @@ def ensure_dynamic_fields():
 		ordered_slugs = sorted(by_slug.keys(), key=lambda s: (by_slug[s]["row"].label or "", s))
 		half = -(-len(ordered_slugs) // 2)  # ceil division - the extra field (if odd) goes in column 1
 
-		any_active = any(info["active_categories"] for info in by_slug.values())
 		all_active_categories = sorted({c for info in by_slug.values() for c in info["active_categories"]})
 
 		for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
-			_ensure_dynamic_fields_section(doctype, any_active, all_active_categories)
+			_ensure_dynamic_fields_section(doctype, all_active_categories)
 
 		# The column break's own position - the last field of column 1, or
 		# the section break itself when column 1 is empty (no fields at
@@ -401,7 +400,7 @@ def ensure_dynamic_fields():
 		frappe.log_error(title="masar_diwan: failed to ensure dynamic fields")
 
 
-def _ensure_dynamic_fields_section(doctype, any_active, all_active_categories):
+def _ensure_dynamic_fields_section(doctype, all_active_categories):
 	"""The one shared Section Break per target doctype - every dynamic
 	field, regardless of which category defines it, lives in this one
 	section (right after correspondence_sub_category on Correspondence
@@ -410,12 +409,19 @@ def _ensure_dynamic_fields_section(doctype, any_active, all_active_categories):
 	pass. The matching Column Break (for the two-even-columns layout also
 	asked for) is handled separately, by _ensure_column_break() - its own
 	position depends on how many fields end up in column 1, which isn't
-	known yet at this point."""
+	known yet at this point.
+
+	Same condition on both target doctypes - Correspondence gained its own
+	real correspondence_category/correspondence_sub_category fields
+	(2026-09-25, populated at Approve & Register) specifically so this no
+	longer has to fall back to an unconditional "show whenever anything is
+	active anywhere" for it. Before that fix, every Correspondence record
+	showed every active dynamic field from every category, regardless of
+	its own actual category - confirmed live as a real, confusing bug, not
+	a hypothetical."""
 	visible_categories_json = frappe.as_json(all_active_categories, indent=None) if all_active_categories else "[]"
 	section_depends_on = (
 		f"eval:{visible_categories_json}.includes(doc.correspondence_sub_category || doc.correspondence_category)"
-		if doctype == "Correspondence Request"
-		else ("eval:1" if any_active else "eval:0")
 	)
 
 	wanted = {
@@ -471,12 +477,13 @@ def _ensure_dynamic_custom_field(slug, row, active_categories, previous_field):
 
 	created_at = {}
 	for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
-		# On Correspondence, the request's own category/sub-category context
-		# no longer exists as such a field - the value was already copied
-		# over at Approve & Register (see register_correspondence()). Shown
-		# unconditionally there rather than reconstructing the same
-		# condition against a field this doctype doesn't have.
-		depends_on = condition if doctype == "Correspondence Request" else ("eval:1" if active_categories else "eval:0")
+		# Same condition on both target doctypes - Correspondence now has its
+		# own real correspondence_category/correspondence_sub_category fields
+		# (2026-09-25, populated at Approve & Register), so it no longer
+		# needs the old unconditional "eval:1 whenever active anywhere"
+		# fallback that used to apply here regardless of a record's actual
+		# category.
+		depends_on = condition
 		mandatory_depends_on = depends_on if row.reqd and active_categories else None
 
 		wanted = {

@@ -119,6 +119,8 @@ class CorrespondenceRequest(Document):
 				"department": self.requesting_department,
 				"current_owner": self.requested_by,
 				"source_request": self.name,
+				"correspondence_category": self.correspondence_category,
+				"correspondence_sub_category": self.correspondence_sub_category,
 			}
 		)
 		self._copy_dynamic_field_values(correspondence)
