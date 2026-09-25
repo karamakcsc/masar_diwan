@@ -69,6 +69,43 @@ def require_diwan_staff(user=None):
 
 
 def get_user_departments(user: str) -> set[str]:
+	"""Employee's own `department` field is checked first - when the
+	`Employee` doctype exists on this site at all (ERPNext; `frappe.db.exists`
+	rather than checking installed apps specifically, matching this app's own
+	existing convention elsewhere for an optional-dependency doctype, e.g.
+	`_ensure_dynamic_custom_field()`'s `link_scope == "erpnext"` check - this
+	stays correct even if a future Frappe version moves Employee into a
+	separate `hrms` app) and this user has a matching, *Active* Employee
+	record with a department set. HR already owns and maintains that
+	relationship, so this means a client's existing HR data drives department
+	scoping with zero extra admin work for anyone whose User <-> Employee
+	link is already correct there. Only `Active` is trusted - an Inactive/
+	Suspended/Left employee's old department assignment is stale HR data,
+	not something that should keep silently driving live permission scoping.
+
+	Falls back to the original `User Permission` (`allow="Department"`) rows
+	otherwise - no Employee doctype at all (e.g. `diwan.local`, no ERPNext),
+	no Employee record for this user, or one exists but its department is
+	empty. This is the *only* mechanism every persistent test account in
+	this project has ever used (none of them have an Employee record - see
+	CLAUDE.md's 2026-09-25 "Employee-first department lookup" section), so
+	it stays fully unaffected for any user who doesn't have Employee data.
+
+	Deliberately a fallback, not a union of both sources: an Employee record
+	with a department set is treated as the authoritative answer on its own,
+	not merged with whatever `User Permission` rows might also exist for that
+	same user.
+	"""
+	if frappe.db.exists("DocType", "Employee"):
+		employee_department = frappe.db.get_value(
+			"Employee",
+			{"user_id": user, "status": "Active"},
+			"department",
+			order_by="modified desc",
+		)
+		if employee_department:
+			return {employee_department}
+
 	return set(
 		frappe.get_all(
 			"User Permission",
