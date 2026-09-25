@@ -282,6 +282,22 @@ def get_permission_query_conditions_internal_mail_movement(user=None):
 	return generic_get_permission_query_conditions("Internal Mail Movement", user)
 
 
+# Correspondence Request only. These are the business-process reviewer
+# roles whose department-exempt bypass must NOT extend to a request still
+# being drafted by its own owner (status == "Draft", not yet Submitted) -
+# their involvement is meant to start only once it reaches "Pending Review".
+# System Manager is deliberately excluded from this set even though it's
+# also in Correspondence's own department_exempt_roles: it's an
+# administrative/technical role already exempt from every department and
+# confidentiality restriction on the *registered* Correspondence itself
+# (including Highly Confidential), so carving out just this one earlier,
+# narrower stage for it alone would be an inconsistent, no-real-security-
+# benefit restriction, not a meaningful boundary. See CLAUDE.md, 2026-09-25
+# "Draft visibility" section, for the full reasoning and the empirical
+# proof of the gap this closes.
+DRAFT_STAGE_RESTRICTED_ROLES = {"Diwan Officer", "Senior Management"}
+
+
 def has_permission_correspondence_request(doc, ptype="read", user=None):
 	"""Department scoping for Correspondence Request, layered on top of the
 	if_owner DocPerm rows (Correspondence Employee/Department Head/Portal
@@ -306,10 +322,19 @@ def has_permission_correspondence_request(doc, ptype="read", user=None):
 
 	roles = set(frappe.get_roles(user))
 	department_exempt_roles = {r.role for r in _get_profile("Correspondence").department_exempt_roles}
-	if roles & department_exempt_roles:
+
+	still_drafting = doc.get("status") == "Draft" and doc.owner != user
+	blocked_while_drafting = still_drafting and (roles & DRAFT_STAGE_RESTRICTED_ROLES) and not (
+		roles - DRAFT_STAGE_RESTRICTED_ROLES
+	) & department_exempt_roles
+
+	if (roles & department_exempt_roles) and not blocked_while_drafting:
 		return True
 	if doc.owner == user:
 		return True
+	if still_drafting:
+		_log_denial(doc.doctype, doc.name or "(new)", user, "Draft not yet submitted")
+		return False
 	if not doc.requesting_department:
 		return True
 	if doc.requesting_department in get_user_departments(user):
@@ -326,11 +351,15 @@ def get_permission_query_conditions_correspondence_request(user=None):
 
 	roles = set(frappe.get_roles(user))
 	department_exempt_roles = {r.role for r in _get_profile("Correspondence").department_exempt_roles}
+	escaped_user = frappe.db.escape(user)
+
 	if roles & department_exempt_roles:
+		if (roles & DRAFT_STAGE_RESTRICTED_ROLES) and not (roles - DRAFT_STAGE_RESTRICTED_ROLES) & department_exempt_roles:
+			# Unrestricted except for someone else's still-drafting request.
+			return f"(status != 'Draft' or owner = {escaped_user})"
 		return ""
 
 	departments = get_user_departments(user)
-	escaped_user = frappe.db.escape(user)
 	department_list = ", ".join(frappe.db.escape(d) for d in departments) if departments else ""
 	department_clause = (
 		f"(requesting_department is null or requesting_department in ({department_list}))"
