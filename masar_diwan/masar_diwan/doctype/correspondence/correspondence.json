@@ -21,14 +21,14 @@
   "party_type",
   "party",
   "column_break_party",
-  "category",
   "priority",
-  "section_break_confidentiality",
   "confidentiality",
+  "section_break_confidentiality",
   "correspondence_category",
   "category_is_group",
-  "correspondence_sub_category",
   "authorized_viewers",
+  "column_break_dowd",
+  "correspondence_sub_category",
   "section_break_routing",
   "status",
   "current_owner",
@@ -131,13 +131,6 @@
   {
    "fieldname": "column_break_party",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "category",
-   "fieldtype": "Link",
-   "in_standard_filter": 1,
-   "label": "Category",
-   "options": "Correspondence Category"
   },
   {
    "default": "Normal",
@@ -315,12 +308,16 @@
    "fieldname": "more_info_tab",
    "fieldtype": "Tab Break",
    "label": "More Info"
+  },
+  {
+   "fieldname": "column_break_dowd",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-26 04:24:47.583985",
+ "modified": "2026-09-26 04:59:45.465027",
  "modified_by": "Administrator",
  "module": "Masar Diwan",
  "name": "Correspondence",
