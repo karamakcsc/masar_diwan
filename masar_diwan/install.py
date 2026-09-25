@@ -330,7 +330,21 @@ def ensure_dynamic_fields():
 	try:
 		by_slug = {}
 		for category_name in frappe.get_all("Correspondence Category", pluck="name"):
-			category = frappe.get_cached_doc("Correspondence Category", category_name)
+			# NOT get_cached_doc(): once a category's persistent (Redis-backed)
+			# document cache is warm, editing an EXISTING dynamic field's own
+			# properties (fieldtype/options/label/...) and saving can silently
+			# fail to propagate here. on_update() calls this function
+			# synchronously mid-save, but Document.save() only invalidates a
+			# doc's cache via notify_update() *after* on_update() returns - so
+			# a cache warmed by an earlier save/read of this same category is
+			# still serving the pre-edit snapshot at the exact moment this
+			# reads it. Confirmed live (2026-09-25): changing a field's
+			# fieldtype from Data to Link and saving left the Custom Field as
+			# Data, even across separate bench execute processes, until the
+			# cache was invalidated by something unrelated. A handful of
+			# categories - a fresh, uncached read on every sync is cheap
+			# enough that correctness is worth more than reusing the cache.
+			category = frappe.get_doc("Correspondence Category", category_name)
 			for row in category.dynamic_fields:
 				if not row.fieldname_slug:
 					continue
@@ -486,12 +500,55 @@ def _ensure_dynamic_custom_field(slug, row, active_categories, previous_field):
 			"Custom Field", existing_name, list(wanted.keys()), as_dict=True
 		)
 		if any(current.get(k) != v for k, v in wanted.items()):
-			cf = frappe.get_doc("Custom Field", existing_name)
-			cf.update(wanted)
-			cf.save(ignore_permissions=True)
+			_apply_dynamic_custom_field_update(doctype, fieldname, existing_name, current, wanted)
 
 	frappe.db.commit()
 	return created_at
+
+
+def _apply_dynamic_custom_field_update(doctype, fieldname, existing_name, current, wanted):
+	"""A category-editor field change (e.g. Data -> Link) can land here as an
+	ordinary property update on an *already-live* Custom Field, one that may
+	already hold real stored data (this is the whole feature's point - editing
+	dynamic_fields on Correspondence Category is meant to be a routine, no-
+	migrate-needed action). Frappe core deliberately refuses to just re-save a
+	Custom Field across an incompatible fieldtype pair -
+	`CustomField.validate()` raises `Fieldtype ... cannot be changed from X to
+	Y` unless both types are in the same `ALLOWED_FIELDTYPE_CHANGE` group
+	(confirmed directly against this app's own generated dynamic field:
+	Data -> Link is not in any group there) - this is Frappe's own safety
+	rail against exactly the "existing free-text values aren't valid Link
+	targets" risk, not a bug to route around blindly.
+
+	The standard, framework-level way to change a field's type across that
+	boundary without losing data is the one Frappe admins already use by hand
+	via Customize Form: delete the Custom Field record and recreate it with
+	the very same `fieldname`, so the *column* (never dropped on delete - see
+	this app's own long-documented "orphaned columns survive" behavior) is
+	simply reinterpreted under its new declared type on the next schema sync,
+	not recreated. Verified safe here specifically because every fieldtype
+	this engine can select (Data/Int/Currency/Date/Select/Check/Link) maps to
+	a SQL column Frappe can alter in place (Link, like Data, is a plain
+	varchar(140) at the DB level) - this is not a generic "always safe"
+	shortcut, just correct for this engine's fixed set of options.
+	"""
+	from frappe.custom.doctype.customize_form.customize_form import CustomizeForm
+
+	old_fieldtype = current.get("fieldtype")
+	new_fieldtype = wanted.get("fieldtype")
+	needs_recreate = old_fieldtype != new_fieldtype and not CustomizeForm.allow_fieldtype_change(
+		old_fieldtype, new_fieldtype
+	)
+
+	if not needs_recreate:
+		cf = frappe.get_doc("Custom Field", existing_name)
+		cf.update(wanted)
+		cf.save(ignore_permissions=True)
+		return
+
+	frappe.delete_doc("Custom Field", existing_name, ignore_permissions=True, force=True)
+	cf = frappe.get_doc({"doctype": "Custom Field", "dt": doctype, "fieldname": fieldname, **wanted})
+	cf.insert(ignore_permissions=True)
 
 
 def _remove_orphaned_dynamic_fields(current_slugs):
