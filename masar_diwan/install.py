@@ -123,6 +123,29 @@ def ensure_workflows():
 			path = os.path.join(workflow_dir, folder, f"{folder}.json")
 			if os.path.exists(path):
 				import_file_by_path(path)
+				# get_workflow() (frappe/model/workflow.py) reads this exact
+				# document via frappe.get_cached_doc("Workflow", ...) on every
+				# apply_workflow() call - found live 2026-09-26 while adding
+				# the Approve/Register split to this workflow: a
+				# frappe.reload_doc(..., force=True) right after an edit
+				# correctly updated the DB (confirmed via direct SQL), but
+				# apply_workflow() still failed with "Not a valid Workflow
+				# Action" against the *new* transitions for a short while
+				# afterward - the persistent (Redis-backed) cached copy of
+				# this Workflow document hadn't been invalidated yet, so
+				# get_transitions() was evaluating against the stale,
+				# pre-edit transition list. Confirmed this is exactly the
+				# gap by re-testing minutes later (once the cache had
+				# naturally expired) and seeing it work - a transient window,
+				# but a real one, that any real user clicking a workflow
+				# button on a freshly-migrated site could hit. Clearing the
+				# cache explicitly here, every time this file is
+				# (re-)imported, closes that window instead of leaving it to
+				# self-heal on its own schedule.
+				with open(path) as f:
+					workflow_name = json.load(f).get("name")
+				if workflow_name:
+					frappe.clear_document_cache("Workflow", workflow_name)
 		frappe.db.commit()
 	except Exception:
 		frappe.log_error(title="masar_diwan: failed to ensure Workflows")
@@ -175,6 +198,7 @@ def ensure_workflow_states():
 		"Pending Review": "Warning",
 		"Under Review": "Warning",
 		"Needs Revision": "Warning",
+		"Approved": "Primary",
 		"Approved & Numbered": "Success",
 		"Rejected": "Danger",
 		"Pending Delivery": "Warning",

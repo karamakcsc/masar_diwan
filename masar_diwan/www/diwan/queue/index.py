@@ -6,7 +6,7 @@ from masar_diwan.utils.dynamic_fields import get_dynamic_field_values_for_displa
 from masar_diwan.utils.pickers import correspondence_type_options
 from masar_diwan.utils.portal_nav import DIWAN_PORTAL_NAV
 
-QUEUE_STATUSES = ["Pending Review", "Under Review"]
+QUEUE_STATUSES = ["Pending Review", "Under Review", "Approved"]
 
 LIST_FIELDS = [
 	"name",

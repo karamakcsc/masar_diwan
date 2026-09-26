@@ -65,6 +65,15 @@
    "evaluate_as_expression": 0,
    "is_optional_state": 0,
    "send_email": 1,
+   "state": "Approved"
+  },
+  {
+   "allow_edit": "Diwan Officer",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "evaluate_as_expression": 0,
+   "is_optional_state": 0,
+   "send_email": 1,
    "state": "Approved & Numbered"
   }
  ],
@@ -174,12 +183,20 @@
    "state": "Under Review"
   },
   {
-   "action": "Approve & Register",
+   "action": "Approve",
+   "allow_self_approval": 1,
+   "allowed": "Diwan Officer",
+   "next_state": "Approved",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
+  },
+  {
+   "action": "Register",
    "allow_self_approval": 1,
    "allowed": "Diwan Officer",
    "next_state": "Approved & Numbered",
    "send_email_to_creator": 0,
-   "state": "Under Review"
+   "state": "Approved"
   },
   {
    "action": "Start Review",
@@ -206,12 +223,20 @@
    "state": "Under Review"
   },
   {
-   "action": "Approve & Register",
+   "action": "Approve",
+   "allow_self_approval": 1,
+   "allowed": "Senior Management",
+   "next_state": "Approved",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
+  },
+  {
+   "action": "Register",
    "allow_self_approval": 1,
    "allowed": "Senior Management",
    "next_state": "Approved & Numbered",
    "send_email_to_creator": 0,
-   "state": "Under Review"
+   "state": "Approved"
   },
   {
    "action": "Start Review",
@@ -238,12 +263,20 @@
    "state": "Under Review"
   },
   {
-   "action": "Approve & Register",
+   "action": "Approve",
+   "allow_self_approval": 1,
+   "allowed": "System Manager",
+   "next_state": "Approved",
+   "send_email_to_creator": 0,
+   "state": "Under Review"
+  },
+  {
+   "action": "Register",
    "allow_self_approval": 1,
    "allowed": "System Manager",
    "next_state": "Approved & Numbered",
    "send_email_to_creator": 0,
-   "state": "Under Review"
+   "state": "Approved"
   }
  ],
  "workflow_name": "Correspondence Request Workflow",

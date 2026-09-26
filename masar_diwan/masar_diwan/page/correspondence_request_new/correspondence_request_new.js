@@ -29,6 +29,7 @@ const CRN_STEPS = [
 	{ key: "Draft", label: "مسودة" },
 	{ key: "Pending Review", label: "بانتظار المراجعة" },
 	{ key: "Under Review", label: "قيد المراجعة" },
+	{ key: "Approved", label: "معتمدة" },
 	{ key: "Approved & Numbered", label: "معتمدة ومرقّمة" },
 ];
 
@@ -38,6 +39,7 @@ const CRN_STATUS_META = {
 	"Under Review": { label: "قيد المراجعة", color: "blue" },
 	"Needs Revision": { label: "بحاجة لتعديل", color: "yellow" },
 	Rejected: { label: "مرفوض", color: "red" },
+	Approved: { label: "معتمدة", color: "blue" },
 	"Approved & Numbered": { label: "معتمدة ومرقّمة", color: "green" },
 };
 

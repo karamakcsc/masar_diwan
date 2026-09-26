@@ -33,6 +33,7 @@ window.diwanPortal = (function () {
 		"Under Review": "review",
 		"Needs Revision": "revision",
 		"Rejected": "rejected",
+		"Approved": "approved",
 		"Approved & Numbered": "approved"
 	};
 

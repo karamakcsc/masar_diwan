@@ -86,9 +86,22 @@ frappe.ready(function () {
 	}
 
 	function approveOne(name, correspondenceType) {
+		// Approve (the review decision) and Register (the Diwan-only typing/
+		// numbering step) are now two separate workflow transitions - see
+		// /diwan/queue for the same split. The tray still does both in one
+		// chained pass for a whole batch, since staff using this page are
+		// deliberately committing to a full one-shot decision, type
+		// included, for straightforward requests - not a relaxation of the
+		// split, just this page's own existing fast-path shortcut extended
+		// by one more step.
 		return frappe.call({
 			method: "frappe.model.workflow.apply_workflow",
 			args: { doc: { doctype: "Correspondence Request", name: name }, action: "Start Review" },
+		}).then(function () {
+			return frappe.call({
+				method: "frappe.model.workflow.apply_workflow",
+				args: { doc: { doctype: "Correspondence Request", name: name }, action: "Approve" },
+			});
 		}).then(function () {
 			return frappe.call({
 				method: "frappe.client.set_value",
@@ -97,7 +110,7 @@ frappe.ready(function () {
 		}).then(function () {
 			return frappe.call({
 				method: "frappe.model.workflow.apply_workflow",
-				args: { doc: { doctype: "Correspondence Request", name: name }, action: "Approve & Register" },
+				args: { doc: { doctype: "Correspondence Request", name: name }, action: "Register" },
 			});
 		}).then(function (r) {
 			setRowResult(

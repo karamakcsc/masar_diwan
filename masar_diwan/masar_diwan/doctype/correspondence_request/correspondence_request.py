@@ -87,8 +87,12 @@ class CorrespondenceRequest(Document):
 		if not before or before.status == self.status:
 			return
 
+		# Approve (the review decision) and Register (the Diwan-only typing/
+		# numbering step) are two separate transitions now (2026-09-26) -
+		# "Tray Decision" logs the review decision itself, which now lands on
+		# Approved rather than Approved & Numbered directly.
 		if before.status == "Under Review" and self.status in (
-			"Approved & Numbered",
+			"Approved",
 			"Rejected",
 			"Needs Revision",
 		):
@@ -105,7 +109,7 @@ class CorrespondenceRequest(Document):
 	def register_correspondence(self):
 		if not self.correspondence_type:
 			frappe.throw(
-				_("Set a Correspondence Type before approving - it determines the reference number series.")
+				_("Set a Correspondence Type before registering - it determines the reference number series.")
 			)
 
 		correspondence = frappe.get_doc(

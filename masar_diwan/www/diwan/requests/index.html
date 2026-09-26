@@ -143,7 +143,7 @@ frappe.ready(function () {
 		var pillHost = document.getElementById("status-pill");
 		if (pillHost) pillHost.innerHTML = diwanPortal.statusPillHtml(detail.status);
 
-		var order = ["Draft", "Pending Review", "Under Review", "Approved & Numbered"];
+		var order = ["Draft", "Pending Review", "Under Review", "Approved", "Approved & Numbered"];
 		var idx = order.indexOf(detail.status);
 		var blocked = detail.status === "Rejected" || detail.status === "Needs Revision";
 		var stepper = document.getElementById("status-stepper");

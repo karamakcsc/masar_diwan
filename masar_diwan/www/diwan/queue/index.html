@@ -94,11 +94,19 @@
 				{% endif %}
 			</div>
 
-			{% if detail.status in ("Pending Review", "Under Review") %}
+			{% if detail.status in ("Pending Review", "Under Review", "Approved") %}
 			<div class="diwan-card" id="decision-card">
 				<div class="diwan-card__title">{{ _("Decision") }}</div>
 
 				{% if detail.status == "Under Review" %}
+				<div class="diwan-field">
+					<label>{{ _("Decision Note") }}</label>
+					<textarea id="field-decision-note" rows="3">{{ detail.decision_note or "" }}</textarea>
+					<div class="diwan-hint">{{ _("Required for Reject and Request Revision.") }}</div>
+				</div>
+				{% endif %}
+
+				{% if detail.status == "Approved" %}
 				<div class="diwan-field">
 					<label>{{ _("Correspondence Type") }} *</label>
 					<select id="field-correspondence-type">
@@ -107,12 +115,7 @@
 						<option value="{{ t.name }}" {{ "selected" if t.name == detail.correspondence_type else "" }}>{{ t.title }}</option>
 						{% endfor %}
 					</select>
-					<div class="diwan-hint">{{ _("Required before approving - determines the reference number series.") }}</div>
-				</div>
-				<div class="diwan-field">
-					<label>{{ _("Decision Note") }}</label>
-					<textarea id="field-decision-note" rows="3">{{ detail.decision_note or "" }}</textarea>
-					<div class="diwan-hint">{{ _("Required for Reject and Request Revision.") }}</div>
+					<div class="diwan-hint">{{ _("Required to register - determines the reference number series. This is the Diwan department's own step, separate from the approval decision above.") }}</div>
 				</div>
 				{% endif %}
 
@@ -121,10 +124,12 @@
 				<div style="display:flex; gap:8px; flex-wrap:wrap; margin-block-start:10px;">
 					{% if detail.status == "Pending Review" %}
 					<button class="diwan-btn diwan-btn--primary" id="start-review-btn" type="button">{{ _("Start Review") }}</button>
-					{% else %}
-					<button class="diwan-btn diwan-btn--primary" id="approve-btn" type="button">{{ _("Approve & Register") }}</button>
+					{% elif detail.status == "Under Review" %}
+					<button class="diwan-btn diwan-btn--primary" id="approve-btn" type="button">{{ _("Approve") }}</button>
 					<button class="diwan-btn" id="revision-btn" type="button">{{ _("Request Revision") }}</button>
 					<button class="diwan-btn diwan-btn--danger" id="reject-btn" type="button">{{ _("Reject") }}</button>
+					{% else %}
+					<button class="diwan-btn diwan-btn--primary" id="register-btn" type="button">{{ _("Register") }}</button>
 					{% endif %}
 				</div>
 			</div>
@@ -205,9 +210,14 @@ frappe.ready(function () {
 
 	var approveBtn = document.getElementById("approve-btn");
 	if (approveBtn) approveBtn.addEventListener("click", function () {
+		applyAction("Approve");
+	});
+
+	var registerBtn = document.getElementById("register-btn");
+	if (registerBtn) registerBtn.addEventListener("click", function () {
 		var ct = document.getElementById("field-correspondence-type").value;
-		if (!ct) { showMessage(__("Set a Correspondence Type before approving."), true); return; }
-		applyAction("Approve & Register", { correspondence_type: ct });
+		if (!ct) { showMessage(__("Set a Correspondence Type before registering."), true); return; }
+		applyAction("Register", { correspondence_type: ct });
 	});
 
 	var revisionBtn = document.getElementById("revision-btn");

@@ -107,7 +107,7 @@ def _users_with_roles(roles):
 # Correspondence Request - submitted for review / decided
 # --------------------------------------------------------------------------
 
-REQUEST_DECIDED_STATUSES = ("Approved & Numbered", "Rejected", "Needs Revision")
+REQUEST_DECIDED_STATUSES = ("Approved", "Rejected", "Needs Revision")
 
 
 def on_correspondence_request_update(doc, method=None):
@@ -142,6 +142,29 @@ def on_correspondence_request_update(doc, method=None):
 				"Your correspondence request <b>{0}</b> has been <b>{1}</b>."
 			).format(frappe.utils.escape_html(doc.subject or doc.name), status_label)
 			+ (f"<br>{_('Note')}: {frappe.utils.escape_html(doc.decision_note)}" if doc.decision_note else ""),
+		)
+		return
+
+	# 2026-09-26: Approve (the review decision) and Register (the Diwan-only
+	# typing/numbering step) are now two separate transitions - the requester
+	# already got told about the decision above; this is the second,
+	# genuinely new milestone (the actual reference number), which the old
+	# single "Approve & Register" transition used to fold into that one
+	# notification.
+	if before.status == "Approved" and doc.status == "Approved & Numbered":
+		if not doc.requested_by:
+			return
+		_notify(
+			[doc.requested_by],
+			_("Your correspondence request was registered: {0}").format(doc.subject or doc.name),
+			"Correspondence Request",
+			doc.name,
+			email_content=_(
+				"Your correspondence request <b>{0}</b> has been registered as <b>{1}</b>."
+			).format(
+				frappe.utils.escape_html(doc.subject or doc.name),
+				frappe.utils.escape_html(doc.resulting_correspondence or ""),
+			),
 		)
 
 

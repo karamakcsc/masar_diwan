@@ -41,12 +41,12 @@
    "reqd": 1
   },
   {
-   "depends_on": "eval:doc.status && doc.status != \"Draft\" && doc.status != \"Pending Review\"",
-   "description": "Set by the Diwan Officer before approval - determines the reference number series.",
+   "depends_on": "eval:doc.status == \"Approved\" || doc.status == \"Approved & Numbered\"",
+   "description": "The Diwan department's own registration step - set only once a request is Approved, right before Register. Not part of the review/approval decision itself.",
    "fieldname": "correspondence_type",
    "fieldtype": "Link",
    "label": "Correspondence Type",
-   "mandatory_depends_on": "eval:doc.status == \"Approved & Numbered\"",
+   "mandatory_depends_on": "eval:doc.status == \"Approved\"",
    "options": "Correspondence Type"
   },
   {
@@ -124,7 +124,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Draft\nPending Review\nUnder Review\nNeeds Revision\nRejected\nApproved & Numbered",
+   "options": "Draft\nPending Review\nUnder Review\nNeeds Revision\nRejected\nApproved\nApproved & Numbered",
    "read_only": 1
   },
   {
