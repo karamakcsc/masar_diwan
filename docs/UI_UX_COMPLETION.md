@@ -1,6 +1,6 @@
 # UI/UX completion checklist
 
-This is the current checklist. [Surface coverage](UI_UX_SURFACE_COVERAGE.md) accounts for every inventory item; `UI_UX_AUDIT.md` preserves chronological evidence, including older coverage snapshots. Source implementation spans the full inventory; the goal is not complete until the open checks below are resolved or a concrete environment limitation is documented.
+This is the current checklist. The [2026-09-26 rebase audit](UI_UX_REBASE.md) records verification against the new upstream baseline; evidence below describes the original overhaul unless explicitly updated. [Surface coverage](UI_UX_SURFACE_COVERAGE.md) accounts for every inventory item; `UI_UX_AUDIT.md` preserves chronological evidence, including older coverage snapshots. Source implementation spans the full inventory; the goal is not complete until the open checks below are resolved or a concrete environment limitation is documented.
 
 ## Evidence already established
 
@@ -35,3 +35,14 @@ This is the current checklist. [Surface coverage](UI_UX_SURFACE_COVERAGE.md) acc
 ## Test-data handling
 
 Use dedicated audit accounts/records. The existing access logger commits transactions, so rollback does not reliably remove workflow fixtures. Confirm authoritative state after each fixture run and clean only exact, known test records. Do not reset existing credentials. Some clearly named browser audit requests and audit events are deliberately retained as evidence.
+
+## Upstream integration completion
+
+- [x] Preserve the original 80-file UI checkpoint and branch backup refs.
+- [x] Update bara and rebase codex/UI onto upstream master 8e3d05d without modifying master or pushing.
+- [x] Carry full editing, upload recovery, accessibility, translations, pagination and bulk feedback into the merged portal tabs.
+- [x] Adapt status indicators, guidance, timelines, individual decisions and batch actions to separate Approve/Register transitions.
+- [x] Correct the unchanged upstream workflow timestamp so migration imports the new transitions.
+- [x] Verify category scoping/required fields/locking and cached field-type updates; retain upstream draft privacy and Employee lookup.
+- [x] Verify actual Desk envelope search and tracking; preserve the workspace's five cards and three portal shortcuts.
+- [x] Run eight focused Python regressions, browser journeys, bilingual responsive checks and source parsing; see the rebase audit for exact evidence and limitations.

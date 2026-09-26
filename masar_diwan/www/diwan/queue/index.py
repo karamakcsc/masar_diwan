@@ -1,5 +1,7 @@
 import frappe
 
+from masar_diwan.utils.portal_i18n import get_portal_messages
+
 from masar_diwan.utils.portal_pagination import get_page
 from masar_diwan.access_log import log_event
 from masar_diwan.permissions import require_diwan_staff
@@ -63,6 +65,7 @@ def get_context(context):
 
 	context.no_cache = 1
 	context.lang = frappe.local.lang
+	context.diwan_messages = get_portal_messages()
 	context.user_fullname = frappe.utils.get_fullname(frappe.session.user)
 	context.portal_nav = DIWAN_PORTAL_NAV
 	context.portal_section_title = "Diwan Portal"

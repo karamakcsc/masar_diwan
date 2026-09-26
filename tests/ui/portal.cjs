@@ -12,7 +12,7 @@ if (!base || !cdpUrl) throw new Error('Set DIWAN_UI_URL and DIWAN_UI_CDP for an 
  await cdp.send('Network.setCacheDisabled',{cacheDisabled:true});
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.setViewportSize({width:1440,height:1000});
- await page.goto(base+'/diwan/submit?_lang=en',{waitUntil:'networkidle'});
+ await page.goto(base+'/diwan/requests?tab=submit&_lang=en',{waitUntil:'networkidle'});
  await page.locator('#submit-btn').click();
  assert.equal(await page.locator('#field-subject').getAttribute('aria-invalid'),'true');
  assert.equal(await page.evaluate(()=>document.activeElement.id),'field-subject');
@@ -22,7 +22,7 @@ if (!base || !cdpUrl) throw new Error('Set DIWAN_UI_URL and DIWAN_UI_CDP for an 
  await page.locator('#submit-btn').click();
  await page.waitForFunction(()=>document.querySelector('#form-message').innerText.includes('some attachments failed'));
  assert.match(await page.locator('#attachment-list').innerText(),/ui-audit.txt/);
- assert.match(page.url(),/\/submit/);
+ assert.equal(new URL(page.url()).searchParams.get("tab"),"submit");
  assert.equal(await page.locator('#submit-btn').isEnabled(),true);
  console.log('PASS: rejected upload keeps draft and pending attachment; no false submission.');
  await page.unroute('**/api/method/upload_file');
@@ -39,7 +39,7 @@ if (!base || !cdpUrl) throw new Error('Set DIWAN_UI_URL and DIWAN_UI_CDP for an 
  assert.equal(await page.locator('.diwan-app').getAttribute('dir'),'rtl');
  console.log('PASS: language switch retains record and renders RTL.');
  await page.setViewportSize({width:360,height:800});
- await page.goto(base+'/diwan/submit?_lang=ar',{waitUntil:'networkidle'});
+ await page.goto(base+'/diwan/requests?tab=submit&_lang=ar',{waitUntil:'networkidle'});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
  await page.locator('[data-diwan-hamburger]').click();
  assert.equal(await page.locator('[data-diwan-hamburger]').getAttribute('aria-expanded'),'true');

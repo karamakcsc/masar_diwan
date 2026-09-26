@@ -73,6 +73,7 @@ window.masarDiwanDesk = (function () {
 		"Under Review": __("Review the details and use the available workflow actions to continue."),
 		"Needs Revision": __("Read the decision note, update the request, and submit it again."),
 		"Rejected": __("Read the decision note for the reason this request was rejected."),
+		"Approved": __("Approved for registration. Select a Correspondence Type and use Register to issue the reference number."),
 		"Approved & Numbered": __("The request has been registered. Open the resulting correspondence to follow its progress."),
 		"Referred / In Progress": __("Follow up with the current owner and record progress before completion."),
 		"Completed": __("Work is complete. Review the history and related documents."),

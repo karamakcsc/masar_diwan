@@ -1,5 +1,7 @@
 import frappe
 
+from masar_diwan.utils.portal_i18n import get_portal_messages
+
 from masar_diwan.utils.portal_pagination import get_page
 
 from masar_diwan.access_log import log_event
@@ -42,6 +44,7 @@ def get_context(context):
 
 	context.no_cache = 1
 	context.lang = frappe.local.lang
+	context.diwan_messages = get_portal_messages()
 	context.user_fullname = frappe.utils.get_fullname(frappe.session.user)
 	context.portal_nav = PORTAL_NAV
 	context.portal_section_title = "Requester Portal"
@@ -51,8 +54,7 @@ def get_context(context):
 	if tab not in ("submit", "requests"):
 		tab = "requests"
 	if name and tab != "submit":
-		# A request detail is always the "My Requests" tab's own drill-down -
-		# a name in the URL always wins over an unrelated ?tab= value.
+		# Named requests open detail unless the submit tab explicitly requests editing.
 		tab = "requests"
 	context.active_tab = tab
 	context.active_route = "/diwan/requests" if tab == "requests" else f"/diwan/requests?tab={tab}"

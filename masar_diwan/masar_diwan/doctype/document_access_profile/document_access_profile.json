@@ -67,14 +67,14 @@
    "label": "Department Scoping"
   },
   {
-   "description": "Link fields on Document Type that hold a department (or whichever doctype is currently providing 'Department') used for department scoping - e.g. 'department', or 'from_department'+'to_department' for a doctype with two. A user sees the document if ANY one of these fields' value is one of their own departments (logical OR across rows) - or if their role is in Department Exempt Roles below. Leave empty if this type is not department-scoped at all.",
+   "description": "Department Link fields used to scope documents. Any matching field grants department access. A user's active Employee department is used first; Department User Permissions are the fallback. Leave empty for documents without department scoping.",
    "fieldname": "department_fields",
    "fieldtype": "Table",
    "label": "Department Fields",
    "options": "Document Access Profile Department Field"
   },
   {
-   "description": "Roles that see documents of this type across every department, regardless of their own User Permission department assignment. Confidentiality tiering (below) still applies independently.",
+   "description": "Roles that can see documents across departments, regardless of Employee or User Permission assignments. Confidentiality rules still apply independently.",
    "fieldname": "department_exempt_roles",
    "fieldtype": "Table",
    "label": "Department Exempt Roles",

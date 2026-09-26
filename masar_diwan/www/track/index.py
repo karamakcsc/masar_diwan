@@ -1,5 +1,7 @@
 import frappe
 
+from masar_diwan.utils.portal_i18n import get_portal_messages
+
 from masar_diwan.api.portal import get_tracking_detail
 
 PORTAL_NAV = [
@@ -15,6 +17,7 @@ def get_context(context):
 	context.no_cache = 1
 	context.title = frappe._("Track Correspondence")
 	context.lang = frappe.local.lang
+	context.diwan_messages = get_portal_messages()
 	context.user_fullname = frappe.utils.get_fullname(frappe.session.user)
 	context.portal_nav = PORTAL_NAV
 	context.portal_section_title = "Track"

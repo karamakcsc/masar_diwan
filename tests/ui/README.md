@@ -27,3 +27,13 @@ If Playwright is installed outside the repository, set `DIWAN_PLAYWRIGHT` to its
 `rejection.cjs` requires `DIWAN_REJECTION_TARGET` pointing to a JSON file with a `name` key for a dedicated pending UI audit request with a previous decision note. It confirms the previous note is context only, the fresh note is required, and the requester sees the rejection. This test changes that audit request to Rejected.
 
 `desk-request.cjs` uses the same browser environment variables. It verifies the custom Desk page keeps a rejected attachment staged, retries upload, and submits the same draft. It retains the submitted audit request and private text attachment as evidence.
+
+## Upstream integration checks
+
+`rebase.cjs` checks all seven merged portal tab views in English/Arabic at 360/768/1440, tab-preserving language links, legacy draft editing, separate Approve/Register, required registration type, stored resulting correspondence and the five-stage timeline. It retains a uniquely named audit request and registered correspondence on the development site.
+
+`desk-envelope.cjs` searches and opens a real readable Envelope in Desk. Set `DIWAN_ENVELOPE_TARGET` to its name. It changes no document; the search/view endpoints write normal access logs.
+
+The existing portal, draft, revision, dynamic-field and bulk checks now use canonical tab URLs. Bulk checks expect Start Review → Approve → Register and intercept workflow writes.
+
+Focused Python regressions require the bench Python and no site/database: `python -m unittest discover -s tests -p 'test_*.py' -v`. They cover tab-aware pagination, compatibility redirects, draft privacy, Employee department precedence/fallback, denied envelope search and scoped translation messages.

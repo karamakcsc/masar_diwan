@@ -22,7 +22,6 @@
   "party_type",
   "party",
   "column_break_party",
-  "category",
   "priority",
   "confidentiality",
   "section_break_confidentiality",
@@ -150,7 +149,7 @@
   {
    "fieldname": "section_break_confidentiality",
    "fieldtype": "Section Break",
-   "label": "Access and confidentiality"
+   "label": "Category and authorized viewers"
   },
   {
    "default": "Normal",
@@ -162,7 +161,7 @@
    "options": "Confidentiality Level"
   },
   {
-   "description": "Editable on a direct Correspondence (no source_request yet); auto-filled and locked once one is approved into this record from the tray. Drives which fields appear in Additional Fields below.",
+   "description": "Choose a category for direct correspondence. Requests supply their category automatically; it is locked after registration.",
    "fieldname": "correspondence_category",
    "fieldtype": "Link",
    "label": "Correspondence Category",
@@ -324,13 +323,6 @@
   {
    "fieldname": "column_break_dowd",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "category",
-   "fieldtype": "Link",
-   "in_standard_filter": 1,
-   "label": "Category",
-   "options": "Correspondence Category"
   },
   {
    "fieldname": "details_tab",

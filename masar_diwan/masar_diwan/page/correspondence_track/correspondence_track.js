@@ -54,7 +54,7 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 		page.body
 	);
 	const envelope_results_wrapper = $(
-		'<div class="correspondence-track-results" style="margin-top: 15px;"></div>'
+		'<div class="correspondence-track-results" aria-live="polite" style="margin-top: 15px;"></div>'
 	).appendTo(page.body);
 
 	let searchSequence = 0;

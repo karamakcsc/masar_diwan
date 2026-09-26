@@ -299,3 +299,7 @@ A fresh isolated pass rendered real rows in the native Envelope, Delivery Sheet,
 An unsaved Category Field row editor advanced keyboard focus from its Label input to the visible Field Type select with Tab; no JavaScript error occurred. This samples native grid keyboard behavior alongside the earlier 51-row pagination check, without claiming an exhaustive key-by-key audit of all 11 child tables. The browser was closed without saving the form.
 
 The final source/site comparison found zero mismatches across 25 modified presentation documents. Static parsing passed for 101 Python, 9 Jinja, 47 JSON and 25 JavaScript app files; `git diff --check` passed. Source scope review found only Diwan UI, navigation, report-filter, pagination, and supporting documentation/test changes. Configured wkhtmltopdf and physical camera/printer output could not be exercised on this host; Chromium previews and camera-denial/manual-entry checks remain the available local evidence. No server restart, configuration change, or push.
+
+## 2026-09-26 — integration with updated remote master
+
+Preserved the full original UI checkpoint at `83c8a95`, fetched upstream master `8e3d05d`, advanced bara, and rebased codex/UI. Master was not changed or pushed. The [rebase audit](UI_UX_REBASE.md) maps all 12 upstream commits to their adaptations and records current browser/server verification, the workflow timestamp fix, translation boot fix, development backup and cleanup. Historical combined Approve & Register evidence above predates the new split workflow.

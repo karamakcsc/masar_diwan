@@ -1,6 +1,6 @@
 # Diwan UI/UX overhaul
 
-Status: implemented and locally reviewed; configured PDF renderer and physical hardware checks are documented environment limits. See the [completion checklist](docs/UI_UX_COMPLETION.md), [surface coverage](docs/UI_UX_SURFACE_COVERAGE.md), and [chronological evidence](docs/UI_UX_AUDIT.md).
+Status: implemented, rebased onto upstream master `8e3d05d`, and locally reviewed; configured PDF renderer and physical hardware checks are documented environment limits. See the [completion checklist](docs/UI_UX_COMPLETION.md), [surface coverage](docs/UI_UX_SURFACE_COVERAGE.md), and [chronological evidence](docs/UI_UX_AUDIT.md).
 Created: 2026-09-25.
 
 ## Goal
@@ -17,12 +17,12 @@ Use the existing navy/orange identity as the starting point. Refine it through a
 | Configuration and oversight DocTypes | Correspondence Category (including tree), Correspondence Type, Confidentiality Level, Document Access Profile, Correspondence Settings, Access Log Entry |
 | Embedded child DocTypes | Correspondence Authorized Viewer, Correspondence Transfer Log, Follow-up Action, Correspondence Category Field, Correspondence Numbering Rule, Confidentiality Level Bypass Role, Delivery Sheet Item, Envelope Document, Document Access Profile Department Field, Document Access Profile Role, Document Access Profile Searchable Field |
 | Desk pages | correspondence-request-new, correspondence-track |
-| Portal pages | /track, /diwan/submit, /diwan/requests, /diwan/tray, /diwan/queue, /diwan/delivery_sheets, /diwan/envelopes, /diwan/audit_log |
+| Portal views | /track; /diwan/requests (list/detail and submit/edit tabs); /diwan/queue (queue, tray, delivery_sheets, envelopes, audit_log tabs). Five former routes remain compatibility redirects. |
 | Reports | Overdue Correspondence, Correspondence Completion Time, Access Log Report |
 | Workspace and metrics | Masar Diwan workspace, five correspondence number cards, two dashboard charts |
 | Print formats | Delivery Sheet Print, Envelope Label, Document Label |
 
-Totals: 22 DocTypes (11 top-level, including one singleton; 11 child tables), two custom Desk pages, eight portal pages, three reports, three print formats.
+Totals: 22 DocTypes (11 top-level, including one singleton; 11 child tables), two custom Desk pages, eight portal views across three canonical routes, three reports, three print formats.
 
 Audit dialogs, detail panels, dynamic category fields, attachment controls, scanning, and workflow actions within their owning surfaces. Check navigation links for additional runtime surfaces during the browser audit.
 
@@ -100,3 +100,9 @@ Do not equate a CSS refresh with completion: form organization, navigation, acti
 - [x] Complete the targeted checks and final source/site review in `docs/UI_UX_COMPLETION.md`; record renderer/hardware limits separately.
 
 The user authorized local implementation and asked to defer testing until the source batches were complete. That sequencing was followed. The local site presentation audit has zero source/DB mismatches. No code has been pushed, and pushing is not authorized.
+
+## Upstream integration — 2026-09-26
+
+`bara` now contains upstream master `8e3d05d`; `codex/UI` contains the preserved overhaul and the adaptations described in [the rebase audit](docs/UI_UX_REBASE.md). Local master remains at `acbf4ba`. No push or merge into bara has been performed.
+
+New coverage includes merged portal tabs, separate Approve/Register stages, category-scoped correspondence fields, Employee-first department lookup, draft privacy, envelope search, and the reorganized workspace. Historical approval evidence below the original phases predates the split; current verification is recorded in the rebase audit.

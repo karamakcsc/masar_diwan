@@ -429,3 +429,28 @@ Exact field name reserved for future cross-document search. The current Correspo
 Users with this role can read documents at this confidentiality level across departments.,يستطيع المستخدمون الذين لديهم هذا الدور قراءة المستندات في مستوى السرية هذا عبر الأقسام.
 Allows this user to read this correspondence at its configured confidentiality level, even outside its department.,يسمح لهذا المستخدم بقراءة هذه المراسلة وفق مستوى سريتها المحدد حتى خارج قسمه.
 Bypasses department checks for this document type. Confidentiality rules still apply unless that level also lists this role as a bypass.,يتجاوز هذا الدور قيود القسم لهذا النوع من المستندات. وتظل قواعد السرية سارية ما لم يدرج مستوى السرية هذا الدور ضمن أدوار التجاوز.
+Approve,اعتماد
+Register,تسجيل
+Approved for registration. Select a Correspondence Type and use Register to issue the reference number.,تم الاعتماد للتسجيل. اختر نوع المراسلة ثم استخدم تسجيل لإصدار الرقم المرجعي.
+Category and authorized viewers,التصنيف والمصرح لهم بالاطلاع
+Choose a category for direct correspondence. Requests supply their category automatically; it is locked after registration.,اختر تصنيفاً للمراسلة المباشرة. يُنقل تصنيف الطلب تلقائياً ويُقفل بعد التسجيل.
+Required to register - determines the reference number series.,مطلوب للتسجيل ويحدد تسلسل الرقم المرجعي.
+Set a Correspondence Type before registering.,حدد نوع المراسلة قبل التسجيل.
+Set a Correspondence Type before registering - it determines the reference number series.,حدد نوع المراسلة قبل التسجيل؛ فهو يحدد تسلسل الرقم المرجعي.
+"The Diwan department's own registration step - set only once a request is Approved, right before Register. Not part of the review/approval decision itself.",خطوة التسجيل الخاصة بالديوان. يُحدد بعد اعتماد الطلب وقبل التسجيل، وهو مستقل عن قرار المراجعة والاعتماد.
+Category cannot be changed - this Correspondence was registered from an approved request.,لا يمكن تغيير التصنيف؛ سُجلت هذه المراسلة من طلب معتمد.
+Your correspondence request was registered: {0},تم تسجيل طلب مراسلتك: {0}
+Your correspondence request <b>{0}</b> has been registered as <b>{1}</b>.,تم تسجيل طلب مراسلتك <b>{0}</b> بالرقم <b>{1}</b>.
+Correspondence Sub Category,التصنيف الفرعي للمراسلة
+More Info,معلومات إضافية
+QR Code Image,صورة رمز الاستجابة السريعة
+No QR code generated yet,لم يُنشأ رمز استجابة سريعة بعد
+No results,لا توجد نتائج
+Registered by,سُجل بواسطة
+Registered from request,سُجل من الطلب
+Reference No / Subject,الرقم المرجعي / الموضوع
+Select a Correspondence Sub Category - the chosen category has sub-categories.,اختر تصنيفاً فرعياً للمراسلة؛ التصنيف المختار له تصنيفات فرعية.
+{0} is not a valid sub-category of {1}.,{0} ليس تصنيفاً فرعياً صالحاً ضمن {1}.
+{0} is required.,{0} مطلوب.
+Department Link fields used to scope documents. Any matching field grants department access. A user's active Employee department is used first; Department User Permissions are the fallback. Leave empty for documents without department scoping.,حقول القسم المرتبطة المستخدمة لتقييد الاطلاع. تكفي مطابقة أي حقل. يُستخدم قسم سجل الموظف النشط أولاً، وتُستخدم صلاحيات المستخدم للقسم عند عدم توفره. اتركها فارغة للمستندات غير المقيدة بالقسم.
+"Roles that can see documents across departments, regardless of Employee or User Permission assignments. Confidentiality rules still apply independently.",أدوار يمكنها الاطلاع عبر الأقسام بغض النظر عن تعيينات الموظف أو صلاحيات المستخدم. تبقى قواعد السرية سارية بشكل مستقل.

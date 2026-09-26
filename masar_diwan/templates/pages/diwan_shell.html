@@ -109,6 +109,7 @@ mobile drawer. Expects portal_nav, active_route, user_fullname, and lang. #}
 {% endblock %}
 
 {% block script %}
+<script>frappe._messages = Object.assign(frappe._messages || {}, {{ diwan_messages | default({}) | tojson }});</script>
 <script src="/assets/masar_diwan/js/diwan-portal.js"></script>
 <script src="/assets/masar_diwan/js/masar_diwan-dynamic-fields.js"></script>
 {% block diwan_script %}{% endblock %}

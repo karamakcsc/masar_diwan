@@ -340,7 +340,7 @@
 				<td>{{ _(e.event_type) }}</td>
 				<td>{{ _(e.channel) if e.channel else "-" }}</td>
 				<td><span class="result-pill" data-result="{{ e.result }}"></span></td>
-				<td>{% if e.reference_name %}{{ e.reference_doctype }} <span class="ref-code">{{ e.reference_name }}</span>{% else %}-{% endif %}</td>
+				<td>{% if e.reference_name %}{{ _(e.reference_doctype) }} <span class="ref-code">{{ e.reference_name }}</span>{% else %}-{% endif %}</td>
 				<td>{{ e.ip_address or "-" }}{% if e.is_new_ip %} <span class="diwan-hint">({{ _("new") }})</span>{% endif %}</td>
 			</tr>
 			{% endfor %}

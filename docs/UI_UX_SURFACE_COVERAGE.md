@@ -2,6 +2,8 @@
 
 Current source and verification ledger for the [UI/UX goal](../UI_UX_PLAN.md). “Rendered” means an actual browser route/control check; “flow” means a workflow or data check. The [chronological audit](UI_UX_AUDIT.md) records detailed fixtures and evidence. Source coverage alone does not imply that every state was exercised.
 
+The portal route names in the original ledger below describe historical verification. Current canonical routes and upstream-feature coverage are recorded in [UI_UX_REBASE.md](UI_UX_REBASE.md); legacy routes redirect to the corresponding tabs.
+
 ## Top-level DocTypes
 
 | Surface | UI work | Verified behavior |
@@ -63,3 +65,16 @@ All 11 child controls initialized in their owning Desk forms. Native Link/Data c
 - The native Category Field row editor moves keyboard focus from Label to the visible Field Type control with Tab. Other child tables use Frappe's native grid controls; exhaustive key-by-key sampling of every table is outside this focused review.
 - The configured wkhtmltopdf binary and physical camera/printer are unavailable locally. Chromium previews, PDF-option parsing, renderer-source precedence, and camera-denial behavior do not prove hardware output.
 - The final source/site presentation audit compares all 25 modified metadata documents with zero mismatches. Never push code for this goal.
+
+## New upstream surfaces
+
+| Feature | Current coverage |
+| --- | --- |
+| Requester portal tabs | New/edit request and list/detail share `/diwan/requests`; legacy draft URLs preserve record identity |
+| Staff portal tabs | Queue, batch approval, delivery, envelopes and audit share `/diwan/queue`; page/filter/language links retain the active tab |
+| Approve then Register | Separate actions, numbering-type validation, five-stage requester timeline, Approved list indicator and Desk guidance |
+| Correspondence category fields | Upstream fields/locking retained alongside UI tabs; obsolete category selector removed; category help translated |
+| Employee-first departments | Upstream enforcement retained; access-profile help describes authoritative Employee department and User Permission fallback |
+| Desk envelope search | Real envelope search and detail verified; loading/error/stale-response handling and accessible horizontal table region |
+| Workspace | Upstream grouping, five number cards and three portal shortcuts retained |
+| Portal JavaScript translations | App messages are explicitly supplied to all three canonical routes; site translation overrides remain supported |
