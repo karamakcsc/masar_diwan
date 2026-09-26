@@ -7,7 +7,9 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "numbering_section",
   "numbering_rules",
+  "tracking_section",
   "qr_scan_policy"
  ],
  "fields": [
@@ -15,7 +17,8 @@
    "fieldname": "numbering_rules",
    "fieldtype": "Table",
    "label": "Numbering Rules",
-   "options": "Correspondence Numbering Rule"
+   "options": "Correspondence Numbering Rule",
+   "description": "Manage the prefix and sequence for each correspondence type. Changing counters can affect future reference numbers."
   },
   {
    "default": "Authorized Only",
@@ -25,6 +28,16 @@
    "label": "QR Scan Policy for Restricted Correspondence",
    "options": "Hide Completely\nAuthorized Only",
    "reqd": 1
+  },
+  {
+   "fieldname": "numbering_section",
+   "fieldtype": "Section Break",
+   "label": "Reference Numbering"
+  },
+  {
+   "fieldname": "tracking_section",
+   "fieldtype": "Section Break",
+   "label": "Tracking and confidentiality"
   }
  ],
  "grid_page_length": 50,

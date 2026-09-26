@@ -21,7 +21,8 @@
    "fieldtype": "Datetime",
    "in_list_view": 1,
    "label": "Date",
-   "read_only": 1
+   "read_only": 1,
+   "columns": 2
   },
   {
    "fieldname": "action_type",
@@ -29,12 +30,13 @@
    "in_list_view": 1,
    "label": "Action Type",
    "options": "Referral\nReply\nComment\nView\nScan",
-   "read_only": 1
+   "read_only": 1,
+   "columns": 2
   },
   {
    "fieldname": "from_user",
    "fieldtype": "Link",
-   "in_list_view": 1,
+   "in_list_view": 0,
    "label": "From User",
    "options": "User",
    "read_only": 1
@@ -45,19 +47,22 @@
    "in_list_view": 1,
    "label": "To User",
    "options": "User",
-   "read_only": 1
+   "read_only": 1,
+   "columns": 3
   },
   {
    "fieldname": "to_department",
    "fieldtype": "Link",
    "label": "To Department",
    "options": "Department",
-   "read_only": 1
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 3
   },
   {
    "fieldname": "user",
    "fieldtype": "Link",
-   "in_list_view": 1,
+   "in_list_view": 0,
    "label": "Performed By",
    "options": "User",
    "read_only": 1
@@ -66,7 +71,8 @@
    "fieldname": "note",
    "fieldtype": "Small Text",
    "label": "Note",
-   "read_only": 1
+   "read_only": 1,
+   "in_list_view": 0
   }
  ],
  "grid_page_length": 50,

@@ -11,6 +11,7 @@
  ],
  "fields": [
   {
+   "description": "Allows this user to read this correspondence at its configured confidentiality level, even outside its department.",
    "fieldname": "user",
    "fieldtype": "Link",
    "in_list_view": 1,

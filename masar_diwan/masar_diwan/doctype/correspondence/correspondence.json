@@ -8,6 +8,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "details_tab",
   "correspondence_type",
   "column_break_type",
   "reference_no",
@@ -21,6 +22,7 @@
   "party_type",
   "party",
   "column_break_party",
+  "category",
   "priority",
   "confidentiality",
   "section_break_confidentiality",
@@ -29,6 +31,7 @@
   "authorized_viewers",
   "column_break_dowd",
   "correspondence_sub_category",
+  "routing_tab",
   "section_break_routing",
   "status",
   "current_owner",
@@ -43,6 +46,7 @@
   "source_request",
   "delivery_sheet",
   "envelope",
+  "history_tab",
   "section_break_followup",
   "follow_up_actions",
   "section_break_transfer_log",
@@ -82,7 +86,8 @@
   },
   {
    "fieldname": "section_break_subject",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Subject and dates"
   },
   {
    "fieldname": "subject",
@@ -114,7 +119,8 @@
   },
   {
    "fieldname": "section_break_party",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Classification and related party"
   },
   {
    "fieldname": "party_type",
@@ -143,7 +149,8 @@
   },
   {
    "fieldname": "section_break_confidentiality",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Access and confidentiality"
   },
   {
    "default": "Normal",
@@ -186,11 +193,13 @@
    "fieldname": "authorized_viewers",
    "fieldtype": "Table MultiSelect",
    "label": "Authorized Viewers",
-   "options": "Correspondence Authorized Viewer"
+   "options": "Correspondence Authorized Viewer",
+   "description": "People explicitly allowed to view this correspondence, subject to the configured access rules."
   },
   {
    "fieldname": "section_break_routing",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Responsibility and follow-up"
   },
   {
    "default": "Draft",
@@ -236,7 +245,8 @@
   },
   {
    "fieldname": "section_break_related",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Related documents"
   },
   {
    "fieldname": "related_document_type",
@@ -284,7 +294,8 @@
    "fieldname": "follow_up_actions",
    "fieldtype": "Table",
    "label": "Follow-up Actions",
-   "options": "Follow-up Action"
+   "options": "Follow-up Action",
+   "description": "Assign each follow-up to a person and set a due date."
   },
   {
    "fieldname": "section_break_transfer_log",
@@ -296,7 +307,8 @@
    "fieldtype": "Table",
    "label": "Transfer Log",
    "options": "Correspondence Transfer Log",
-   "read_only": 1
+   "read_only": 1,
+   "description": "Recorded workflow changes and handoffs. Open a row for the full details."
   },
   {
    "fieldname": "qr_code_image",
@@ -312,6 +324,28 @@
   {
    "fieldname": "column_break_dowd",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Category",
+   "options": "Correspondence Category"
+  },
+  {
+   "fieldname": "details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Correspondence details"
+  },
+  {
+   "fieldname": "routing_tab",
+   "fieldtype": "Tab Break",
+   "label": "Routing and related documents"
+  },
+  {
+   "fieldname": "history_tab",
+   "fieldtype": "Tab Break",
+   "label": "Follow-up and history"
   }
  ],
  "grid_page_length": 50,
@@ -384,5 +418,6 @@
  "sort_order": "DESC",
  "states": [],
  "title_field": "subject",
- "track_changes": 1
+ "track_changes": 1,
+ "default_print_format": "Document Label"
 }

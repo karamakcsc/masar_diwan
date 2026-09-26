@@ -7,6 +7,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "access_rules_tab",
   "document_type",
   "owner_field",
   "column_break_fields",
@@ -19,9 +20,11 @@
   "supports_confidentiality",
   "confidentiality_field",
   "authorized_viewer_doctype",
+  "numbering_tab",
   "section_break_numbering",
   "numbering_prefix_source_doctype",
   "numbering_prefix_source_field",
+  "search_tab",
   "section_break_search",
   "searchable_fields"
  ],
@@ -124,14 +127,29 @@
   {
    "fieldname": "section_break_search",
    "fieldtype": "Section Break",
-   "label": "Unified Search"
+   "label": "Future Search"
   },
   {
-   "description": "Fields queried by the unified search across all registered document types.",
+   "description": "Reserved for cross-document search. The current Correspondence search uses Reference No and Subject; editing this list does not change those results.",
    "fieldname": "searchable_fields",
    "fieldtype": "Table",
    "label": "Searchable Fields",
    "options": "Document Access Profile Searchable Field"
+  },
+  {
+   "fieldname": "access_rules_tab",
+   "fieldtype": "Tab Break",
+   "label": "Access rules"
+  },
+  {
+   "fieldname": "numbering_tab",
+   "fieldtype": "Tab Break",
+   "label": "Reference Numbering"
+  },
+  {
+   "fieldname": "search_tab",
+   "fieldtype": "Tab Break",
+   "label": "Search fields"
   }
  ],
  "grid_page_length": 50,

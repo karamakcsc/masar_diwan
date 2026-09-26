@@ -10,6 +10,7 @@
  ],
  "fields": [
   {
+   "description": "Exact field name reserved for future cross-document search. The current Correspondence search does not use this list.",
    "fieldname": "fieldname",
    "fieldtype": "Data",
    "in_list_view": 1,

@@ -1,38 +1,6 @@
-/* masar_diwan Desk-side visual identity tokens + shared helpers.
-Loaded globally on every Desk page via hooks.py app_include_css, but its
-rules are deliberately either (a) new custom properties on :root - additive,
-never redefining any of Frappe's own core CSS variables, so nothing else on
-Desk changes appearance - or (b) selectors scoped to this app's own two
-Desk Pages via [data-page-route="..."], or (c) the shared .ref-code helper
-(see CLAUDE.md gotcha on reference-number bidi rendering). Page-body-local
-styling for correspondence-request-new lives in that page's own JS
-(inject_styles()), matching the convention already established there;
-correspondence-track's page-local styling is injected the same way from its
-own JS. This file only holds what genuinely needs to be available before/
-outside those page bodies render. */
-
-:root {
-	--md-ink-950: #0b111e;
-	--md-ink-900: #111827;
-	--md-ink-100: #eff2f5;
-	--md-ink-50:  #f8fafc;
-
-	--md-brand:         #1a375b;
-	--md-brand-strong:  #0b111e;
-
-	--md-accent:        #f59014;
-	--md-accent-strong: #d8790e;
-
-	--md-success: #187269;
-	--md-warning: #d8790e;
-	--md-danger:  #ba2c3c;
-	--md-info:    #7154b6;
-
-	--md-radius-lg: 15px;  /* large cards */
-	--md-radius-sm: 9px;   /* badges / small buttons */
-	--md-shadow-card: 0 1px 2px rgba(10,20,40,.04), 0 6px 20px -6px rgba(10,20,40,.10);
-}
-
+/* Diwan Desk components. Shared identity tokens live in diwan-tokens.css.
+   Route-specific styling uses body.md-desk, set by the shared Desk helper.
+   No Frappe theme variables are overridden. */
 /* ---------------------------------------------------------------------
    Reference-number bidi fix (Unicode bidi rule W2) - shared, applied
    everywhere a Correspondence/Correspondence Request reference number is
@@ -135,4 +103,105 @@ outside those page bodies render. */
 .md-hstepper__step.is-current .md-hstepper__label {
 	color: #111827;
 	font-weight: 500;
+}
+
+/* App-owned Desk screens only. Frappe variables preserve light/dark themes. */
+body.md-desk { --md-ui-border: var(--border-color, #dce3eb); }
+.md-desk .layout-main-section { border-radius: 14px; }
+.md-desk .page-title .title-text { font-weight: 650; }
+.md-desk .page-head .btn-primary { background: var(--md-brand); border-color: var(--md-brand); color: #fff; }
+.md-desk .page-head .btn-primary:hover { background: var(--md-brand-strong); }
+.md-desk .form-section .section-head { font-size: 15px; font-weight: 650; padding-block: 8px; }
+.md-desk .form-section { padding-block: 12px; }
+.md-desk .form-control { border: 1px solid var(--md-ui-border); min-height: 38px; border-radius: 8px; }
+.md-desk .frappe-control .control-label { font-weight: 500; line-height: 1.6; }
+.md-desk .form-grid { border-radius: 10px; overflow: hidden; }
+.md-desk .grid-heading-row { background: var(--subtle-fg, #f8fafc); }
+.md-desk .form-tabs-list { border-block-end: 1px solid var(--md-ui-border); }
+.md-desk .form-tabs-list .nav-link.active { color: var(--primary); font-weight: 650; }
+.md-desk .list-row { min-height: 48px; }
+.md-desk .list-row-head { min-height: 42px; background: var(--subtle-fg, #f8fafc); }
+.md-desk .list-row-col { line-height: 1.6; }
+.md-desk .widget { border-radius: 12px; }
+.md-desk .widget.number-widget-box { border-block-start: 3px solid var(--md-brand); }
+.md-desk .report-summary { gap: 12px; }
+.md-desk :is(button, a, input, select, textarea):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.md-form-guide { background: var(--subtle-fg, #f8fafc); border: 1px solid var(--border-color, #dce3eb); border-inline-start: 4px solid var(--md-accent); border-radius: 10px; padding: 18px 20px; margin: 20px 20px 8px; }
+.md-form-guide__title { font-weight: 650; font-size: 16px; color: var(--text-color); margin-block-end: 4px; }
+.md-form-guide p { margin: 0; font-size: 13px; line-height: 1.7; color: var(--text-muted); }
+.md-form-guide .md-form-guide__next { margin-block-start: 8px; color: var(--text-color); }
+@media (max-width: 767px) {
+	.md-form-guide { margin: 12px 10px 4px; padding: 14px; }
+	.md-desk .md-hstepper { flex-wrap: wrap; row-gap: 14px; }
+	.md-desk .md-hstepper__step { min-width: 85px; }
+	.md-desk .form-section .section-head { font-size: 14px; }
+}
+
+/* Custom Desk tasks share the form/list rhythm. */
+.md-desk .correspondence-request-new-page { padding: 20px; }
+.md-desk .correspondence-request-new-page .card { background: var(--card-bg, #fff); border-color: var(--border-color); box-shadow: none; }
+.md-desk .correspondence-request-new-page .card-body { padding: 22px; }
+.md-desk .correspondence-request-new-page .card-title { font-size: 16px; font-weight: 650; margin-block-end: 18px; }
+.md-desk .correspondence-request-new-page :is(.crn-readonly-label, .crn-file-size, .crn-step-label) { color: var(--text-muted); opacity: 1; }
+.md-desk .correspondence-request-new-page .crn-dropzone { color: var(--text-color); opacity: 1; border-color: var(--border-color); }
+.md-desk .correspondence-request-new-page .btn-group { display: flex; flex-wrap: wrap; gap: 6px; }
+.md-desk .correspondence-request-new-page .crn-save-feedback:empty { display: none; }
+.md-desk .md-track-intro { margin: 20px 0; }
+.md-desk .md-empty-state { padding: 32px 24px; text-align: center; color: var(--text-muted); border: 1px dashed var(--border-color); border-radius: 12px; background: var(--card-bg); }
+.md-desk .md-table-scroll { max-width: 100%; overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; }
+.md-desk .md-table-scroll table { min-width: 620px; margin: 0; border: 0; }
+.md-desk .md-table-scroll th { background: var(--subtle-fg); font-weight: 600; }
+.md-desk .md-table-scroll :is(th, td) { padding: 14px 16px; }
+@media (max-width: 767px) {
+	.md-desk .correspondence-request-new-page { padding: 12px; }
+	.md-desk .correspondence-request-new-page .card-body { padding: 16px; }
+	.md-desk .correspondence-request-new-page .crn-type-btn { padding-inline: 4px; font-size: 12px; }
+}
+.md-desk .tree-link { padding-block: 8px; line-height: 1.6; }
+.md-desk .tree-node .tree-label:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.md-desk .md-category-tree-guide { margin-inline: 0; }
+
+/* Keep full task and lifecycle names readable in the workspace. */
+.md-desk .shortcut-widget-box .widget-title,
+.md-desk .number-widget-box .widget-title {
+ white-space: normal;
+ overflow: visible;
+ text-overflow: clip;
+ line-height: 1.4;
+}
+.md-desk .number-widget-box .widget-head { min-height: 40px; }
+.md-desk .shortcut-widget-box .widget-title > .ellipsis,
+.md-desk .number-widget-box .widget-title > .ellipsis {
+ white-space: normal;
+ overflow: visible;
+ text-overflow: clip;
+}
+/* Give long report identifiers enough room without widening all filters. */
+.md-desk .page-form .frappe-control:has(input[data-fieldname="reference_doctype"]),
+.md-desk .page-form .frappe-control:has(input[data-fieldname="current_owner"]) {
+  min-width: 240px;
+}
+/* The request lifecycle value must remain readable in the native list. */
+.md-desk [id^="page-List/Correspondence Request/"] .list-row-col:nth-child(3) {
+  min-width: 190px;
+  flex: 0 0 190px !important;
+}
+.md-desk [id^="page-List/Correspondence Request/"] .indicator-pill[data-filter^="status,"] {
+  max-width: none;
+}
+/* Keep the category parent quick-filter name legible on desktop. */
+.md-desk [id^="page-List/Correspondence Category/"] .frappe-control:has(input[data-fieldname="parent_correspondence_category"]) {
+  min-width: 280px;
+}
+/* Operational quick filters should show their labels before a value is chosen. */
+.md-desk [id^="page-List/Envelope/"] .frappe-control:has(input[data-fieldname="linked_delivery_sheet"]),
+.md-desk [id^="page-List/Delivery Sheet/"] .frappe-control:has(input[data-fieldname="delivery_sheet_no"]),
+.md-desk [id^="page-List/Delivery Sheet/"] .frappe-control:has(input[data-fieldname="recipient_party"]) {
+  min-width: 225px;
+}
+/* The Arabic prefix in a delivery-sheet reference must keep its stored order. */
+.md-desk [id^="page-List/Delivery Sheet/"] .list-row:not(.list-row-head) .list-subject a,
+.md-desk [id^="page-List/Delivery Sheet/"] .list-row:not(.list-row-head) .level-left > .list-row-col:last-child {
+  direction: ltr;
+  unicode-bidi: bidi-override;
 }

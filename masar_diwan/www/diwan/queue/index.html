@@ -1,52 +1,51 @@
 {% extends "templates/pages/diwan_shell.html" %}
 
 {% block diwan_breadcrumb %}
-<a href="/diwan/queue">{{ _("Diwan Portal") }}</a> / {{ tab_label }}
-{% if active_tab == "queue" and detail and not detail.not_found %} / {{ detail.name }}{% endif %}
+{% if active_tab == "queue" %}
+<a href="/diwan/queue">{{ _("Diwan Portal") }}</a> / {{ _("Queue") }}
+{% if detail and not detail.not_found %} / {{ detail.name }}{% endif %}
+{% elif active_tab == "tray" %}<a href="/diwan/queue">{{ _("Diwan Portal") }}</a> / {{ _("Bulk Approve") }}{% elif active_tab == "delivery_sheets" %}<a href="/diwan/queue">{{ _("Diwan Portal") }}</a> / {{ _("Delivery Sheets") }}{% elif active_tab == "envelopes" %}<a href="/diwan/queue">{{ _("Diwan Portal") }}</a> / {{ _("Envelopes") }}{% elif active_tab == "audit_log" %}<a href="/diwan/queue">{{ _("Diwan Portal") }}</a> / {{ _("Access Log") }}{% endif %}
 {% endblock %}
 
 {% block diwan_title %}
-{%- if active_tab == "queue" and detail -%}
+{% if active_tab == "queue" %}
+{%- if detail -%}
 	{%- if detail.not_found -%}{{ _("Not Found") }}{%- else -%}{{ detail.subject }}{%- endif -%}
 {%- else -%}
-	{{ title }}
+	{{ _("Incoming Requests") }}
 {%- endif -%}
+{% elif active_tab == "tray" %}{{ _("Bulk Approve") }}{% elif active_tab == "delivery_sheets" %}{{ _("Delivery Sheets") }}{% elif active_tab == "envelopes" %}{{ _("Envelopes") }}{% elif active_tab == "audit_log" %}{{ _("Access Log") }}{% endif %}
 {% endblock %}
 
 {% block diwan_status %}
-{% if active_tab == "queue" and detail and not detail.not_found %}
+{% if active_tab == "queue" %}
+{% if detail and not detail.not_found %}
 <span id="status-pill"></span>
 <span id="confidentiality-pill"></span>
 {% endif %}
-{% endblock %}
-
-{% block diwan_primary_action %}
-{% if active_tab == "tray" %}
-<button class="diwan-btn diwan-btn--primary" id="approve-selected-btn" type="button" disabled>{{ _("Approve Selected") }}</button>
 {% endif %}
 {% endblock %}
 
 {% block diwan_body %}
-
 {% if active_tab == "queue" %}
-
 {% if not detail %}
 	{% if requests %}
 	<div class="diwan-card" style="padding:0;">
+		<div class="diwan-table-scroll" role="region" aria-label="{{ _('Results') }}" tabindex="0">
 		<table class="diwan-table">
 			<thead><tr>
-				<th>{{ _("Subject") }}</th>
-				<th>{{ _("Type") }}</th>
-				<th>{{ _("Requester") }}</th>
-				<th>{{ _("Department") }}</th>
-				<th>{{ _("Status") }}</th>
-				<th></th>
-				<th>{{ _("Requested") }}</th>
+				<th scope="col">{{ _("Subject") }}</th>
+				<th scope="col">{{ _("Type") }}</th>
+				<th scope="col">{{ _("Requester") }}</th>
+				<th scope="col">{{ _("Department") }}</th>
+				<th scope="col">{{ _("Status") }}</th>
+				<th scope="col">{{ _("Confidentiality") }}</th>
+				<th scope="col">{{ _("Requested") }}</th>
 			</tr></thead>
 			<tbody>
 				{% for r in requests %}
-				<tr onclick="window.location.href='/diwan/queue?name={{ r.name }}'" style="cursor:pointer;">
-					<td>{{ r.subject }}</td>
+				<tr>
+					<td><a class="diwan-table__subject" href="/diwan/queue?name={{ r.name | urlencode }}">{{ r.subject }}</a></td>
 					<td>{{ _(r.request_type) }}</td>
 					<td>{{ r.requested_by }}</td>
 					<td>{{ r.requesting_department or "-" }}</td>
@@ -58,6 +57,7 @@
 			</tbody>
 		</table>
 	</div>
+	</div>
 	{% else %}
 	<div class="diwan-empty">{{ _("Nothing waiting in the queue right now.") }}</div>
 	{% endif %}
@@ -67,7 +67,7 @@
 
 {% else %}
 	<div style="display:flex; gap:20px; flex-wrap:wrap;">
-		<div style="flex:2 1 380px;">
+		<div class="diwan-detail-main">
 			<div class="diwan-card">
 				<div class="diwan-card__title">{{ _("Details") }}</div>
 				<p><b>{{ _("Type") }}:</b> {{ _(detail.request_type) }}</p>
@@ -83,7 +83,7 @@
 				{% if dynamic_field_values %}
 				<div style="margin-block-start:14px; padding-block-start:12px; border-top:1px solid var(--md-ink-100);">
 					<p style="font-weight:600; margin-block-end:6px;">{{ _("Additional Fields") }}</p>
-					<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px 20px;">
+					<div class="diwan-detail-grid">
 						{% for f in dynamic_field_values %}
 						<p style="margin:0;"><b>{{ f.label }}:</b> {{ f.value }}</p>
 						{% endfor %}
@@ -107,28 +107,30 @@
 			<div class="diwan-card" id="decision-card">
 				<div class="diwan-card__title">{{ _("Decision") }}</div>
 
-				{% if detail.status == "Under Review" %}
-				<div class="diwan-field">
-					<label>{{ _("Decision Note") }}</label>
-					<textarea id="field-decision-note" rows="3">{{ detail.decision_note or "" }}</textarea>
-					<div class="diwan-hint">{{ _("Required for Reject and Request Revision.") }}</div>
-				</div>
-				{% endif %}
-
 				{% if detail.status == "Approved" %}
 				<div class="diwan-field">
-					<label>{{ _("Correspondence Type") }} *</label>
+					<label for="field-correspondence-type">{{ _("Correspondence Type") }} *</label>
 					<select id="field-correspondence-type">
 						<option value="">-</option>
 						{% for t in correspondence_types %}
 						<option value="{{ t.name }}" {{ "selected" if t.name == detail.correspondence_type else "" }}>{{ t.title }}</option>
 						{% endfor %}
 					</select>
-					<div class="diwan-hint">{{ _("Required to register - determines the reference number series. This is the Diwan department's own step, separate from the approval decision above.") }}</div>
+					<div class="diwan-hint">{{ _("Required to register - determines the reference number series.") }}</div>
+				</div>
+				{% endif %}
+				{% if detail.status == "Under Review" %}
+				{% if detail.decision_note %}
+				<div class="diwan-hint"><b>{{ _("Previous decision note") }}:</b> {{ detail.decision_note }}</div>
+				{% endif %}
+				<div class="diwan-field">
+					<label for="field-decision-note">{{ _("Decision Note") }}</label>
+					<textarea id="field-decision-note" rows="3"></textarea>
+					<div class="diwan-hint">{{ _("Required for Reject and Request Revision.") }}</div>
 				</div>
 				{% endif %}
 
-				<div id="decision-message"></div>
+				<div id="decision-message" role="status" aria-live="polite" tabindex="-1"></div>
 
 				<div style="display:flex; gap:8px; flex-wrap:wrap; margin-block-start:10px;">
 					{% if detail.status == "Pending Review" %}
@@ -167,15 +169,13 @@
 		</div>
 	</div>
 {% endif %}
-
 {% elif active_tab == "tray" %}
-
 <div class="diwan-card">
 	<div class="diwan-hint">
 		{{ _("Select requests that are straightforward and don't need individual review, pick one Correspondence Type for the batch, and register them all at once. Anything that needs a closer look belongs in the Queue instead.") }}
 	</div>
 	<div class="diwan-field" style="max-width:320px; margin-block-start:10px;">
-		<label>{{ _("Correspondence Type for this batch") }} *</label>
+		<label for="batch-correspondence-type">{{ _("Correspondence Type for this batch") }} *</label>
 		<select id="batch-correspondence-type">
 			<option value="">-</option>
 			{% for t in correspondence_types %}
@@ -185,23 +185,25 @@
 	</div>
 </div>
 
+<div id="batch-feedback" class="diwan-batch-feedback" role="status" aria-live="polite"></div>
 {% if tray_requests %}
 <div class="diwan-card" style="padding:0;">
-	<table class="diwan-table">
+	<div class="diwan-table-scroll" role="region" aria-label="{{ _('Results') }}" tabindex="0">
+		<table class="diwan-table">
 		<thead><tr>
-			<th style="width:32px;"><input type="checkbox" id="select-all"></th>
-			<th>{{ _("Subject") }}</th>
-			<th>{{ _("Type") }}</th>
-			<th>{{ _("Requester") }}</th>
-			<th>{{ _("Department") }}</th>
-			<th></th>
-			<th>{{ _("Result") }}</th>
+			<th style="width:32px;"><input type="checkbox" id="select-all" aria-label="{{ _('Select all requests on this page') }}"></th>
+			<th scope="col">{{ _("Subject") }}</th>
+			<th scope="col">{{ _("Type") }}</th>
+			<th scope="col">{{ _("Requester") }}</th>
+			<th scope="col">{{ _("Department") }}</th>
+			<th scope="col">{{ _("Confidentiality") }}</th>
+			<th scope="col">{{ _("Result") }}</th>
 		</tr></thead>
 		<tbody>
 			{% for r in tray_requests %}
 			<tr data-name="{{ r.name }}">
-				<td><input type="checkbox" class="row-select" value="{{ r.name }}"></td>
-				<td>{{ r.subject }}</td>
+				<td><input type="checkbox" class="row-select" value="{{ r.name }}" aria-label="{{ _('Select request') }}: {{ r.subject }}"></td>
+				<td><a class="diwan-table__subject" href="/diwan/queue?name={{ r.name | urlencode }}">{{ r.subject }}</a></td>
 				<td>{{ _(r.request_type) }}</td>
 				<td>{{ r.requested_by }}</td>
 				<td>{{ r.requesting_department or "-" }}</td>
@@ -211,83 +213,83 @@
 			{% endfor %}
 		</tbody>
 	</table>
+	</div>
 </div>
 {% else %}
 <div class="diwan-empty">{{ _("Nothing pending review right now.") }}</div>
 {% endif %}
-
 {% elif active_tab == "delivery_sheets" %}
-
 {% if sheets %}
 <div class="diwan-card" style="padding:0;">
-	<table class="diwan-table">
+	<div class="diwan-table-scroll" role="region" aria-label="{{ _('Results') }}" tabindex="0">
+		<table class="diwan-table">
 		<thead><tr>
-			<th>{{ _("No.") }}</th>
-			<th>{{ _("Method") }}</th>
-			<th>{{ _("Recipient") }}</th>
-			<th>{{ _("Status") }}</th>
-			<th></th>
+			<th scope="col">{{ _("No.") }}</th>
+			<th scope="col">{{ _("Method") }}</th>
+			<th scope="col">{{ _("Recipient") }}</th>
+			<th scope="col">{{ _("Status") }}</th>
+			<th scope="col">{{ _("Actions") }}</th>
 		</tr></thead>
 		<tbody>
 			{% for s in sheets %}
 			<tr>
-				<td><span class="ref-code">{{ s.name }}</span></td>
+				<td>{% if can_open_desk %}<a class="ref-code" href="/desk/delivery-sheet/{{ s.name | urlencode }}">{{ s.name }}</a>{% else %}<span class="ref-code">{{ s.name }}</span>{% endif %}</td>
 				<td>{{ _(s.delivery_method) }}</td>
 				<td>{{ s.recipient_party }}</td>
 				<td><span class="ds-status-pill" data-status="{{ s.status }}"></span></td>
 				<td>
-					<a class="diwan-btn" target="_blank"
+					<a class="diwan-btn" target="_blank" rel="noopener"
 						href="/printview?doctype=Delivery+Sheet&name={{ s.name | urlencode }}&format=Delivery+Sheet+Print">{{ _("Print") }}</a>
 				</td>
 			</tr>
 			{% endfor %}
 		</tbody>
 	</table>
+	</div>
 </div>
 {% else %}
-<div class="diwan-empty">{{ _("No delivery sheets yet.") }}</div>
+<div class="diwan-empty">{{ _("No delivery sheets yet.") }}<p class="diwan-hint">{{ _("Delivery sheets group documents for dispatch and record proof of receipt.") }}</p></div>
 {% endif %}
-
 {% elif active_tab == "envelopes" %}
-
 {% if envelopes %}
 <div class="diwan-card" style="padding:0;">
-	<table class="diwan-table">
+	<div class="diwan-table-scroll" role="region" aria-label="{{ _('Results') }}" tabindex="0">
+		<table class="diwan-table">
 		<thead><tr>
-			<th>{{ _("No.") }}</th>
-			<th>{{ _("Status") }}</th>
-			<th>{{ _("Delivery Sheet") }}</th>
-			<th>{{ _("Created") }}</th>
-			<th></th>
+			<th scope="col">{{ _("No.") }}</th>
+			<th scope="col">{{ _("Status") }}</th>
+			<th scope="col">{{ _("Delivery Sheet") }}</th>
+			<th scope="col">{{ _("Created") }}</th>
+			<th scope="col">{{ _("Actions") }}</th>
 		</tr></thead>
 		<tbody>
 			{% for e in envelopes %}
 			<tr>
-				<td><span class="ref-code">{{ e.name }}</span></td>
+				<td><a class="ref-code" href="/track?ref={{ e.name | urlencode }}">{{ e.name }}</a></td>
 				<td><span class="env-status-pill" data-status="{{ e.status }}"></span></td>
 				<td>{{ e.linked_delivery_sheet or "-" }}</td>
 				<td>{{ frappe.utils.format_date(e.creation_date) if e.creation_date else "-" }}</td>
 				<td>
-					<a class="diwan-btn" target="_blank"
+					{% if can_open_desk %}<a class="diwan-btn" href="/desk/envelope/{{ e.name | urlencode }}">{{ _("Open") }}</a>{% endif %}
+					<a class="diwan-btn" target="_blank" rel="noopener"
 						href="/printview?doctype=Envelope&name={{ e.name | urlencode }}&format=Envelope+Label">{{ _("Print") }}</a>
 				</td>
 			</tr>
 			{% endfor %}
 		</tbody>
 	</table>
+	</div>
 </div>
 {% else %}
-<div class="diwan-empty">{{ _("No envelopes yet.") }}</div>
+<div class="diwan-empty">{{ _("No envelopes yet.") }}<p class="diwan-hint">{{ _("Envelopes keep related documents together and provide a tracking reference.") }}</p></div>
 {% endif %}
-
 {% elif active_tab == "audit_log" %}
-
 <div class="diwan-card">
 	<form method="get" style="display:flex; gap:10px; flex-wrap:wrap; align-items:end;">
 		<input type="hidden" name="tab" value="audit_log">
 		<div class="diwan-field" style="margin:0;">
-			<label>{{ _("Event Type") }}</label>
-			<select name="event_type">
+			<label for="audit-event_type">{{ _("Event Type") }}</label>
+			<select id="audit-event_type" name="event_type">
 				<option value="">{{ _("All") }}</option>
 				{% for opt in ["Login", "View", "Download", "QR Scan", "Barcode Scan", "Tray Decision"] %}
 				<option value="{{ opt }}" {{ "selected" if active_filters.event_type == opt else "" }}>{{ _(opt) }}</option>
@@ -295,8 +297,8 @@
 			</select>
 		</div>
 		<div class="diwan-field" style="margin:0;">
-			<label>{{ _("Result") }}</label>
-			<select name="result">
+			<label for="audit-result">{{ _("Result") }}</label>
+			<select id="audit-result" name="result">
 				<option value="">{{ _("All") }}</option>
 				{% for opt in ["Success", "Denied"] %}
 				<option value="{{ opt }}" {{ "selected" if active_filters.result == opt else "" }}>{{ _(opt) }}</option>
@@ -304,8 +306,8 @@
 			</select>
 		</div>
 		<div class="diwan-field" style="margin:0;">
-			<label>{{ _("Channel") }}</label>
-			<select name="channel">
+			<label for="audit-channel">{{ _("Channel") }}</label>
+			<select id="audit-channel" name="channel">
 				<option value="">{{ _("All") }}</option>
 				{% for opt in ["Desk", "Portal"] %}
 				<option value="{{ opt }}" {{ "selected" if active_filters.channel == opt else "" }}>{{ _(opt) }}</option>
@@ -319,15 +321,16 @@
 
 {% if entries %}
 <div class="diwan-card" style="padding:0;">
-	<table class="diwan-table">
+	<div class="diwan-table-scroll" role="region" aria-label="{{ _('Results') }}" tabindex="0">
+		<table class="diwan-table">
 		<thead><tr>
-			<th>{{ _("When") }}</th>
-			<th>{{ _("User") }}</th>
-			<th>{{ _("Event") }}</th>
-			<th>{{ _("Channel") }}</th>
-			<th>{{ _("Result") }}</th>
-			<th>{{ _("Reference") }}</th>
-			<th>{{ _("IP") }}</th>
+			<th scope="col">{{ _("When") }}</th>
+			<th scope="col">{{ _("User") }}</th>
+			<th scope="col">{{ _("Event") }}</th>
+			<th scope="col">{{ _("Channel") }}</th>
+			<th scope="col">{{ _("Result") }}</th>
+			<th scope="col">{{ _("Reference") }}</th>
+			<th scope="col">{{ _("IP") }}</th>
 		</tr></thead>
 		<tbody>
 			{% for e in entries %}
@@ -343,18 +346,18 @@
 			{% endfor %}
 		</tbody>
 	</table>
+	</div>
 </div>
 {% else %}
 <div class="diwan-empty">{{ _("No access log entries match these filters.") }}</div>
 {% endif %}
-
 {% endif %}
 {% endblock %}
 
 {% block diwan_script %}
+{% if active_tab == "queue" %}
 <script>
 frappe.ready(function () {
-	{% if active_tab == "queue" %}
 	document.querySelectorAll(".request-status-pill").forEach(function (el) {
 		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.status);
 	});
@@ -377,24 +380,26 @@ frappe.ready(function () {
 			frappe.utils.escape_html(text) + "</div>";
 	}
 
-	function applyAction(action, extraFields) {
-		var chain = Promise.resolve();
-		if (extraFields && Object.keys(extraFields).length) {
-			chain = frappe.call({
-				method: "frappe.client.set_value",
-				args: { doctype: "Correspondence Request", name: detail.name, fieldname: extraFields },
-			});
-		}
-		chain.then(function () {
-			return frappe.call({
-				method: "frappe.model.workflow.apply_workflow",
-				args: { doc: { doctype: "Correspondence Request", name: detail.name }, action: action },
-			});
-		}).then(function () {
+	var actionPending = false;
+	async function applyAction(action, extraFields) {
+		if (actionPending) return;
+		actionPending = true;
+		var controls = document.querySelectorAll("#decision-card button, #decision-card input, #decision-card select, #decision-card textarea");
+		controls.forEach(el => { el.disabled = true; });
+		showMessage(__("Saving decision…"), false);
+		try {
+			if (extraFields && Object.keys(extraFields).length) {
+				await frappe.call({ method: "frappe.client.set_value", args: { doctype: "Correspondence Request", name: detail.name, fieldname: extraFields } });
+			}
+			await frappe.call({ method: "frappe.model.workflow.apply_workflow", args: { doc: { doctype: "Correspondence Request", name: detail.name }, action: action } });
 			window.location.reload();
-		}).catch(function (err) {
+		} catch (error) {
 			showMessage(__("Could not complete this action. Check the required fields above."), true);
-		});
+			document.getElementById("decision-message").focus();
+		} finally {
+			actionPending = false;
+			controls.forEach(el => { el.disabled = false; });
+		}
 	}
 
 	var startBtn = document.getElementById("start-review-btn");
@@ -402,31 +407,33 @@ frappe.ready(function () {
 
 	var approveBtn = document.getElementById("approve-btn");
 	if (approveBtn) approveBtn.addEventListener("click", function () {
-		applyAction("Approve");
+		applyAction("Approve", { decision_note: document.getElementById("field-decision-note").value.trim() });
 	});
-
 	var registerBtn = document.getElementById("register-btn");
 	if (registerBtn) registerBtn.addEventListener("click", function () {
-		var ct = document.getElementById("field-correspondence-type").value;
-		if (!ct) { showMessage(__("Set a Correspondence Type before registering."), true); return; }
-		applyAction("Register", { correspondence_type: ct });
+		var field = document.getElementById("field-correspondence-type");
+		if (!field.value) { showMessage(__("Set a Correspondence Type before registering."), true); field.focus(); return; }
+		applyAction("Register", { correspondence_type: field.value });
 	});
 
 	var revisionBtn = document.getElementById("revision-btn");
 	if (revisionBtn) revisionBtn.addEventListener("click", function () {
-		var note = document.getElementById("field-decision-note").value;
+		var note = document.getElementById("field-decision-note").value.trim();
 		if (!note) { showMessage(__("A decision note is required."), true); return; }
 		applyAction("Request Revision", { decision_note: note });
 	});
 
 	var rejectBtn = document.getElementById("reject-btn");
 	if (rejectBtn) rejectBtn.addEventListener("click", function () {
-		var note = document.getElementById("field-decision-note").value;
+		var note = document.getElementById("field-decision-note").value.trim();
 		if (!note) { showMessage(__("A decision note is required."), true); return; }
 		applyAction("Reject", { decision_note: note });
 	});
-
-	{% elif active_tab == "tray" %}
+});
+</script>
+{% elif active_tab == "tray" %}
+<script>
+frappe.ready(function () {
 	document.querySelectorAll(".conf-pill").forEach(function (el) {
 		el.outerHTML = diwanPortal.confidentialityPillHtml(el.dataset.conf);
 	});
@@ -435,19 +442,28 @@ frappe.ready(function () {
 	var rowChecks = Array.prototype.slice.call(document.querySelectorAll(".row-select"));
 	var approveBtn = document.getElementById("approve-selected-btn");
 
+	var busy = false;
 	function refreshButton() {
-		approveBtn.disabled = !rowChecks.some(function (c) { return c.checked; });
+		var available = rowChecks.filter(c => !c.disabled);
+		var selected = available.filter(c => c.checked);
+		approveBtn.disabled = busy || !selected.length;
+		approveBtn.textContent = selected.length ? __("Approve Selected ({0})", [selected.length]) : __("Approve Selected");
+		if (selectAll) {
+			selectAll.checked = available.length > 0 && selected.length === available.length;
+			selectAll.indeterminate = selected.length > 0 && selected.length < available.length;
+			selectAll.disabled = busy || !available.length;
+		}
 	}
-	if (selectAll) {
-		selectAll.addEventListener("change", function () {
-			rowChecks.forEach(function (c) { c.checked = selectAll.checked; });
-			refreshButton();
-		});
-	}
-	rowChecks.forEach(function (c) { c.addEventListener("change", refreshButton); });
+	if (selectAll) selectAll.addEventListener("change", function () {
+		rowChecks.filter(c => !c.disabled).forEach(c => { c.checked = selectAll.checked; });
+		refreshButton();
+	});
+	rowChecks.forEach(c => c.addEventListener("change", refreshButton));
+	refreshButton();
 
 	function setRowResult(name, html, isError) {
-		var row = document.querySelector('tr[data-name="' + name + '"] .row-result');
+		var checkbox = rowChecks.find(c => c.value === name);
+		var row = checkbox && checkbox.closest("tr").querySelector(".row-result");
 		if (row) {
 			row.innerHTML = html;
 			row.style.color = isError ? "var(--md-danger)" : "var(--md-success)";
@@ -455,12 +471,6 @@ frappe.ready(function () {
 	}
 
 	function approveOne(name, correspondenceType) {
-		// Approve (the review decision) and Register (the Diwan-only typing/
-		// numbering step) are two separate workflow transitions - see the
-		// Queue tab for the same split. The tray still does both in one
-		// chained pass for a whole batch, since staff using this page are
-		// deliberately committing to a full one-shot decision, type
-		// included, for straightforward requests.
 		return frappe.call({
 			method: "frappe.model.workflow.apply_workflow",
 			args: { doc: { doctype: "Correspondence Request", name: name }, action: "Start Review" },
@@ -486,44 +496,86 @@ frappe.ready(function () {
 					frappe.utils.escape_html(r.message.resulting_correspondence) + "</span>)",
 				false
 			);
+			return true;
 		}).catch(function () {
-			setRowResult(name, frappe.utils.escape_html(__("Failed")), true);
+			setRowResult(name, '<a href="/diwan/queue?name=' + encodeURIComponent(name) + '">' + frappe.utils.escape_html(__("Open for individual review")) + '</a>', true);
+			return false;
 		});
 	}
 
-	approveBtn.addEventListener("click", function () {
-		var ct = document.getElementById("batch-correspondence-type").value;
+	approveBtn.addEventListener("click", async function () {
+		if (busy) return;
+		var typeField = document.getElementById("batch-correspondence-type");
+		var ct = typeField.value;
+		var feedback = document.getElementById("batch-feedback");
 		if (!ct) {
-			frappe.msgprint(__("Select a Correspondence Type for this batch first."));
+			feedback.textContent = __("Select a Correspondence Type for this batch first.");
+			typeField.focus();
 			return;
 		}
-		var selected = rowChecks.filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
-		approveBtn.disabled = true;
-		selected.reduce(function (chain, name) {
-			return chain.then(function () { return approveOne(name, ct); });
-		}, Promise.resolve()).then(function () {
-			approveBtn.textContent = __("Done");
-		});
+		var selected = rowChecks.filter(c => c.checked && !c.disabled);
+		if (!selected.length) return;
+		busy = true;
+		typeField.disabled = true;
+		rowChecks.forEach(c => { c.dataset.wasDisabled = String(c.disabled); c.disabled = true; });
+		refreshButton();
+		var approved = 0;
+		try {
+			for (var index = 0; index < selected.length; index++) {
+				feedback.textContent = __("Processing request {0} of {1}…", [index + 1, selected.length]);
+				if (await approveOne(selected[index].value, ct)) approved++;
+				selected[index].dataset.processed = "true";
+				selected[index].checked = false;
+			}
+			feedback.textContent = __("{0} approved; {1} need individual review.", [approved, selected.length - approved]);
+		} finally {
+			busy = false;
+			typeField.disabled = false;
+			rowChecks.forEach(c => { c.disabled = c.dataset.wasDisabled === "true" || c.dataset.processed === "true"; });
+			refreshButton();
+		}
 	});
 
-	{% elif active_tab == "delivery_sheets" %}
-	var DS_STATUS_CLASS = { "Pending Delivery": "pending", "Delivered": "review", "Receipt Confirmed": "approved" };
-	document.querySelectorAll(".ds-status-pill").forEach(function (el) {
-		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.status, DS_STATUS_CLASS);
-	});
-
-	{% elif active_tab == "envelopes" %}
-	var ENV_STATUS_CLASS = { "Open": "pending", "Sent": "review", "Archived": "approved" };
-	document.querySelectorAll(".env-status-pill").forEach(function (el) {
-		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.status, ENV_STATUS_CLASS);
-	});
-
-	{% elif active_tab == "audit_log" %}
-	var LOG_STATUS_CLASS = { "Success": "approved", "Denied": "rejected" };
-	document.querySelectorAll(".result-pill").forEach(function (el) {
-		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.result, LOG_STATUS_CLASS);
-	});
-	{% endif %}
 });
 </script>
+{% elif active_tab == "delivery_sheets" %}
+<script>
+frappe.ready(function () {
+	var STATUS_CLASS = { "Pending Delivery": "pending", "Delivered": "review", "Receipt Confirmed": "approved" };
+	document.querySelectorAll(".ds-status-pill").forEach(function (el) {
+		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.status, STATUS_CLASS);
+	});
+});
+</script>
+{% elif active_tab == "envelopes" %}
+<script>
+frappe.ready(function () {
+	var STATUS_CLASS = { "Open": "pending", "Sent": "review", "Archived": "approved" };
+	document.querySelectorAll(".env-status-pill").forEach(function (el) {
+		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.status, STATUS_CLASS);
+	});
+});
+</script>
+{% elif active_tab == "audit_log" %}
+<script>
+frappe.ready(function () {
+	var STATUS_CLASS = { "Success": "approved", "Denied": "rejected" };
+	document.querySelectorAll(".result-pill").forEach(function (el) {
+		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.result, STATUS_CLASS);
+	});
+});
+</script>
+{% endif %}
+{% endblock %}
+
+{% block diwan_primary_action %}
+{% if active_tab == "tray" %}
+<button class="diwan-btn diwan-btn--primary" id="approve-selected-btn" type="button" disabled>{{ _("Approve Selected") }}</button>
+{% elif active_tab == "delivery_sheets" %}
+{% if can_open_desk %}<a class="diwan-btn" href="/desk/delivery-sheet">{{ _("Manage in Desk") }}</a>{% endif %}
+{% if can_create %}<a class="diwan-btn diwan-btn--primary" href="/desk/delivery-sheet/new-delivery-sheet">{{ _("New Delivery Sheet") }}</a>{% endif %}
+{% elif active_tab == "envelopes" %}
+{% if can_open_desk %}<a class="diwan-btn" href="/desk/envelope">{{ _("Manage in Desk") }}</a>{% endif %}
+{% if can_create %}<a class="diwan-btn diwan-btn--primary" href="/desk/envelope/new-envelope">{{ _("New Envelope") }}</a>{% endif %}
+{% endif %}
 {% endblock %}

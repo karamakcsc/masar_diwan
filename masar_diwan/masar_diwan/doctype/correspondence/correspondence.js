@@ -50,6 +50,9 @@ frappe.ui.form.on("Correspondence", {
 		if (frm.is_new()) {
 			return;
 		}
+		frm.add_custom_button(__("Track Correspondence"), () => {
+			window.open("/track?ref=" + encodeURIComponent(frm.doc.name), "_blank", "noopener");
+		});
 		render_source_request_banner(frm);
 		render_registered_dashboard_section(frm);
 	},
@@ -71,7 +74,7 @@ function render_registered_dashboard_section(frm) {
 	frm.dashboard.parent.find(".correspondence-registered-section").remove();
 
 	const qr_html = frm.doc.qr_code
-		? `<img src="${frappe.utils.escape_html(frm.doc.qr_code)}" style="width:96px; height:96px; object-fit:contain; border:1px solid var(--md-ink-100, #eff2f5); border-radius:9px;">`
+		? `<img alt="${__("Tracking QR Code")}" src="${frappe.utils.escape_html(frm.doc.qr_code)}" style="width:96px; height:96px; object-fit:contain; border:1px solid var(--md-ink-100, #eff2f5); border-radius:9px;">`
 		: `<div class="text-muted small">${__("No QR code generated yet")}</div>`;
 
 	const registered_by = frm.doc.owner
@@ -90,7 +93,7 @@ function render_registered_dashboard_section(frm) {
 				${qr_html}
 				<div class="small text-muted mt-1 ref-code">${frappe.utils.escape_html(frm.doc.name)}</div>
 			</div>
-			<div style="flex:1; min-width:260px;">
+			<div style="flex:1; min-width:0;">
 				<div class="text-muted small mb-2">${__("Registered by")}: ${registered_by}</div>
 				${window.masarDiwanDesk.renderCorrespondenceStepper(frm.doc.status)}
 			</div>

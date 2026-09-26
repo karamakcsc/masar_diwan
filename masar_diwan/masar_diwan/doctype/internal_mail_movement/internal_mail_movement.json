@@ -64,7 +64,8 @@
    "fieldname": "content_description",
    "fieldtype": "Small Text",
    "label": "Content Description",
-   "reqd": 1
+   "reqd": 1,
+   "description": "Describe the contents and any instructions needed by the receiving department."
   },
   {
    "fieldname": "section_break_related",

@@ -177,3 +177,255 @@ Search Correspondence,البحث عن مراسلة,
 Reference Not Found,لم يتم العثور على الرقم المرجعي,
 Restricted content,محتوى مقيّد,
 You are not authorized to view this correspondence,غير مخوّل بالاطلاع على هذه المراسلة,
+Skip to content,انتقل إلى المحتوى
+Close menu,إغلاق القائمة
+Track correspondence,تتبّع المراسلات
+Filter loaded rows,تصفية الصفوف المعروضة
+{0} of {1} rows,{0} من {1} صفوف
+No matching rows. Try another search.,لا توجد صفوف مطابقة. جرّب بحثاً آخر.
+Results,النتائج
+Subject and dates,الموضوع والتواريخ
+Classification and related party,التصنيف والجهة ذات العلاقة
+Access and confidentiality,الصلاحيات والسرية
+Responsibility and follow-up,المسؤولية والمتابعة
+Related documents,المستندات المرتبطة
+Request details,تفاصيل الطلب
+Review and outcome,المراجعة والنتيجة
+Delivery destination,وجهة التسليم
+Documents to deliver,المستندات المطلوب تسليمها
+Delivery confirmation,تأكيد التسليم
+Enclosed documents,المستندات المرفقة
+Document and access context,المستند وتفاصيل الوصول
+"Register correspondence, assign responsibility, and follow its progress.",سجّل المراسلة وحدّد المسؤول عنها وتابع تقدم العمل عليها.
+Prepare a draft for the Diwan team. An official reference is assigned after approval.,أعدّ مسودة لفريق الديوان. يُخصّص الرقم الرسمي بعد الموافقة.
+"Record the sending and receiving departments, then track the handoff.",حدّد القسم المرسِل والقسم المستلِم، ثم تابع عملية التسليم.
+Group correspondence for delivery and record the recipient's proof of receipt.,اجمع المراسلات للتسليم وسجّل إثبات استلامها.
+Group documents in an envelope and link it to a delivery sheet when ready.,اجمع المستندات في مغلف واربطه بكشف تسليم عند الجاهزية.
+Organize categories and define the additional fields required for each request.,نظّم التصنيفات وحدّد الحقول الإضافية اللازمة لكل طلب.
+Define a correspondence type and the prefix used for its reference numbers.,عرّف نوع المراسلة والبادئة المستخدمة في أرقامها المرجعية.
+Define who can read documents at this confidentiality level.,حدّد من يمكنه قراءة المستندات ضمن مستوى السرية هذا.
+"Configure department access, confidentiality, numbering, and search for a document type.",اضبط صلاحيات الأقسام والسرية والترقيم والبحث لنوع المستند.
+Manage reference numbering and the response to restricted QR scans.,أدِر الترقيم المرجعي والاستجابة لمسح رموز المستندات المقيّدة.
+"Read-only history of document access and actions, including denied attempts.",سجل للقراءة فقط لعمليات الوصول والإجراءات، بما فيها المحاولات المرفوضة.
+Complete the required fields and save your draft before taking the next action.,أكمل الحقول المطلوبة واحفظ المسودة قبل الانتقال إلى الإجراء التالي.
+Submitted to the Diwan team and waiting for review.,أُرسل إلى فريق الديوان وهو بانتظار المراجعة.
+Review the details and use the available workflow actions to continue.,راجع التفاصيل واستخدم إجراءات سير العمل المتاحة للمتابعة.
+"Read the decision note, update the request, and submit it again.",اقرأ ملاحظة القرار وحدّث الطلب ثم أعد إرساله.
+Read the decision note for the reason this request was rejected.,اقرأ ملاحظة القرار لمعرفة سبب رفض الطلب.
+The request has been registered. Open the resulting correspondence to follow its progress.,تم تسجيل الطلب. افتح المراسلة الناتجة لمتابعة تقدمها.
+Follow up with the current owner and record progress before completion.,تابع مع المسؤول الحالي وسجّل التقدم قبل إتمام العمل.
+Work is complete. Review the history and related documents.,اكتمل العمل. يمكنك مراجعة السجل والمستندات المرتبطة.
+This correspondence is archived for reference.,هذه المراسلة مؤرشفة للرجوع إليها.
+Used at the start of new reference numbers. Existing references remain unchanged.,تُستخدم في بداية الأرقام المرجعية الجديدة. لا تتغير الأرقام الحالية.
+Fields defined here appear on requests using this category. Review field types and required values before saving.,تظهر هذه الحقول في الطلبات التي تستخدم هذا التصنيف. راجع أنواع الحقول والقيم المطلوبة قبل الحفظ.
+Higher ranks represent more restricted information.,تشير الرتب الأعلى إلى معلومات أكثر تقييداً.
+These roles can read documents at this level regardless of the owner and department flags.,تستطيع هذه الأدوار قراءة المستندات في هذا المستوى بغض النظر عن إعدادات المالك والقسم.
+Manage the prefix and sequence for each correspondence type. Changing counters can affect future reference numbers.,أدِر البادئة والتسلسل لكل نوع مراسلة. قد يؤثر تغيير العدّادات في الأرقام المرجعية المستقبلية.
+Select a registered correspondence document to include in this delivery.,اختر مراسلة مسجّلة لإضافتها إلى هذا التسليم.
+Remove attachment,إزالة المرفق
+Saving request and attachments…,جارٍ حفظ الطلب والمرفقات…
+"Draft saved, but some attachments failed to upload. Retry to upload the remaining files before submitting.",حُفظت المسودة، لكن تعذّر رفع بعض المرفقات. أعد المحاولة لرفع الملفات المتبقية قبل الإرسال.
+Select all requests,تحديد جميع الطلبات
+Select request,تحديد الطلب
+A decision note is required.,ملاحظة القرار مطلوبة.
+Access Log,سجل الوصول
+Additional Fields,حقول إضافية
+All,الكل
+Approve Selected,الموافقة على المحدد
+Approved,تمت الموافقة
+Bulk Approve,الموافقة الجماعية
+Camera scanner library failed to load,تعذّر تحميل أداة المسح بالكاميرا
+Clear,مسح
+Correspondence Type for this batch,نوع المراسلة لهذه المجموعة
+Could not complete this action. Check the required fields above.,تعذّر إكمال الإجراء. تحقّق من الحقول المطلوبة أعلاه.
+Could not save the request. Please check the required fields.,تعذّر حفظ الطلب. يرجى التحقق من الحقول المطلوبة.
+Created,تاريخ الإنشاء
+Decision,القرار
+Delivery Sheets,كشوف التسليم
+Details,التفاصيل
+Diwan Portal,بوابة الديوان
+Edit & Resubmit,تعديل وإعادة إرسال
+Enter the exact tracking reference or scan the QR code printed on the correspondence. This only shows the single record you already hold a reference to - it is not a search tool.,أدخل الرقم المرجعي كاملاً أو امسح رمز الاستجابة السريعة المطبوع على المراسلة. تُعرض تفاصيل السجل المطابق فقط.
+Envelopes,المغلفات
+Event,الحدث
+Failed,فشل
+Filter,تصفية
+IP,عنوان IP
+Incoming Requests,الطلبات الواردة
+Menu,القائمة
+Method,الطريقة
+My Requests,طلباتي
+New Correspondence Request,طلب مراسلة جديد
+New Request,طلب جديد
+No access log entries match these filters.,لا توجد سجلات وصول تطابق عوامل التصفية.
+No correspondence or envelope found for this reference.,لم يُعثر على مراسلة أو مغلف بهذا الرقم المرجعي.
+No delivery sheets yet.,لا توجد كشوف تسليم بعد.
+No documents in this envelope.,لا توجد مستندات في هذا المغلف.
+No envelopes yet.,لا توجد مغلفات بعد.
+No.,الرقم
+Not Found,غير موجود
+Nothing pending review right now.,لا توجد طلبات بانتظار المراجعة حالياً.
+Nothing waiting in the queue right now.,لا توجد طلبات في قائمة الانتظار حالياً.
+Outcome,النتيجة
+Print,طباعة
+Queue,قائمة الانتظار
+Recipient,المستلم
+Reference,المرجع
+Reference Number,الرقم المرجعي
+"Reference number, then Enter",الرقم المرجعي، ثم اضغط إدخال
+Requested,تاريخ الطلب
+Requester,مقدّم الطلب
+Requester Portal,بوابة مقدّم الطلب
+Required before approving - determines the reference number series.,مطلوب قبل الموافقة لتحديد سلسلة الأرقام المرجعية.
+Required for Reject and Request Revision.,مطلوب عند الرفض أو طلب التعديل.
+Revise and Resubmit,تعديل وإعادة إرسال
+Save as Draft,حفظ كمسودة
+"Saved as draft, but could not submit for review.",حُفظت المسودة، لكن تعذّر إرسالها للمراجعة.
+Saved as draft.,حُفظت المسودة.
+Scan or Enter a Reference,امسح الرمز أو أدخل الرقم المرجعي
+Select a Correspondence Type for this batch first.,اختر نوع المراسلة لهذه المجموعة أولاً.
+"Select requests that are straightforward and don't need individual review, pick one Correspondence Type for the batch, and register them all at once. Anything that needs a closer look belongs in the Queue instead.",حدّد الطلبات الجاهزة التي لا تحتاج إلى مراجعة فردية، واختر نوع مراسلة واحداً لتسجيلها دفعة واحدة. استخدم قائمة الانتظار لمراجعة الطلبات التي تحتاج إلى تدقيق.
+Set a Correspondence Type before approving.,حدّد نوع المراسلة قبل الموافقة.
+Sub Category,التصنيف الفرعي
+Subject is required.,الموضوع مطلوب.
+Submitted by,مقدّم الطلب
+"This reference exists, but you are not authorized to view its details.",هذا الرقم المرجعي موجود، لكن ليس لديك صلاحية عرض تفاصيله.
+This request doesn't exist or you don't have access to it.,هذا الطلب غير موجود أو ليس لديك صلاحية الوصول إليه.
+Track,التتبّع
+Track Correspondence,تتبّع المراسلات
+Tracking QR Code,رمز الاستجابة السريعة للتتبّع
+Type,النوع
+When,الوقت
+Who is this correspondence with?,ما الجهة المعنية بهذه المراسلة؟
+You haven't submitted any correspondence requests yet.,لم تقدّم أي طلبات مراسلة بعد.
+new,جديد
+Define fields on the category used to file the request (a leaf category). They appear on requests and registered correspondence for that category.,عرّف الحقول في التصنيف النهائي المستخدم لتقديم الطلب. تظهر هذه الحقول في الطلبات والمراسلات المسجّلة ضمن ذلك التصنيف.
+Select a request type and enter a subject to continue.,الرجاء اختيار نوع المعاملة وإدخال الموضوع قبل المتابعة.
+Submitting for review…,جارٍ الإرسال للمراجعة...
+Saving draft…,جارٍ حفظ المسودة...
+Draft saved with reference,تم حفظ الطلب كمسودة برقم
+Classification,التصنيف
+Priority and confidentiality,الأولوية ودرجة السرية المقترحتان
+Drop files here or choose files,اسحب وأفلت الملفات هنا، أو اضغط للاختيار
+Request status,حالة الطلب
+The Diwan team will review your request and may ask for changes before registering it.,بعد الإرسال، تتم مراجعة طلبك من قبل أمين الديوان وقد يُطلب منك تعديله قبل اعتماده وتسجيله رسمياً.
+Request submitted for review,تم إرسال الطلب للمراجعة بنجاح
+Request reference:,رقم الطلب:
+View Request,عرض الطلب
+A tracking QR code becomes available after approval and official registration.,سيتم توليد رمز QR للتتبع تلقائياً بعد اعتماد الطلب وتسجيله كمراسلة رسمية.
+Choose attachments,اختيار المرفقات
+Could not complete this action. Your entered details are still available; please try again.,تعذّر إكمال الإجراء. لا تزال البيانات المدخلة متاحة؛ يرجى إعادة المحاولة.
+Find correspondence or track a reference,البحث عن مراسلة أو تتبّع مرجع
+"Enter an exact reference to track a document, or search by reference and subject below.",أدخل الرقم المرجعي كاملاً لتتبّع مستند، أو ابحث بالمرجع والموضوع أدناه.
+Searching…,جارٍ البحث…
+Search could not be completed. Please try again.,تعذّر إكمال البحث. يرجى إعادة المحاولة.
+No matching correspondence. Try another reference or subject.,لا توجد مراسلات مطابقة. جرّب مرجعاً أو موضوعاً آخر.
+Search results,نتائج البحث
+Loading document…,جارٍ تحميل المستند…
+The document could not be loaded. Please try again.,تعذّر تحميل المستند. يرجى إعادة المحاولة.
+Manage in Desk,إدارة من المكتب
+New Delivery Sheet,كشف تسليم جديد
+New Envelope,مغلف جديد
+Delivery sheets group documents for dispatch and record proof of receipt.,تجمع كشوف التسليم مستندات الإرسال وتوثّق إثبات استلامها.
+Envelopes keep related documents together and provide a tracking reference.,تجمع المغلفات المستندات المرتبطة وتوفّر رقماً مرجعياً للتتبّع.
+Daily work,العمل اليومي
+Delivery and movement,التسليم وحركة البريد
+Reports and oversight,التقارير والرقابة
+Configuration,الإعدادات
+Correspondence overview,نظرة عامة على المراسلات
+Correspondence - Referred or In Progress,المراسلات - محالة أو قيد التنفيذ
+Correspondence details,تفاصيل المراسلة
+Routing and related documents,التوجيه والمستندات المرتبطة
+Follow-up and history,المتابعة والسجل
+Access rules,قواعد الوصول
+Search fields,حقول البحث
+Tracking and confidentiality,التتبّع والسرية
+Assign each follow-up to a person and set a due date.,عيّن مسؤولاً وتاريخ استحقاق لكل إجراء متابعة.
+Recorded workflow changes and handoffs. Open a row for the full details.,تغييرات سير العمل وعمليات التسليم المسجّلة. افتح الصف لعرض التفاصيل كاملة.
+"People explicitly allowed to view this correspondence, subject to the configured access rules.",الأشخاص المصرّح لهم صراحةً بعرض هذه المراسلة، وفق قواعد الوصول المحدّدة.
+Describe the contents and any instructions needed by the receiving department.,صِف المحتويات وأي تعليمات يحتاجها القسم المستلِم.
+Select the correspondence enclosed in this envelope. Party details are filled from each document.,اختر المراسلات داخل هذا المغلف. تُجلب تفاصيل الجهة من كل مستند.
+Attach the signed receipt before confirming receipt.,أرفق إيصال الاستلام الموقّع قبل تأكيد الاستلام.
+Select each correspondence once and review its subject before dispatch.,اختر كل مراسلة مرة واحدة وراجع موضوعها قبل الإرسال.
+The last issued number. The next reference increments this counter.,آخر رقم صادر. يزيد الرقم المرجعي التالي هذا العدّاد.
+Year of the last annual reset.,سنة آخر إعادة تعيين سنوية.
+Approve Selected ({0}),الموافقة على المحدد ({0})
+Open for individual review,فتح للمراجعة الفردية
+Processing request {0} of {1}…,جارٍ معالجة الطلب {0} من {1}…
+{0} approved; {1} need individual review.,تمت الموافقة على {0}؛ ويحتاج {1} إلى مراجعة فردية.
+Guided request,طلب بخطوات مبسّطة
+Track Envelope,تتبّع المغلف
+From Date must be on or before To Date.,يجب أن يكون تاريخ البداية قبل تاريخ النهاية أو مساوياً له.
+Follow-up From,المتابعة من
+Follow-up To,المتابعة إلى
+Created From,الإنشاء من
+Created To,الإنشاء إلى
+Delivery reference QR code,رمز الاستجابة السريعة لمرجع التسليم
+Date and time,التاريخ والوقت
+Keep this reference to track your correspondence.,احتفظ بهذا المرجع لتتبّع مراسلتك.
+Select an option,اختر خياراً
+No matching options.,لا توجد خيارات مطابقة.
+Saving decision…,جارٍ حفظ القرار…
+Edit Draft,تعديل المسودة
+Saving request…,جارٍ حفظ الطلب…
+This record is archived for reference.,هذا السجل مؤرشف للرجوع إليه.
+The receiving department can confirm receipt after the handoff.,يمكن للقسم المستلِم تأكيد الاستلام بعد التسليم.
+Receipt has been recorded. Review the recipient and receipt time.,تم تسجيل الاستلام. راجع المستلِم ووقت الاستلام.
+"Review the recipient, address, and document list before dispatch.",راجع المستلِم والعنوان وقائمة المستندات قبل الإرسال.
+Delivery is complete and proof of receipt is recorded.,اكتمل التسليم وسُجّل إثبات الاستلام.
+Add the enclosed documents and link a delivery sheet when ready.,أضف المستندات المرفقة واربط كشف التسليم عند الجاهزية.
+Use the tracking reference to follow this envelope.,استخدم الرقم المرجعي لتتبّع هذا المغلف.
+Stop camera,إيقاف الكاميرا
+Enter a reference number to continue.,أدخل رقماً مرجعياً للمتابعة.
+Starting camera…,جارٍ تشغيل الكاميرا…
+"Point the camera at the QR code, or stop scanning to enter a reference.",وجّه الكاميرا نحو رمز الاستجابة السريعة، أو أوقف المسح لإدخال المرجع.
+The camera could not start. Check camera access or enter the reference manually.,تعذّر تشغيل الكاميرا. تحقّق من إذن الكاميرا أو أدخل المرجع يدوياً.
+Pagination,التنقّل بين الصفحات
+Previous page,الصفحة السابقة
+Next page,الصفحة التالية
+Page {0},الصفحة {0}
+Edit Request,تعديل الطلب
+Save Changes,حفظ التغييرات
+Resubmit for Review,إعادة الإرسال للمراجعة
+Changes saved.,حُفظت التغييرات.
+Only your own drafts and revision requests can be edited here.,يمكنك هنا تعديل مسوداتك وطلباتك المعادة للتعديل فقط.
+Category fields could not be loaded. Select the category again to retry.,تعذّر تحميل حقول التصنيف. أعد اختيار التصنيف للمحاولة مجدداً.
+Categories could not be loaded. Reload this page to try again.,تعذّر تحميل التصنيفات. أعد تحميل الصفحة للمحاولة مجدداً.
+Wait for the category fields to finish loading before saving.,انتظر حتى يكتمل تحميل حقول التصنيف قبل الحفظ.
+Existing formatting is kept unless you edit this text. Text edits are saved with simple line breaks.,يُحفظ التنسيق الحالي ما لم تعدّل هذا النص. تُحفظ التعديلات النصية بفواصل أسطر بسيطة.
+Correspondence Categories,تصنيفات المراسلات
+Organize request categories,تنظيم تصنيفات الطلبات
+Category list,قائمة التصنيفات
+Use groups to organize categories. Configure request fields on a leaf category. Open a category to manage its fields or disable it.,استخدم المجموعات لتنظيم التصنيفات، وأضف حقول الطلب إلى التصنيف النهائي. افتح التصنيف لإدارة حقوله أو تعطيله.
+
+Select all requests on this page,تحديد جميع الطلبات في هذه الصفحة
+Courier,المندوب
+Delivered By (Courier Signature),توقيع المندوب المسلّم
+Received By (Party Signature),توقيع الجهة المستلمة
+Correspondence Tracking,تتبع المراسلات
+Track Portal,بوابة التتبع
+Diwan Review Queue,قائمة مراجعة الديوان
+Diwan Bulk Approve,الاعتماد الجماعي للديوان
+Delivery Sheets (Portal),كشوف التسليم (البوابة)
+Envelopes (Portal),المغلفات (البوابة)
+Access Log (Portal),سجل الوصول (البوابة)
+Submit Request (Portal),تقديم طلب (البوابة)
+My Requests (Portal),طلباتي (البوابة)
+Document Access Profile,ملف صلاحيات المستند
+Confidentiality Level,مستوى السرية
+Internal Mail Movement,حركة البريد الداخلي
+Correspondence - Draft,المراسلات - مسودة
+Correspondence - Under Review,المراسلات - قيد المراجعة
+Correspondence - Completed,المراسلات - مكتملة
+Correspondence - Archived,المراسلات - مؤرشفة
+Correspondence by Department,المراسلات حسب القسم
+Correspondence Trend,اتجاه المراسلات
+"History of document access and actions, including denied attempts.",سجل عمليات الوصول إلى المستندات والإجراءات، بما فيها المحاولات المرفوضة.
+Previous decision note,ملاحظة القرار السابقة
+Label {0} of {1},ملصق {0} من {1}
+Future Search,بحث مستقبلي
+Reserved for cross-document search. The current Correspondence search uses Reference No and Subject; editing this list does not change those results.,محجوز للبحث المستقبلي عبر أنواع المستندات. يستخدم البحث الحالي عن المراسلات الرقم المرجعي والموضوع ولا يؤثر تعديل هذه القائمة في نتائجه.
+Exact field name reserved for future cross-document search. The current Correspondence search does not use this list.,اسم الحقل الدقيق المحجوز للبحث المستقبلي عبر أنواع المستندات. لا يستخدم البحث الحالي عن المراسلات هذه القائمة.
+Users with this role can read documents at this confidentiality level across departments.,يستطيع المستخدمون الذين لديهم هذا الدور قراءة المستندات في مستوى السرية هذا عبر الأقسام.
+Allows this user to read this correspondence at its configured confidentiality level, even outside its department.,يسمح لهذا المستخدم بقراءة هذه المراسلة وفق مستوى سريتها المحدد حتى خارج قسمه.
+Bypasses department checks for this document type. Confidentiality rules still apply unless that level also lists this role as a bypass.,يتجاوز هذا الدور قيود القسم لهذا النوع من المستندات. وتظل قواعد السرية سارية ما لم يدرج مستوى السرية هذا الدور ضمن أدوار التجاوز.

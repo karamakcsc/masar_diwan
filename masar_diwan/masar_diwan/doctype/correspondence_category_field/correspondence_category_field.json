@@ -27,13 +27,14 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Label",
-   "reqd": 1
+   "reqd": 1,
+   "columns": 4
   },
   {
-   "description": "Built once from the first Label entered (slugified + a short random suffix to avoid collisions), then locked. This is the real, permanent column name behind this field (as csf_<this value> on Correspondence Request/Correspondence) - it never changes again even if Label is edited later, so previously-entered data is never orphaned.",
+   "description": "Built once from the first Label entered (slugified + a short random suffix to avoid collisions), then locked. This is the real, permanent column name behind this field (as csf_ followed by this value on Correspondence Request and Correspondence) - it never changes again even if Label is edited later, so previously-entered data is never orphaned.",
    "fieldname": "fieldname_slug",
    "fieldtype": "Data",
-   "in_list_view": 1,
+   "in_list_view": 0,
    "label": "Field Name (auto, permanent)",
    "read_only": 1
   },
@@ -48,14 +49,16 @@
    "in_list_view": 1,
    "label": "Field Type",
    "options": "Data\nInt\nCurrency\nDate\nSelect\nCheck\nLink",
-   "reqd": 1
+   "reqd": 1,
+   "columns": 3
   },
   {
    "depends_on": "eval:doc.fieldtype == \"Select\" || doc.fieldtype == \"Link\"",
    "description": "For Select: one option per line. For Link: the target DocType's exact name.",
    "fieldname": "options",
    "fieldtype": "Small Text",
-   "label": "Options"
+   "label": "Options",
+   "in_list_view": 0
   },
   {
    "depends_on": "eval:doc.fieldtype == \"Link\"",
@@ -63,7 +66,8 @@
    "fieldname": "link_scope",
    "fieldtype": "Select",
    "label": "Link Scope",
-   "options": "core\nerpnext"
+   "options": "core\nerpnext",
+   "in_list_view": 0
   },
   {
    "fieldname": "column_break_2",
@@ -74,13 +78,15 @@
    "fieldname": "reqd",
    "fieldtype": "Check",
    "in_list_view": 1,
-   "label": "Mandatory"
+   "label": "Mandatory",
+   "columns": 1
   },
   {
    "default": "0",
    "fieldname": "sort_order",
    "fieldtype": "Int",
-   "label": "Sort Order"
+   "label": "Sort Order",
+   "in_list_view": 0
   },
   {
    "default": "1",
@@ -88,7 +94,8 @@
    "fieldname": "is_active",
    "fieldtype": "Check",
    "in_list_view": 1,
-   "label": "Active"
+   "label": "Active",
+   "columns": 2
   },
   {
    "fieldname": "section_break_reuse",
@@ -102,14 +109,16 @@
    "fieldtype": "Select",
    "label": "Definition",
    "options": "New Field\nReuse Existing Field",
-   "reqd": 1
+   "reqd": 1,
+   "in_list_view": 0
   },
   {
    "depends_on": "eval:doc.definition_mode == \"Reuse Existing Field\"",
    "description": "Enter the exact \"Field Name (auto, permanent)\" value of the field to reuse, from any other category. Field Type/Options/Link Scope are then taken from that existing definition, not from what's set above, to guarantee the shared column stays consistent everywhere it's used.",
    "fieldname": "reuse_fieldname_slug",
    "fieldtype": "Data",
-   "label": "Existing Field Name To Reuse"
+   "label": "Existing Field Name To Reuse",
+   "in_list_view": 0
   }
  ],
  "grid_page_length": 50,

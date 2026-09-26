@@ -18,21 +18,25 @@
    "in_list_view": 1,
    "label": "Correspondence",
    "options": "Correspondence",
-   "reqd": 1
+   "reqd": 1,
+   "description": "Select a registered correspondence document to include in this delivery.",
+   "columns": 3
   },
   {
    "fieldname": "subject",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Subject",
-   "read_only": 1
+   "read_only": 1,
+   "columns": 5
   },
   {
    "fieldname": "attachment_count",
    "fieldtype": "Int",
    "in_list_view": 1,
    "label": "Attachments",
-   "read_only": 1
+   "read_only": 1,
+   "columns": 2
   }
  ],
  "grid_page_length": 50,

@@ -928,3 +928,141 @@ Applied via `doc.save()` (not `reload_doc`, per this file's own long-documented 
 3. **For anything about how something *visually renders* (an icon, a color, a layout, a fallback vs. the real thing) — checking `bootinfo`/the database/an API response is never sufficient proof, no matter how directly it seems to relate.** The only acceptable evidence is an actual screenshot of a page actually rendered in an actual browser. This was violated **twice** in this exact file on the icon question alone: first, multiple sessions reported the Workspace/Desktop Icon `icon` field as "verified" from database and boot-payload checks, when the field turned out to not even be read by the code path that renders that specific tile at all (see the section above) — the data was correct and the conclusion was still wrong. If this environment has no browser-automation tool available (check first — `chromium`/`chrome` binary, Playwright, Selenium, Puppeteer; as of this writing, none exist here), **say so explicitly and ask the user to confirm visually themselves** rather than reporting something as "verified." A data-layer check can rule out data-layer bugs; it can never on its own prove what a rendered pixel looks like. (Separately: a real HTTP fetch of the full page *is* legitimate evidence for "does the right data reach the browser," e.g. confirming `frappe.desk.desktop.get_workspaces()` isn't what renders the home grid at all — that's verifying data delivery, not visual rendering; don't conflate the two.)
 4. **Any diagnostic action that changes real, shared, hard-to-reverse state — resetting a password, clicking a destructive UI action, running a command whose effect can't be inspected before it runs — must be flagged to the user immediately when it happens, or avoided entirely in favor of a disposable/reversible alternative (a throwaway test user, a copy, a dry run).** Not after the user notices it themselves. This happened once in this project: `bench set-password Administrator ...` was run to test a login-based theory instead of using a disposable test user (the pattern used successfully in every other verification here) — overwriting a real, unrecoverable credential on a real bench without asking first. Flagged immediately once noticed, but it should never have happened; the disposable-test-user pattern already established throughout this file's own verification sections was right there to reuse.
 5. **A fix this file recommends for one situation is not automatically safe for a superficially similar one — re-check, don't just reuse.** Gotcha #4 recommends `frappe.reload_doc(..., force=True)` to force a standard doc's JSON edit into the DB. Reusing that exact recommendation on a `Workspace` document (gotcha #10) deleted the file it was meant to fix, because `Workspace` has its own `on_update()` deletion logic that Print Format/Report/Workflow don't have. Before applying a previously-documented fix to a new situation, check whether the target doctype has any doctype-specific hooks that could behave differently — grep the controller (`frappe/**/doctype/<name>/<name>.py`) for `on_update`/`before_save`/`on_trash` first, rather than assuming "this worked for doctype X, so it'll work the same way for doctype Y."
+
+
+## 2026-09-25: UI/UX overhaul started (active, not complete)
+
+The user authorized the whole-app UI/UX overhaul and local verification, explicitly forbidding any push. Working branch is `codex/UI`. The actual site in this environment is `bara.diwan` on port 8001, not the historical sites/accounts above. A dedicated `ui.audit@diwan.local` user and clearly named UI test requests/attachments were created; existing user credentials were not changed.
+
+Plan: `UI_UX_PLAN.md`. Authoritative coverage and verification ledger: `docs/UI_UX_AUDIT.md`. Shared Desk/portal palette now lives in `public/css/diwan-tokens.css`, included before each surface stylesheet. New Desk styling is scoped by `body.md-desk`; `frappe.get_route()` can be null during `app_ready`, so the route helper must retain its empty-array guard.
+
+Implemented accessible mobile navigation, native keyboard radio controls, explicit labels, bounded/filterable portal tables, real record links, record-preserving language switching, responsive request form/footer actions, form guidance and section names, and missing Arabic portal translations. Fixed a real portal upload bug: fetch HTTP failures used to be treated as upload success and discarded staged files; failed files now remain for retry, submission waits for uploads, and overlapping saves are blocked. `tests/ui/portal.cjs` verifies this against the live development site.
+
+Browser evidence: all eight portal routes rendered at 360/768/1440 in EN/AR without document overflow or page errors; ten editable/configuration Desk forms rendered with shared guidance. Screenshots were inspected, not inferred from metadata. Initial axe findings for audit filter names were corrected. Full workflow, role, print, report, workspace, and child-table coverage remains pending—do not mark the goal complete from the shared styling alone. No code pushed.
+
+### UI/UX batch 2 and testing deferral
+
+The user subsequently instructed: **do not spend tokens testing now; test all changes once implementation is done**. Honor that constraint; do not restart incremental browser/lint/test work. The latest source changes have not been verified. Batch 2 adds bilingual custom Desk request entry, robust pending/upload feedback, tracking search states, native form tabs and child-grid columns, list lifecycle indicators/filters, report filters (with permission clauses retained), grouped workspace/all five cards, redesigned print templates, accessible dynamic Link pickers, safer review/bulk/resubmission interactions, and camera controls. Detailed coverage and remaining implementation gaps are recorded in `docs/UI_UX_AUDIT.md`. Only batch-1 metadata was synced locally; batch-2 metadata/workspace/print templates still need deliberate final synchronization. No push has occurred or is authorized.
+
+
+### UI/UX batch 3 — source coverage complete, verification pending
+
+Added permission-aware pagination to six portal lists, complete draft/revision editing through `/diwan/submit?name=...`, retained attachments/category/dynamic values and unchanged rich text, correct Resubmit action, category-load race guards, and category-tree guidance/list navigation. Bulk selection names the current page. Updated plan and audit ledger. No tests were run for this batch, consistent with the user's deferral. Source coverage spans the inventory; this is not functional or visual verification. Batch 2/3 metadata, workspace, and print changes still require careful synchronization and consolidated verification. The goal remains incomplete. No push.
+
+### UI/UX consolidated integration and verification begun
+
+After completing source implementation, synchronized 17 DocTypes, all three print templates, and Workspace content/number cards locally. Backup: `/tmp/diwan-ui-integration-backup.json` (private). Used migration flag and disabled developer export in the integration process; avoided destructive Workspace force-reload. Static checks passed. Integrated portal interaction checks and complete-draft editing passed; all 48 bilingual/responsive portal views passed again, with Arabic mobile screenshot inspected. Report queries run but currently return no rows, leaving populated correctness unproven. Broader Desk/role/workflow/print validation remains pending. See audit ledger. Nothing pushed.
+
+Desk rendering follow-up passed for all ten editable/configuration forms. A test timeout was due to selecting the previous hidden SPA guide; visible-guide selection corrected the harness. No application fix was needed for that timeout. Full workflow verification remains pending.
+
+
+### Workspace/print visual review and fixes
+
+Confirmed integrated workspace visually; fixed native child-span ellipsis that truncated long task/card titles. Label CSS now declares PDF page width/height and margins on `.print-format` as required by Frappe's PDF option extraction, in addition to browser `@page`; label metadata margins are 3mm. Delivery table fonts now inherit print sizing, and courier/signature labels have Arabic translations. Changes synchronized. Six EN/AR sample templates rendered with loaded QR images; Chromium PDFs have expected label/A4 sizes, repeated delivery headers and final signatures. wkhtmltopdf is not installed, so configured-renderer output is not verified. Samples are in-memory and did not add business records. Evidence and remaining scope are in the audit ledger. Nothing pushed.
+
+
+### Revision and requester permission checks
+
+Integrated browser revision journey passed with the dedicated audit user: Submit, Start Review, required decision note, Request Revision, full-form edit and Resubmit retained request identity and revised text. Added reusable `tests/ui/revision.cjs`. Separate controller checks using a temporary requester-only account denied all five staff portal controllers and another owner's draft editor, while allowing new-request entry. Temporary user/document rolled back; no welcome email or credential changes. Broader workflow/access coverage remains open in the audit ledger. No push.
+
+### Populated workflow/report/pagination verification
+
+Approval/registration, overdue date boundaries, completion-report inclusion, 51-row pagination, movement handoff, envelope linkage/QR, and delivery proof-required/confirmed linkage checks passed using audit fixtures. See audit ledger for evidence limits. Discovered the existing `access_log.log_event()` commits transactions: do not promise rollback-only isolation for workflows that call it. Initial approval left the isolated type and approved audit request behind while the resulting correspondence rolled back; removed those exact two test records after dependency checks. Audit events retained. Requester-only user and permission draft were confirmed absent; pagination fixtures also rolled back. Movement/delivery fixtures rolled back. No production records changed and nothing pushed.
+
+
+### Dynamic-field async integration fix
+
+Custom Desk request category callbacks had stale-response and prefill-overwrite gaps. Added sequence guards, loading/save protection, required subcategory checks, and current-value retention. Portal also retains edits made while metadata requests are pending. Browser checks with controlled delayed metadata responses passed on the real Desk page; all seven shared controls and keyboard Link selection passed. Tests saved under `tests/ui/desk-categories.cjs` and `dynamic-fields.cjs`; mocked responses mean server field generation and search permissions remain separate checks. Updated audit ledger. No push.
+
+
+### Custom Desk tracking completion checks
+
+Tracking page now offers explicit Track/Enter actions, actual search-result URLs, current Desk document routes, and scrollable envelope tables. Real missing-reference API browser check passed; controlled restricted/envelope cases passed rendering/keyboard/link checks. Mobile screenshot inspected after closing native Desk sidebar, with no document-level overflow. Added `tests/ui/tracking.cjs`; mocks do not establish permission enforcement. Updated audit ledger; goal still active. No push.
+
+
+### Arabic workspace verification
+
+Desk `_lang=ar` alone can change direction while retaining the audit user's English boot translations. Verify `frappe.boot.lang` before claiming Arabic Desk coverage. Temporarily switched only `ui.audit@diwan.local` to Arabic, found/fixed 18 missing workspace labels, cleared caches, and visually checked 390px/1440px. All five cards and translated task/chart labels render without horizontal overflow or page errors. Restored the user's original language afterward. Evidence and scope in the audit ledger. No push.
+
+### Consolidated completion checklist and native routes
+
+Created `docs/UI_UX_COMPLETION.md` as the current requirement/evidence checklist, preserving the full inventory and six concrete remaining verification areas. Updated plan status and labeled the old audit matrix historical to avoid treating stale rows as current status. Browser route checks passed for all ten non-singleton top-level DocType lists and category tree guide with scoped styling/no JS errors. Populated actions and child-grid behavior remain separate checks. Nothing pushed.
+
+### Bulk browser recovery and portal request interception
+
+Bulk partial-failure UI check passed with corrected interception: type validation, 1/1 summary, individual-review link, processed-row lockout. Portal frappe.call may send `cmd` POSTs rather than `/api/method/...` URLs. An initial endpoint-only mock missed two guarded audit approvals; verified persisted CR-2026-0001/0002 and their approved UI audit source requests, retained as evidence. Corrected `tests/ui/bulk.cjs` catches both request forms and aborts other POSTs during actions. Development site's missing outgoing email account appeared; no external email sent. No business records selected and nothing pushed.
+
+
+### Audit detail role-aware review
+
+Access Log Entry preserves System Manager write permission and officer/senior read-only permission. Browser check with System Manager temporarily removed from only the dedicated audit account confirmed no Save action and read-only fields; screenshot inspected. Exact original roles restored. Shared guide now says “History…” rather than inaccurately promising read-only behavior for every role. No enforcement changes. No push.
+
+
+### Real category/access/report integration
+
+Created an isolated category group/leaf with a required Data field. The real portal required it and reopened a saved draft with its value. Deleted the draft/categories and confirmed both generated Custom Fields were removed. Temporarily marked an existing UI audit correspondence Highly Confidential: a restricted employee saw masked tracking, no list/report row, and denied private download; the owner retained access. Restored fields and deleted the temporary user. Three Desk reports loaded; Access Log Report rendered 32 rows. Widened its clipped reference-type filter. Evidence and remaining variants are in the audit/checklist. No push.
+
+
+### Source/site presentation audit and child grids
+
+Compared 21 modified presentation documents with the local DB. Fixed the only mismatch: a Category Field slug help example used angle brackets and Frappe ate the placeholder as HTML. After resync, zero mismatches. Arabic CSV has no duplicate keys; diff whitespace check passed. All 11 child controls initialized on owning forms, and category/delivery row editors rendered on unsaved forms with labels/guidance. Access Log Report displayed 32 rows and summary; widened its clipped reference-type filter. Evidence/limits in `docs/UI_UX_AUDIT.md`. Nothing pushed.
+
+
+### Queue previous-note rejection bug
+
+An officer queue test found that prefilled `decision_note` let an old revision reason satisfy Reject without a fresh note. Separated the previous note from an empty decision textarea. A dedicated pending audit request with a previous note proved empty Reject fails, a fresh note persists, and requester detail shows it. Corrected the earlier owned audit request's displayed rejection reason. Added `tests/ui/rejection.cjs`; audit has details. No business requests or push.
+
+
+### Configured print renderer limit
+
+Actual `get_print` for audit Correspondence CR-2026-0001 includes its reference and QR; private QR inlining succeeded. Frappe extracts 90×50mm/3mm label settings, but `prepare_options` also includes site A4 default. wkhtmltopdf is unavailable locally, so final configured-renderer size is unresolved; browser Chromium PDF dimensions alone do not prove it. Track this as a print risk rather than declaring print complete. No push.
+
+### Large envelope labels
+
+The 90×50mm Envelope Label previously listed every document in one label and could overflow. It now groups three references per repeated label, with envelope ID, total count, label index, and QR on each. Eight-document in-memory fixture produced exactly three 90×50mm Chromium PDF pages with all references in order; screenshot inspected. Source and site format synchronized. wkhtmltopdf page breaks remain unverified in this environment. No push.
+
+
+### Custom Desk request full journey
+
+Real browser flow passed: forced upload HTTP 500 kept the attachment staged, retry uploaded it, and Submit for Review transitioned the same audit draft to Pending Review with one private attachment. Corrected browser harness to click visible action by accessible name; first hidden-dropdown-target attempt left an extra dedicated Draft, which was deleted. Added `tests/ui/desk-request.cjs`. No business request changed or code pushed.
+
+
+### Populated delivery/envelope portal review
+
+Canonicalized portal Desk links from `/app` redirects to `/desk`. Verified populated Envelope and Delivery Sheet lists at 390px/1440px with Desk/print links, no document overflow, and envelope tracking showing its linked audit correspondence. Inspected mobile screenshots. Deleted isolated fixture records and restored audit correspondence links. No push.
+
+### Populated reports, individual approval, and final native-list pass
+
+Real audit-log portal filters Event Type=Download, Result=Denied, Channel=Desk combined correctly and Clear reset them. Populated Overdue report showed audit CR-2026-0001 with owner/type filters and correct count/date; the temporary follow-up date was restored. Populated Completion report showed CR-2026-0003 and summary using one temporary child log; the exact log was removed. Individual portal Start Review/Approve & Register on named UI-audit request produced CR-2026-0003 with verified back-link. Populated request/correspondence native lists displayed rows/actions/status, though the long request status clipped; source CSS now gives that column 190px. Report owner filter now gets 240px. Controlled camera failure retained manual tracking. Fresh browser capture of the last CSS adjustment still needed because the long-lived Chrome context held an older stylesheet and cache-disabled reload stalled. See `docs/UI_UX_AUDIT.md` and `docs/UI_UX_COMPLETION.md`. No push.
+
+### Current final-pass state
+
+Final source/site presentation comparison: 21 documents, zero mismatches. All app JSON parses and `git diff --check` passes. The local static server serves the new report-filter and request-status CSS. Fresh Chrome capture of that final CSS was not obtained: both a cache-disabled existing session and a fresh headless session timed out during navigation, while the site and CSS endpoint remained responsive. Keep this distinction in the checklist. Goal remains active for the remaining category/permission/list-grid checks and environment-limited wkhtmltopdf/hardware output. Nothing pushed.
+
+### PDF option source audit and request-list badge resolution
+
+Read Frappe `prepare_options` and wkhtmltopdf's official converter source. Frappe sends A4 plus 90×50mm label dimensions, but wkhtmltopdf uses explicit width and height ahead of the named page size. Its page-size parser does not accept `Custom`; a brief source-only attempt to add that value was removed, and the local site Print Formats stayed on their prior valid CSS. Actual wkhtmltopdf output still cannot be rendered here because the binary is absent. Closed 20 stale dedicated audit browser tabs, which restored navigation. Fresh screenshot revealed Frappe's status badge itself had a 150px cap; scoped CSS now removes it, and “Approved & Numbered” renders fully at 1440px. Final `requested_by` width experiment was removed because it did not visibly improve that native column. No push.
+
+### Real category variants
+
+Isolated group/leaf category generated Link, Select, Currency, and Check Custom Fields on both Request and Correspondence. Live `get_dynamic_fields` returned all four. A temporary Website User with only Correspondence Employee role searched the real allowed Correspondence Type Link endpoint and found Circular. Deleted the exact category pair, all generated fields, and temporary user; absence verified. Full category-value transfer through revision/approval remains. No push.
+
+### Department visibility and dynamic value lifecycle
+
+Temporary matching/other-department employee users showed expected Normal, Confidential, and Highly Confidential tracking/list/overdue visibility on CR-2026-0001. Two actual 390px browser logins confirmed full Confidential tracking detail for the matching employee and a masked result with no subject for the other. Screenshots inspected. Correspondence restored; temporary users/permissions and password file removed. A fresh database session confirmed cleanup after one in-process assertion disagreed with committed state. Separate real category field kept A-001 through Request Revision, saved B-002 on Resubmit, and copied B-002 into registered Correspondence on Approve & Register. Exact audit request/correspondence/QR/category/type/numbering/generated-field fixtures removed. No push.
+
+### Configuration lists and 51-row child grid
+
+Real native Correspondence Type, Confidentiality Level, and Document Access Profile lists showed 4/3/2 rows and readable key values. Correspondence Category is currently empty and shows Frappe's create action. Its parent quick-filter label clipped; scoped 280px CSS now displays it fully in a fresh screenshot. An unsaved Category form with 51 in-memory Dynamic Field rows displayed 50 on the first page and row 51 after Last; no record saved. No push.
+
+### Admin search language and browser-load cleanup
+
+Document Access Profile's Searchable Fields was inaccurately described as controlling live unified search; current search is hardcoded to reference number/subject. Labeled section “Future Search” and clarified parent/child help in EN/AR without changing backend search or permissions. Added help to bypass-role, authorized-viewer, and exempt-role one-field child DocTypes; Department Field child already had required entry and detailed help, so intentionally unchanged. Compared 25 modified presentation documents with site; zero mismatches. A populated Envelope/Delivery/Movement native-list attempt timed out under high host load and produced no evidence; deleted its three audit fixtures and restored correspondence links, confirmed in a fresh DB session. Closed dedicated audit browser; site `/login` responded HTTP 200 in 0.26s afterward. Server process was never restarted or reconfigured. No push.
+
+### Populated operational lists and mixed-script reference
+
+Retried isolated Envelope, Delivery Sheet, and Internal Mail Movement native rows with a fresh browser; all three rendered real data and lifecycle indicators. Their exact fixtures were deleted and correspondence links restored. Screenshot review caught three clipped operational quick-filter labels and a visually reversed Arabic Delivery Sheet number. Scoped CSS widens the filters and applies the shared bidi-override treatment to the Delivery Sheet subject and ID cells. A second fresh-browser capture confirmed both fixes, then the browser was closed. No server restart or configuration change. No push.
+
+### Final UI/UX local review
+
+Unsaved Category Field row-editor keyboard check advanced focus from Label to the visible Field Type select, with no page error; browser closed without saving. Final source/site comparison: 25 modified presentation documents, zero mismatches. Parsed 101 app Python, 9 Jinja, 47 JSON, and 25 JavaScript files; `git diff --check` passed. Source inventory stays within Diwan UI/navigation/report helpers and supporting evidence. Documented configured wkhtmltopdf and physical camera/printer limits; Chromium print previews and manual tracking fallback are verified. No server restart, configuration change, or push.

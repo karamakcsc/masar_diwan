@@ -1,5 +1,7 @@
 from urllib.parse import quote
 
+from urllib.parse import urlencode
+
 import frappe
 
 FILTERABLE = ["event_type", "result", "channel", "reference_doctype"]
@@ -15,5 +17,7 @@ def get_context(context):
 	target = "/diwan/queue?tab=audit_log"
 	if params:
 		target += f"&{params}"
-	frappe.local.flags.redirect_location = target
+	query = {key: frappe.form_dict[key] for key in ("name", "_lang", "page", "event_type", "result", "channel", "reference_doctype") if frappe.form_dict.get(key)}
+	query["tab"] = "audit_log"
+	frappe.local.flags.redirect_location = "/diwan/queue?" + urlencode(query)
 	raise frappe.Redirect

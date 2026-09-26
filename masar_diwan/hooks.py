@@ -25,19 +25,13 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-# New visual identity (2026-09-21 restyle): tokens + .ref-code bidi helper +
-# the two custom Desk Pages' page-action button retoken - see the file's own
-# header comment. "IBM Plex Sans Arabic" loaded via Google Fonts (outbound
-# internet access confirmed reachable from this bench at the time this was
-# added) rather than self-hosted, since the CDN was directly reachable.
+# Shared identity and scoped Desk components.
 app_include_css = [
 	"https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap",
+	"/assets/masar_diwan/css/diwan-tokens.css",
 	"/assets/masar_diwan/css/masar_diwan-desk.css",
 ]
-# Shared Desk-side JS helpers (currently just the Correspondence Workflow
-# stepper renderer - see the file's own header comment for what this
-# replaced) - loaded app-wide so correspondence.js and correspondence_track.js
-# both call the same function instead of each keeping its own copy.
+# Shared workflow, form guidance, and route-scoped presentation helpers.
 app_include_js = [
 	"/assets/masar_diwan/js/masar_diwan-desk.js",
 	"/assets/masar_diwan/js/masar_diwan-dynamic-fields.js",

@@ -1,5 +1,6 @@
 import frappe
 
+from masar_diwan.utils.portal_pagination import get_page
 from masar_diwan.access_log import log_event
 from masar_diwan.permissions import require_diwan_staff
 from masar_diwan.utils.dynamic_fields import get_dynamic_field_values_for_display
@@ -117,12 +118,11 @@ def get_context(context):
 			# get_list applies masar_diwan.permissions.get_permission_query_conditions_correspondence_request -
 			# department-scoped for anyone outside DEPARTMENT_EXEMPT_ROLES, unrestricted for Diwan
 			# Officer/Senior Management, exactly like the Correspondence list itself.
-			context.requests = frappe.get_list(
+			context.requests = get_page(context,
 				"Correspondence Request",
 				filters={"status": ["in", QUEUE_STATUSES]},
 				fields=LIST_FIELDS,
 				order_by="request_date asc",
-				limit_page_length=200,
 			)
 
 	elif tab == "tray":
@@ -132,7 +132,7 @@ def get_context(context):
 		# (fast-track straightforward, already-clear requests); anything
 		# already pulled into individual review belongs on the Queue tab
 		# instead.
-		context.tray_requests = frappe.get_list(
+		context.tray_requests = get_page(context,
 			"Correspondence Request",
 			filters={"status": "Pending Review"},
 			fields=[
@@ -146,7 +146,6 @@ def get_context(context):
 				"request_date",
 			],
 			order_by="request_date asc",
-			limit_page_length=200,
 		)
 
 	elif tab == "delivery_sheets":
@@ -157,20 +156,18 @@ def get_context(context):
 		# these; nothing custom to add here, just a portal-friendly listing +
 		# a link into Frappe's own /printview for the existing Delivery Sheet
 		# Print format rather than re-rendering it ourselves.
-		context.sheets = frappe.get_list(
+		context.sheets = get_page(context,
 			"Delivery Sheet",
 			fields=["name", "delivery_method", "recipient_party", "status", "modified"],
 			order_by="modified desc",
-			limit_page_length=100,
 		)
 
 	elif tab == "envelopes":
 		context.title = context.tab_label
-		context.envelopes = frappe.get_list(
+		context.envelopes = get_page(context,
 			"Envelope",
 			fields=["name", "status", "creation_date", "linked_delivery_sheet"],
 			order_by="modified desc",
-			limit_page_length=100,
 		)
 
 	elif tab == "audit_log":
@@ -186,7 +183,7 @@ def get_context(context):
 		# access_log_entry.json) already gates this; nothing custom needed
 		# here, same as the existing Desk "Access Log Report" this is a
 		# portal equivalent of.
-		context.entries = frappe.get_list(
+		context.entries = get_page(context,
 			"Access Log Entry",
 			filters=filters,
 			fields=[
@@ -203,7 +200,6 @@ def get_context(context):
 				"is_new_ip",
 			],
 			order_by="event_datetime desc",
-			limit_page_length=200,
 		)
 
 	return context

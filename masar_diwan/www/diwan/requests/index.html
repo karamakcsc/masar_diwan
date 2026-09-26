@@ -1,133 +1,61 @@
 {% extends "templates/pages/diwan_shell.html" %}
 
 {% block diwan_breadcrumb %}
-<a href="/diwan/requests">{{ _("Requester Portal") }}</a> /
-{% if active_tab == "submit" %}{{ _("New Request") }}
-{% elif detail and not detail.not_found %}{{ _("My Requests") }} / {{ detail.name }}
-{% else %}{{ _("My Requests") }}
+{% if active_tab == "requests" %}
+<a href="/diwan/requests?tab=submit">{{ _("Requester Portal") }}</a> / {{ _("My Requests") }}
+{% if detail and not detail.not_found %} / {{ detail.name }}{% endif %}
+{% elif active_tab == "submit" %}
+<a href="/diwan/requests?tab=submit">{{ _("Requester Portal") }}</a> / {{ _("Edit Request") if edit_request else _("New Request") }}
 {% endif %}
 {% endblock %}
 
-{% block diwan_title %}{{ title }}{% endblock %}
+{% block diwan_title %}
+{% if active_tab == "requests" %}
+{%- if detail -%}
+	{%- if detail.not_found -%}{{ _("Not Found") }}{%- else -%}{{ detail.subject }}{%- endif -%}
+{%- else -%}
+	{{ _("My Requests") }}
+{%- endif -%}
+{% elif active_tab == "submit" %}{{ _("Edit Request") if edit_request else _("New Correspondence Request") }}{% endif %}
+{% endblock %}
 
 {% block diwan_status %}
-{% if active_tab == "requests" and detail and not detail.not_found %}<span id="status-pill"></span>{% endif %}
+{% if active_tab == "requests" %}
+{% if detail and not detail.not_found %}<span id="status-pill"></span>{% endif %}
+{% endif %}
 {% endblock %}
 
 {% block diwan_primary_action %}
-{% if active_tab == "submit" %}
-<button class="diwan-btn" id="save-draft-btn" type="button">{{ _("Save as Draft") }}</button>
-<button class="diwan-btn diwan-btn--primary" id="submit-btn" type="button">{{ _("Submit for Review") }}</button>
-{% elif not detail %}
+{% if active_tab == "requests" %}
+{% if not detail %}
 <a class="diwan-btn diwan-btn--primary" href="/diwan/requests?tab=submit">{{ _("New Request") }}</a>
-{% elif detail.status == "Needs Revision" and detail.owner == frappe.session.user %}
-<button class="diwan-btn diwan-btn--primary" id="resubmit-btn" type="button">{{ _("Edit & Resubmit") }}</button>
+{% elif detail.status in ("Draft", "Needs Revision") and detail.owner == frappe.session.user %}
+<a class="diwan-btn diwan-btn--primary" href="/diwan/requests?tab=submit&name={{ detail.name | urlencode }}">{{ _("Edit Draft") if detail.status == "Draft" else _("Edit & Resubmit") }}</a>
+{% endif %}
+{% elif active_tab == "submit" %}
+<button class="diwan-btn" id="save-draft-btn" type="button">{{ _("Save Changes") if edit_request else _("Save as Draft") }}</button>
+<button class="diwan-btn diwan-btn--primary" id="submit-btn" type="button">{{ _("Resubmit for Review") if edit_request and edit_request.status == "Needs Revision" else _("Submit for Review") }}</button>
 {% endif %}
 {% endblock %}
 
 {% block diwan_body %}
-{% if active_tab == "submit" %}
-
-<div class="diwan-card">
-	<div class="diwan-hint" style="margin-block-end:12px;">
-		{{ _("Submitted by") }}: <b>{{ submitter.full_name }}</b>
-		{% if submitter.department %} &mdash; {{ submitter.department }}{% endif %}
-		&mdash; {{ submitter.date }}
-	</div>
-
-	<div class="diwan-field">
-		<label>{{ _("Request Type") }} *</label>
-		<div class="diwan-pillgroup" data-pillgroup="request_type">
-			<input type="radio" name="request_type" id="rt-incoming" value="Incoming" checked>
-			<label for="rt-incoming">{{ _("Incoming") }}</label>
-			<input type="radio" name="request_type" id="rt-outgoing" value="Outgoing">
-			<label for="rt-outgoing">{{ _("Outgoing") }}</label>
-			<input type="radio" name="request_type" id="rt-internal" value="Internal">
-			<label for="rt-internal">{{ _("Internal") }}</label>
-		</div>
-	</div>
-
-	<div class="diwan-field">
-		<label>{{ _("Subject") }} *</label>
-		<input type="text" id="field-subject" maxlength="140">
-	</div>
-
-	<div class="diwan-field">
-		<label>{{ _("Party / Department") }}</label>
-		<input type="text" id="field-party" placeholder="{{ _('Who is this correspondence with?') }}">
-	</div>
-
-	<div class="diwan-field">
-		<label>{{ _("Category") }}</label>
-		<select id="field-category"><option value="">-</option></select>
-	</div>
-
-	<div class="diwan-field" id="subcategory-field" style="display:none;">
-		<label>{{ _("Sub Category") }}</label>
-		<select id="field-subcategory"><option value="">-</option></select>
-	</div>
-
-	<div id="dynamic-fields"></div>
-
-	<div class="diwan-field">
-		<label>{{ _("Draft Text") }}</label>
-		<textarea id="field-draft-text" rows="6"></textarea>
-	</div>
-
-	<div class="diwan-field">
-		<label>{{ _("Suggested Priority") }}</label>
-		<div class="diwan-pillgroup" data-pillgroup="suggested_priority">
-			<input type="radio" name="suggested_priority" id="pr-normal" value="Normal" checked>
-			<label for="pr-normal">{{ _("Normal") }}</label>
-			<input type="radio" name="suggested_priority" id="pr-urgent" value="Urgent">
-			<label for="pr-urgent">{{ _("Urgent") }}</label>
-		</div>
-	</div>
-
-	<div class="diwan-field">
-		<label>{{ _("Suggested Confidentiality") }}</label>
-		{# Rendered from Confidentiality Level records (see index.py) - not a
-		   hardcoded 3-option list, since the site's own configured levels can
-		   vary (Document Access Profile is N-level-capable). #}
-		<div class="diwan-pillgroup" data-pillgroup="suggested_confidentiality">
-			{% for level in confidentiality_levels %}
-			<input type="radio" name="suggested_confidentiality" id="cf-{{ loop.index0 }}" value="{{ level.name }}"{% if loop.first %} checked{% endif %}>
-			<label for="cf-{{ loop.index0 }}">{{ _(level.level_name) }}</label>
-			{% endfor %}
-		</div>
-	</div>
-
-	<div class="diwan-field">
-		<label>{{ _("Note to Registrar") }}</label>
-		<textarea id="field-note" rows="3"></textarea>
-	</div>
-
-	<div class="diwan-field">
-		<label>{{ _("Attachments") }}</label>
-		<input type="file" id="field-attachments" multiple>
-		<div id="attachment-list" style="margin-block-start:8px;"></div>
-	</div>
-
-	<div id="form-message"></div>
-</div>
-
-{% else %}
-
+{% if active_tab == "requests" %}
 {% if not detail %}
 	{% if requests %}
 	<div class="diwan-card" style="padding:0;">
+		<div class="diwan-table-scroll" role="region" aria-label="{{ _('Results') }}" tabindex="0">
 		<table class="diwan-table">
 			<thead><tr>
-				<th>{{ _("Subject") }}</th>
-				<th>{{ _("Type") }}</th>
-				<th>{{ _("Status") }}</th>
-				<th>{{ _("Reference") }}</th>
-				<th>{{ _("Date") }}</th>
+				<th scope="col">{{ _("Subject") }}</th>
+				<th scope="col">{{ _("Type") }}</th>
+				<th scope="col">{{ _("Status") }}</th>
+				<th scope="col">{{ _("Reference") }}</th>
+				<th scope="col">{{ _("Date") }}</th>
 			</tr></thead>
 			<tbody>
 				{% for r in requests %}
-				<tr onclick="window.location.href='/diwan/requests?name={{ r.name }}'" style="cursor:pointer;">
-					<td>{{ r.subject }}</td>
+				<tr>
+					<td><a class="diwan-table__subject" href="/diwan/requests?name={{ r.name | urlencode }}">{{ r.subject }}</a></td>
 					<td>{{ _(r.request_type) }}</td>
 					<td><span class="request-status-pill" data-status="{{ r.status }}"></span></td>
 					<td>{% if r.resulting_correspondence %}<span class="ref-code">{{ r.resulting_correspondence }}</span>{% else %}-{% endif %}</td>
@@ -136,6 +64,7 @@
 				{% endfor %}
 			</tbody>
 		</table>
+	</div>
 	</div>
 	{% else %}
 	<div class="diwan-empty">{{ _("You haven't submitted any correspondence requests yet.") }}</div>
@@ -146,7 +75,7 @@
 
 {% else %}
 	<div style="display:flex; gap:20px; flex-wrap:wrap;">
-		<div style="flex:2 1 380px;">
+		<div class="diwan-detail-main">
 			<div class="diwan-card">
 				<div class="diwan-card__title">{{ _("Details") }}</div>
 				<div style="display:flex; gap:20px; flex-wrap:wrap-reverse; align-items:flex-start;">
@@ -165,7 +94,7 @@
 						{% if dynamic_field_values %}
 						<div style="margin-block-start:14px; padding-block-start:12px; border-top:1px solid var(--md-ink-100);">
 							<p style="font-weight:600; margin-block-end:6px;">{{ _("Additional Fields") }}</p>
-							<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px 20px;">
+							<div class="diwan-detail-grid">
 								{% for f in dynamic_field_values %}
 								<p style="margin:0;"><b>{{ f.label }}:</b> {{ f.value }}</p>
 								{% endfor %}
@@ -193,19 +122,7 @@
 				{% endif %}
 			</div>
 
-			{% if detail.status == "Needs Revision" and detail.owner == frappe.session.user %}
-			<div class="diwan-card" id="edit-card">
-				<div class="diwan-card__title">{{ _("Revise and Resubmit") }}</div>
-				<div class="diwan-field">
-					<label>{{ _("Subject") }}</label>
-					<input type="text" id="edit-subject" value="{{ detail.subject }}">
-				</div>
-				<div class="diwan-field">
-					<label>{{ _("Draft Text") }}</label>
-					<textarea id="edit-draft-text" rows="6">{{ detail.draft_text or "" }}</textarea>
-				</div>
-			</div>
-			{% endif %}
+
 		</div>
 
 		<div style="flex:1 1 220px;">
@@ -216,192 +133,103 @@
 		</div>
 	</div>
 {% endif %}
+{% elif active_tab == "submit" %}
+{% if edit_request and edit_request.decision_note %}<div class="diwan-card"><div class="diwan-card__title">{{ _("Decision Note") }}</div><p>{{ edit_request.decision_note }}</p></div>{% endif %}
+<div class="diwan-card diwan-request-form">
+	<div class="diwan-hint diwan-span-all" style="margin-block-end:12px;">
+		{{ _("Submitted by") }}: <b>{{ submitter.full_name }}</b>
+		{% if submitter.department %} &mdash; {{ submitter.department }}{% endif %}
+		&mdash; {{ submitter.date }}
+	</div>
 
+	<div class="diwan-field diwan-span-all">
+		<label>{{ _("Request Type") }} *</label>
+		<div class="diwan-pillgroup" data-pillgroup="request_type" role="radiogroup" aria-label="{{ _('Request Type') }}">
+			<input type="radio" name="request_type" id="rt-incoming" value="Incoming" checked>
+			<label for="rt-incoming">{{ _("Incoming") }}</label>
+			<input type="radio" name="request_type" id="rt-outgoing" value="Outgoing">
+			<label for="rt-outgoing">{{ _("Outgoing") }}</label>
+			<input type="radio" name="request_type" id="rt-internal" value="Internal">
+			<label for="rt-internal">{{ _("Internal") }}</label>
+		</div>
+	</div>
+
+	<div class="diwan-field diwan-span-all">
+		<label for="field-subject">{{ _("Subject") }} *</label>
+		<input type="text" id="field-subject" maxlength="140" aria-required="true">
+	</div>
+
+	<div class="diwan-field">
+		<label for="field-party">{{ _("Party / Department") }}</label>
+		<input type="text" id="field-party" placeholder="{{ _('Who is this correspondence with?') }}">
+	</div>
+
+	<div class="diwan-field">
+		<label for="field-category">{{ _("Category") }}</label>
+		<select id="field-category"><option value="">-</option></select>
+	</div>
+
+	<div class="diwan-field" id="subcategory-field" style="display:none;">
+		<label for="field-subcategory">{{ _("Sub Category") }}</label>
+		<select id="field-subcategory"><option value="">-</option></select>
+	</div>
+
+	<div id="dynamic-fields" class="diwan-span-all"></div>
+
+	<div class="diwan-field diwan-span-all">
+		<label for="field-draft-text">{{ _("Draft Text") }}</label>
+		<textarea id="field-draft-text" rows="6" aria-describedby="draft-format-hint"></textarea>
+		<div class="diwan-hint" id="draft-format-hint">{{ _("Existing formatting is kept unless you edit this text. Text edits are saved with simple line breaks.") }}</div>
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Suggested Priority") }}</label>
+		<div class="diwan-pillgroup" data-pillgroup="suggested_priority" role="radiogroup" aria-label="{{ _('Suggested Priority') }}">
+			<input type="radio" name="suggested_priority" id="pr-normal" value="Normal" checked>
+			<label for="pr-normal">{{ _("Normal") }}</label>
+			<input type="radio" name="suggested_priority" id="pr-urgent" value="Urgent">
+			<label for="pr-urgent">{{ _("Urgent") }}</label>
+		</div>
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Suggested Confidentiality") }}</label>
+		{# Rendered from Confidentiality Level records (see submit/index.py) -
+		   not a hardcoded 3-option list, since the site's own configured
+		   levels can vary (Document Access Profile is N-level-capable). #}
+		<div class="diwan-pillgroup" data-pillgroup="suggested_confidentiality" role="radiogroup" aria-label="{{ _('Suggested Confidentiality') }}">
+			{% for level in confidentiality_levels %}
+			<input type="radio" name="suggested_confidentiality" id="cf-{{ loop.index0 }}" value="{{ level.name }}"{% if loop.first %} checked{% endif %}>
+			<label for="cf-{{ loop.index0 }}">{{ _(level.level_name) }}</label>
+			{% endfor %}
+		</div>
+	</div>
+
+	<div class="diwan-field diwan-span-all">
+		<label for="field-note">{{ _("Note to Registrar") }}</label>
+		<textarea id="field-note" rows="3"></textarea>
+	</div>
+
+	<div class="diwan-field diwan-span-all">
+		<label for="field-attachments">{{ _("Attachments") }}</label>
+		<input type="file" id="field-attachments" multiple>
+		{% for file in existing_attachments %}<div class="diwan-attachment"><span>{{ file.file_name }}</span><a href="/api/method/masar_diwan.api.portal.download_attachment?file_id={{ file.name | urlencode }}">{{ _("Download") }}</a></div>{% endfor %}
+		<div id="attachment-list" style="margin-block-start:8px;"></div>
+	</div>
+
+	<div class="diwan-span-all diwan-form-actions">
+		<button type="button" class="diwan-btn" data-save-draft>{{ _("Save Changes") if edit_request else _("Save as Draft") }}</button>
+		<button type="button" class="diwan-btn diwan-btn--primary" data-submit-request>{{ _("Resubmit for Review") if edit_request and edit_request.status == "Needs Revision" else _("Submit for Review") }}</button>
+	</div>
+	<div class="diwan-span-all" id="form-message" role="status" aria-live="polite" tabindex="-1"></div>
+</div>
 {% endif %}
 {% endblock %}
 
 {% block diwan_script %}
+{% if active_tab == "requests" %}
 <script>
 frappe.ready(function () {
-	{% if active_tab == "submit" %}
-	var stagedFiles = [];
-	var savedDocname = null;
-
-	function fieldValue(id) {
-		return document.getElementById(id).value;
-	}
-	function pillValue(name) {
-		var checked = document.querySelector('input[name="' + name + '"]:checked');
-		return checked ? checked.value : null;
-	}
-	function showMessage(text, isError) {
-		var el = document.getElementById("form-message");
-		el.innerHTML = '<div class="diwan-hint" style="color:' +
-			(isError ? "var(--md-danger)" : "var(--md-success)") + ';margin-block-start:10px;">' +
-			frappe.utils.escape_html(text) + "</div>";
-	}
-
-	function renderAttachments() {
-		var list = document.getElementById("attachment-list");
-		list.innerHTML = "";
-		stagedFiles.forEach(function (file, idx) {
-			var row = document.createElement("div");
-			row.className = "diwan-attachment";
-			row.innerHTML = "<span>" + frappe.utils.escape_html(file.name) +
-				" (" + Math.round(file.size / 1024) + " KB)</span>" +
-				'<span class="diwan-attachment__remove" data-idx="' + idx + '">&times;</span>';
-			list.appendChild(row);
-		});
-		list.querySelectorAll("[data-idx]").forEach(function (el) {
-			el.addEventListener("click", function () {
-				stagedFiles.splice(parseInt(el.dataset.idx, 10), 1);
-				renderAttachments();
-			});
-		});
-	}
-
-	document.getElementById("field-attachments").addEventListener("change", function (e) {
-		stagedFiles = stagedFiles.concat(Array.prototype.slice.call(e.target.files));
-		renderAttachments();
-	});
-
-	var categoriesMeta = {};
-
-	function fetchDynamicFields() {
-		frappe.call({
-			method: "masar_diwan.api.requests.get_dynamic_fields",
-			args: {
-				correspondence_category: fieldValue("field-category") || null,
-				correspondence_sub_category: fieldValue("field-subcategory") || null,
-			},
-		}).then(function (r) {
-			window.masarDiwanDynamicFields.render(document.getElementById("dynamic-fields"), r.message || []);
-		});
-	}
-
-	frappe.call({ method: "masar_diwan.api.requests.get_top_level_categories" }).then(function (r) {
-		var select = document.getElementById("field-category");
-		(r.message || []).forEach(function (cat) {
-			categoriesMeta[cat.name] = cat;
-			var opt = document.createElement("option");
-			opt.value = cat.name;
-			opt.textContent = cat.title;
-			select.appendChild(opt);
-		});
-	});
-
-	document.getElementById("field-category").addEventListener("change", function () {
-		var category = this.value;
-		var subGroup = document.getElementById("subcategory-field");
-		var subSelect = document.getElementById("field-subcategory");
-		subSelect.innerHTML = '<option value="">-</option>';
-
-		if (category && categoriesMeta[category] && categoriesMeta[category].is_group) {
-			subGroup.style.display = "";
-			frappe.call({
-				method: "masar_diwan.api.requests.get_sub_categories",
-				args: { correspondence_category: category },
-			}).then(function (r) {
-				(r.message || []).forEach(function (sub) {
-					var opt = document.createElement("option");
-					opt.value = sub.name;
-					opt.textContent = sub.title;
-					subSelect.appendChild(opt);
-				});
-			});
-		} else {
-			subGroup.style.display = "none";
-		}
-		fetchDynamicFields();
-	});
-
-	document.getElementById("field-subcategory").addEventListener("change", fetchDynamicFields);
-
-	function uploadStagedFiles(docname) {
-		var uploads = stagedFiles.map(function (file) {
-			var fd = new FormData();
-			fd.append("file", file);
-			fd.append("doctype", "Correspondence Request");
-			fd.append("docname", docname);
-			fd.append("is_private", "1");
-			return fetch("/api/method/upload_file", {
-				method: "POST",
-				headers: { "X-Frappe-CSRF-Token": frappe.csrf_token },
-				body: fd,
-			});
-		});
-		return Promise.all(uploads);
-	}
-
-	function buildDoc() {
-		return Object.assign(
-			{
-				doctype: "Correspondence Request",
-				request_type: pillValue("request_type"),
-				subject: fieldValue("field-subject"),
-				party_or_department: fieldValue("field-party"),
-				draft_text: fieldValue("field-draft-text"),
-				suggested_priority: pillValue("suggested_priority"),
-				suggested_confidentiality: pillValue("suggested_confidentiality"),
-				note_to_registrar: fieldValue("field-note"),
-				correspondence_category: fieldValue("field-category") || null,
-				correspondence_sub_category: fieldValue("field-subcategory") || null,
-			},
-			window.masarDiwanDynamicFields.collectValues(document.getElementById("dynamic-fields"))
-		);
-	}
-
-	function saveDoc(callback) {
-		if (!fieldValue("field-subject")) {
-			showMessage(__("Subject is required."), true);
-			return;
-		}
-		var call = savedDocname
-			? frappe.call({
-				method: "frappe.client.set_value",
-				args: {
-					doctype: "Correspondence Request",
-					name: savedDocname,
-					fieldname: buildDoc(),
-				},
-			})
-			: frappe.call({
-				method: "frappe.client.insert",
-				args: { doc: buildDoc() },
-			});
-
-		call.then(function (r) {
-			savedDocname = r.message.name;
-			uploadStagedFiles(savedDocname).then(function () {
-				stagedFiles = [];
-				renderAttachments();
-				callback && callback(savedDocname);
-			});
-		}).catch(function () {
-			showMessage(__("Could not save the request. Please check the required fields."), true);
-		});
-	}
-
-	document.getElementById("save-draft-btn").addEventListener("click", function () {
-		saveDoc(function (name) {
-			showMessage(__("Saved as draft.") + " (" + name + ")", false);
-		});
-	});
-
-	document.getElementById("submit-btn").addEventListener("click", function () {
-		saveDoc(function (name) {
-			frappe.call({
-				method: "frappe.model.workflow.apply_workflow",
-				args: { doc: { doctype: "Correspondence Request", name: name }, action: "Submit" },
-			}).then(function () {
-				window.location.href = "/diwan/requests?name=" + encodeURIComponent(name);
-			}).catch(function () {
-				showMessage(__("Saved as draft, but could not submit for review."), true);
-			});
-		});
-	});
-
-	{% else %}
 	document.querySelectorAll(".request-status-pill").forEach(function (el) {
 		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.status);
 	});
@@ -432,30 +260,257 @@ frappe.ready(function () {
 		stepper.innerHTML = html;
 	}
 
-	var resubmitBtn = document.getElementById("resubmit-btn");
-	if (resubmitBtn) {
-		resubmitBtn.addEventListener("click", function () {
-			frappe.call({
-				method: "frappe.client.set_value",
-				args: {
-					doctype: "Correspondence Request",
-					name: detail.name,
-					fieldname: {
-						subject: document.getElementById("edit-subject").value,
-						draft_text: document.getElementById("edit-draft-text").value,
-					},
-				},
-			}).then(function () {
-				return frappe.call({
-					method: "frappe.model.workflow.apply_workflow",
-					args: { doc: { doctype: "Correspondence Request", name: detail.name }, action: "Resubmit" },
-				});
-			}).then(function () {
-				window.location.reload();
+
+});
+</script>
+{% elif active_tab == "submit" %}
+<script>
+frappe.ready(function () {
+	var stagedFiles = [];
+	var initial = JSON.parse({{ edit_json | tojson }}) || {};
+	var savedDocname = initial.name || null;
+	var currentStatus = initial.status || "Draft";
+	var fieldsLoading = true;
+	var dynamicValues = Object.assign({}, initial);
+	for (const [id, field] of Object.entries({ "field-subject": "subject", "field-party": "party_or_department", "field-note": "note_to_registrar" })) {
+		document.getElementById(id).value = initial[field] || "";
+	}
+	// Keep stored rich text unchanged unless the user edits its plain-text view.
+	const originalDraft = initial.draft_text || "";
+	const draftTemplate = document.createElement("template");
+	draftTemplate.innerHTML = originalDraft;
+	draftTemplate.content.querySelectorAll("script, style").forEach(node => node.remove());
+	draftTemplate.content.querySelectorAll("br").forEach(node => node.replaceWith("\n"));
+	draftTemplate.content.querySelectorAll("p, div, li, h1, h2, h3, h4, blockquote").forEach(node => node.append("\n"));
+	const originalPlainDraft = draftTemplate.content.textContent.trim();
+	document.getElementById("field-draft-text").value = originalPlainDraft;
+	for (const name of ["request_type", "suggested_priority", "suggested_confidentiality"]) {
+		if (!initial[name]) continue;
+		document.querySelectorAll('input[name="' + name + '"]').forEach(input => { input.checked = input.value === initial[name]; });
+	}
+
+	function fieldValue(id) {
+		return document.getElementById(id).value;
+	}
+	function pillValue(name) {
+		var checked = document.querySelector('input[name="' + name + '"]:checked');
+		return checked ? checked.value : null;
+	}
+	function showMessage(text, isError) {
+		var el = document.getElementById("form-message");
+		el.innerHTML = '<div class="diwan-hint" style="color:' +
+			(isError ? "var(--md-danger)" : "var(--md-success)") + ';margin-block-start:10px;">' +
+			frappe.utils.escape_html(text) + "</div>";
+	}
+
+	function renderAttachments() {
+		var list = document.getElementById("attachment-list");
+		list.innerHTML = "";
+		stagedFiles.forEach(function (file, idx) {
+			var row = document.createElement("div");
+			row.className = "diwan-attachment";
+			row.innerHTML = "<span>" + frappe.utils.escape_html(file.name) +
+				" (" + Math.round(file.size / 1024) + " KB)</span>" +
+				'<button type="button" class="diwan-attachment__remove" aria-label="' + frappe.utils.escape_html(__("Remove attachment") + ': ' + file.name) + '" data-idx="' + idx + '">&times;</button>';
+			list.appendChild(row);
+		});
+		list.querySelectorAll("[data-idx]").forEach(function (el) {
+			el.addEventListener("click", function () {
+				stagedFiles.splice(parseInt(el.dataset.idx, 10), 1);
+				renderAttachments();
 			});
 		});
 	}
-	{% endif %}
+
+	document.getElementById("field-attachments").addEventListener("change", function (e) {
+		stagedFiles = stagedFiles.concat(Array.prototype.slice.call(e.target.files));
+		renderAttachments();
+	});
+
+	// Category/sub-category + their dynamic fields (masar_diwan.install.
+	// ensure_dynamic_fields()) - same three shared endpoints and the same
+	// window.masarDiwanDynamicFields renderer the Desk "New Request" page
+	// uses, not a second copy of either.
+	var categoriesMeta = {};
+	var categorySequence = 0;
+	var categorySelect = document.getElementById("field-category");
+	var subSelect = document.getElementById("field-subcategory");
+	var fieldsHost = document.getElementById("dynamic-fields");
+	function addOption(select, value, label) {
+		if (value && !Array.from(select.options).some(option => option.value === value)) select.add(new Option(label || value, value));
+	}
+	async function refreshCategory(restoreSubCategory) {
+		const sequence = ++categorySequence;
+		fieldsLoading = true;
+		Object.assign(dynamicValues, window.masarDiwanDynamicFields.collectValues(fieldsHost));
+		const category = categorySelect.value;
+		subSelect.replaceChildren(new Option("-", ""));
+		const isGroup = Boolean(categoriesMeta[category] && categoriesMeta[category].is_group);
+		document.getElementById("subcategory-field").style.display = isGroup ? "" : "none";
+		subSelect.required = isGroup;
+		subSelect.disabled = true;
+		fieldsHost.setAttribute("aria-busy", "true");
+		try {
+			if (isGroup) {
+				const response = await frappe.call({ method: "masar_diwan.api.requests.get_sub_categories", args: { correspondence_category: category } });
+				if (sequence !== categorySequence) return;
+				(response.message || []).forEach(sub => addOption(subSelect, sub.name, sub.title));
+				if (restoreSubCategory) { addOption(subSelect, restoreSubCategory); subSelect.value = restoreSubCategory; }
+			}
+			await loadDynamicFields(sequence);
+		} catch (error) {
+			if (sequence === categorySequence) showMessage(__("Category fields could not be loaded. Select the category again to retry."), true);
+		} finally {
+			if (sequence === categorySequence) { subSelect.disabled = false; fieldsHost.setAttribute("aria-busy", "false"); }
+		}
+	}
+	async function loadDynamicFields(sequence) {
+		Object.assign(dynamicValues, window.masarDiwanDynamicFields.collectValues(fieldsHost));
+		const response = await frappe.call({ method: "masar_diwan.api.requests.get_dynamic_fields", args: {
+			correspondence_category: categorySelect.value || null,
+			correspondence_sub_category: subSelect.value || null,
+		} });
+		if (sequence !== categorySequence) return;
+		Object.assign(dynamicValues, window.masarDiwanDynamicFields.collectValues(fieldsHost));
+		window.masarDiwanDynamicFields.render(fieldsHost, response.message || [], dynamicValues);
+		fieldsLoading = false;
+	}
+	async function loadCategories() {
+		categorySelect.disabled = true;
+		try {
+			const response = await frappe.call({ method: "masar_diwan.api.requests.get_top_level_categories" });
+			(response.message || []).forEach(category => { categoriesMeta[category.name] = category; addOption(categorySelect, category.name, category.title); });
+			if (initial.correspondence_category) {
+				addOption(categorySelect, initial.correspondence_category);
+				categoriesMeta[initial.correspondence_category] ||= { is_group: initial.category_is_group };
+				categorySelect.value = initial.correspondence_category;
+			}
+			await refreshCategory(initial.correspondence_sub_category);
+		} catch (error) {
+			showMessage(__("Categories could not be loaded. Reload this page to try again."), true);
+		} finally { categorySelect.disabled = false; }
+	}
+	categorySelect.addEventListener("change", () => refreshCategory());
+	subSelect.addEventListener("change", async () => {
+		const sequence = ++categorySequence;
+		fieldsLoading = true;
+		try { await loadDynamicFields(sequence); }
+		catch (error) { if (sequence === categorySequence) showMessage(__("Category fields could not be loaded. Select the category again to retry."), true); }
+	});
+	loadCategories();
+
+	async function uploadStagedFiles(docname) {
+		// Remove only successful uploads. Failed files remain staged for retry.
+		const results = await Promise.all(stagedFiles.map(async function (file) {
+			const fd = new FormData();
+			fd.append("file", file);
+			fd.append("doctype", "Correspondence Request");
+			fd.append("docname", docname);
+			fd.append("is_private", "1");
+			try {
+				const response = await fetch("/api/method/upload_file", {
+					method: "POST",
+					headers: { "X-Frappe-CSRF-Token": frappe.csrf_token },
+					body: fd,
+				});
+				if (!response.ok) return false;
+				const result = await response.json();
+				return Boolean(result.message && result.message.name);
+			} catch (error) { return false; }
+		}));
+		stagedFiles = stagedFiles.filter((file, index) => !results[index]);
+		renderAttachments();
+		if (stagedFiles.length) throw new Error("attachment-upload");
+	}
+
+	function buildDoc() {
+		return Object.assign(
+			{
+				doctype: "Correspondence Request",
+				request_type: pillValue("request_type"),
+				subject: fieldValue("field-subject"),
+				party_or_department: fieldValue("field-party"),
+				draft_text: fieldValue("field-draft-text") === originalPlainDraft ? originalDraft : frappe.utils.escape_html(fieldValue("field-draft-text")).replace(/\n/g, "<br>"),
+				suggested_priority: pillValue("suggested_priority"),
+				suggested_confidentiality: pillValue("suggested_confidentiality"),
+				note_to_registrar: fieldValue("field-note"),
+				correspondence_category: fieldValue("field-category") || null,
+				correspondence_sub_category: fieldValue("field-subcategory") || null,
+			},
+			window.masarDiwanDynamicFields.collectValues(document.getElementById("dynamic-fields"))
+		);
+	}
+
+	let saving = false;
+	function setBusy(busy) {
+		saving = busy;
+		document.getElementById("diwan-content").setAttribute("aria-busy", String(busy));
+		document.querySelectorAll("#diwan-content input, #diwan-content select, #diwan-content textarea, #diwan-content button").forEach(el => {
+			if (busy) {
+				el.dataset.diwanWasDisabled = String(el.disabled);
+				el.disabled = true;
+			} else {
+				el.disabled = el.dataset.diwanWasDisabled === "true";
+				delete el.dataset.diwanWasDisabled;
+			}
+		});
+	}
+
+	async function saveDoc(submit) {
+		if (saving) return;
+		if (fieldsLoading) { showMessage(__("Wait for the category fields to finish loading before saving."), true); return; }
+		if (!subSelect.checkValidity()) { subSelect.reportValidity(); subSelect.focus(); return; }
+		const subject = document.getElementById("field-subject");
+		if (!subject.value.trim()) {
+			showMessage(__("Subject is required."), true);
+			subject.setAttribute("aria-invalid", "true");
+			subject.focus();
+			return;
+		}
+		subject.removeAttribute("aria-invalid");
+		if (!window.masarDiwanDynamicFields.validate(document.getElementById("dynamic-fields"))) return;
+		setBusy(true);
+		showMessage(__("Saving request and attachments…"), false);
+		try {
+			const response = savedDocname
+				? await frappe.call({
+					method: "frappe.client.set_value",
+					args: { doctype: "Correspondence Request", name: savedDocname, fieldname: buildDoc() },
+				})
+				: await frappe.call({ method: "frappe.client.insert", args: { doc: buildDoc() } });
+			savedDocname = response.message.name;
+			currentStatus = response.message.status || currentStatus;
+			const savedUrl = new URL(window.location.href);
+			savedUrl.searchParams.set("name", savedDocname);
+			window.history.replaceState({}, "", savedUrl);
+			await uploadStagedFiles(savedDocname);
+			if (submit) {
+				try {
+					await frappe.call({
+						method: "frappe.model.workflow.apply_workflow",
+						args: { doc: { doctype: "Correspondence Request", name: savedDocname }, action: currentStatus === "Needs Revision" ? "Resubmit" : "Submit" },
+					});
+					window.location.href = "/diwan/requests?name=" + encodeURIComponent(savedDocname);
+				} catch (error) {
+					showMessage(__("Saved as draft, but could not submit for review."), true);
+				}
+			} else {
+				showMessage((currentStatus === "Draft" ? __("Saved as draft.") : __("Changes saved.")) + " (" + savedDocname + ")", false);
+			}
+		} catch (error) {
+			showMessage(error.message === "attachment-upload"
+				? __("Draft saved, but some attachments failed to upload. Retry to upload the remaining files before submitting.")
+				: __("Could not save the request. Please check the required fields."), true);
+		} finally {
+			setBusy(false);
+			document.getElementById("form-message").focus();
+		}
+	}
+
+	document.querySelectorAll("#save-draft-btn, [data-save-draft]").forEach(button => button.addEventListener("click", () => saveDoc(false)));
+	document.querySelectorAll("#submit-btn, [data-submit-request]").forEach(button => button.addEventListener("click", () => saveDoc(true)));
+
 });
 </script>
+{% endif %}
 {% endblock %}

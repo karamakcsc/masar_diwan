@@ -37,7 +37,8 @@
    "in_list_view": 1,
    "label": "Rank",
    "reqd": 1,
-   "unique": 1
+   "unique": 1,
+   "in_standard_filter": 1
   },
   {
    "fieldname": "column_break_rank",

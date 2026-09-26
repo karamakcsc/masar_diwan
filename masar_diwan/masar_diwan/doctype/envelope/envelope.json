@@ -44,13 +44,15 @@
    "default": "Today",
    "fieldname": "creation_date",
    "fieldtype": "Date",
-   "label": "Creation Date"
+   "label": "Creation Date",
+   "in_standard_filter": 1
   },
   {
    "fieldname": "linked_delivery_sheet",
    "fieldtype": "Link",
    "label": "Linked Delivery Sheet",
-   "options": "Delivery Sheet"
+   "options": "Delivery Sheet",
+   "in_standard_filter": 1
   },
   {
    "fieldname": "qr_code",
@@ -61,13 +63,15 @@
   },
   {
    "fieldname": "section_break_docs",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Enclosed documents"
   },
   {
    "fieldname": "envelope_documents",
    "fieldtype": "Table",
    "label": "Documents",
-   "options": "Envelope Document"
+   "options": "Envelope Document",
+   "description": "Select the correspondence enclosed in this envelope. Party details are filled from each document."
   },
   {
    "fieldname": "qr_code_img",
@@ -146,5 +150,6 @@
  "sort_order": "DESC",
  "states": [],
  "title_field": "envelope_no",
- "track_changes": 1
+ "track_changes": 1,
+ "default_print_format": "Envelope Label"
 }

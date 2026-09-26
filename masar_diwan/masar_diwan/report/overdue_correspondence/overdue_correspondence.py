@@ -6,9 +6,11 @@ from frappe import _
 from frappe.utils import nowdate
 
 from masar_diwan.permissions import get_permission_query_conditions
+from masar_diwan.utils.report_filters import correspondence_filters
 
 
 def execute(filters=None):
+	filter_clause, filter_values = correspondence_filters(filters, "follow_up_date")
 	columns = [
 		{"label": _("Reference No"), "fieldname": "name", "fieldtype": "Link", "options": "Correspondence", "width": 130},
 		{"label": _("Subject"), "fieldname": "subject", "fieldtype": "Data", "width": 220},
@@ -40,9 +42,10 @@ def execute(filters=None):
 			and follow_up_date < %(today)s
 			and status not in ('Completed', 'Archived')
 			{permission_clause}
+			{filter_clause}
 		order by follow_up_date asc
 		""",
-		{"today": nowdate()},
+		{"today": nowdate(), **filter_values},
 		as_dict=True,
 	)
 

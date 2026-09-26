@@ -18,20 +18,23 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Action Required",
-   "reqd": 1
+   "reqd": 1,
+   "columns": 4
   },
   {
    "fieldname": "responsible",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Responsible",
-   "options": "User"
+   "options": "User",
+   "columns": 2
   },
   {
    "fieldname": "due_date",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Due Date"
+   "label": "Due Date",
+   "columns": 2
   },
   {
    "default": "Open",
@@ -39,7 +42,8 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "Open\nDone"
+   "options": "Open\nDone",
+   "columns": 2
   }
  ],
  "grid_page_length": 50,

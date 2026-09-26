@@ -3,23 +3,93 @@
 
 window.diwanPortal = (function () {
 	function initDrawer() {
-		var hamburger = document.querySelector("[data-diwan-hamburger]");
-		var drawer = document.querySelector("[data-diwan-drawer]");
-		var scrim = document.querySelector("[data-diwan-scrim]");
-		if (!hamburger || !drawer || !scrim) return;
-
-		function open() {
-			drawer.classList.add("is-open");
-			scrim.classList.add("is-open");
-		}
-		function close() {
+		const hamburger = document.querySelector("[data-diwan-hamburger]");
+		const drawer = document.querySelector("[data-diwan-drawer]");
+		const scrim = document.querySelector("[data-diwan-scrim]");
+		const shell = document.querySelector(".diwan-shell");
+		if (!hamburger || !drawer || !scrim || !shell) return;
+		function close(restoreFocus = true) {
 			drawer.classList.remove("is-open");
 			scrim.classList.remove("is-open");
+			drawer.hidden = true;
+			drawer.inert = true;
+			shell.inert = false;
+			document.body.classList.remove("diwan-drawer-open");
+			hamburger.setAttribute("aria-expanded", "false");
+			if (restoreFocus) hamburger.focus();
 		}
-		hamburger.addEventListener("click", open);
-		scrim.addEventListener("click", close);
-		drawer.querySelectorAll("a").forEach(function (a) {
-			a.addEventListener("click", close);
+		hamburger.addEventListener("click", function () {
+			drawer.hidden = false;
+			drawer.inert = false;
+			drawer.classList.add("is-open");
+			scrim.classList.add("is-open");
+			hamburger.setAttribute("aria-expanded", "true");
+			shell.inert = true;
+			document.body.classList.add("diwan-drawer-open");
+			drawer.querySelector("[data-diwan-close]").focus();
+		});
+		scrim.addEventListener("click", () => close());
+		drawer.querySelector("[data-diwan-close]").addEventListener("click", () => close());
+		drawer.addEventListener("keydown", function (event) {
+			if (event.key === "Escape") { event.preventDefault(); close(); }
+			if (event.key !== "Tab") return;
+			const items = Array.from(drawer.querySelectorAll('button, a[href]:not([tabindex="-1"])'));
+			const first = items[0], last = items[items.length - 1];
+			if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+			else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+		});
+		window.matchMedia("(min-width: 901px)").addEventListener("change", event => {
+			if (event.matches && !drawer.hidden) close(false);
+		});
+	}
+
+	function initTables() {
+		document.querySelectorAll(".diwan-table-scroll").forEach(function (wrapper, index) {
+			const table = wrapper.querySelector("table");
+			if (table.querySelector(".row-select")) return;
+			const rows = Array.from(table.querySelectorAll("tbody > tr"));
+			if (!rows.length) return;
+			const tools = document.createElement("div");
+			tools.className = "diwan-table-tools";
+			const label = document.createElement("label");
+			label.htmlFor = "diwan-table-filter-" + index;
+			label.textContent = __("Filter loaded rows");
+			const input = document.createElement("input");
+			input.type = "search";
+			input.id = label.htmlFor;
+			const count = document.createElement("span");
+			count.className = "diwan-table-count";
+			count.setAttribute("role", "status");
+			tools.append(label, input, count);
+			wrapper.before(tools);
+			const empty = document.createElement("div");
+			empty.className = "diwan-empty";
+			empty.textContent = __("No matching rows. Try another search.");
+			empty.hidden = true;
+			wrapper.after(empty);
+			function filter() {
+				const query = input.value.trim().toLocaleLowerCase();
+				let visible = 0;
+				rows.forEach(row => {
+					row.hidden = !row.textContent.toLocaleLowerCase().includes(query);
+					if (!row.hidden) visible++;
+				});
+				count.textContent = __("{0} of {1} rows", [visible, rows.length]);
+				empty.hidden = visible !== 0;
+			}
+			input.addEventListener("input", filter);
+			filter();
+		});
+	}
+
+	function initLanguageLinks() {
+		document.querySelectorAll(".diwan-navbar__lang a").forEach(link => {
+			const language = new URL(link.href).searchParams.get("_lang");
+			const url = new URL(window.location.href);
+			url.searchParams.set("_lang", language);
+			link.href = url.pathname + url.search + url.hash;
+			link.lang = language;
+			link.setAttribute("aria-label", language === "ar" ? "العربية" : "English");
 		});
 	}
 
@@ -98,7 +168,11 @@ window.diwanPortal = (function () {
 		'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">' +
 		'<rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 
-	document.addEventListener("DOMContentLoaded", initDrawer);
+	frappe.ready(function () {
+		initDrawer();
+		initLanguageLinks();
+		initTables();
+	});
 
 	return {
 		statusPillHtml: statusPillHtml,

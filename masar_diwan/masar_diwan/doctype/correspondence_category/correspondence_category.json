@@ -32,7 +32,8 @@
    "default": "0",
    "fieldname": "disabled",
    "fieldtype": "Check",
-   "label": "Disabled"
+   "label": "Disabled",
+   "in_standard_filter": 1
   },
   {
    "fieldname": "column_break_yccx",
@@ -42,7 +43,8 @@
    "default": "0",
    "fieldname": "is_group",
    "fieldtype": "Check",
-   "label": "Is Group"
+   "label": "Is Group",
+   "in_standard_filter": 1
   },
   {
    "fieldname": "lft",
@@ -72,10 +74,11 @@
    "fieldtype": "Link",
    "ignore_user_permissions": 1,
    "label": "Parent Correspondence Category",
-   "options": "Correspondence Category"
+   "options": "Correspondence Category",
+   "in_standard_filter": 1
   },
   {
-   "description": "Only meaningful on a leaf category (Is Group unchecked, or a category with no sub-categories) - a category a request can actually be filed under. Fields defined here appear on Correspondence Request/Correspondence the moment this exact category (top-level or sub-category) is selected.",
+   "description": "Define fields on the category used to file the request (a leaf category). They appear on requests and registered correspondence for that category.",
    "fieldname": "dynamic_fields",
    "fieldtype": "Table",
    "label": "Dynamic Fields",

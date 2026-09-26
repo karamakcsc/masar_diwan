@@ -1,5 +1,7 @@
 import frappe
 
+from masar_diwan.utils.portal_pagination import get_page
+
 from masar_diwan.access_log import log_event
 from masar_diwan.api.requests import get_confidentiality_levels, get_submitter_context
 from masar_diwan.utils.dynamic_fields import get_dynamic_field_values_for_display
@@ -48,7 +50,7 @@ def get_context(context):
 	tab = frappe.form_dict.get("tab") or "requests"
 	if tab not in ("submit", "requests"):
 		tab = "requests"
-	if name:
+	if name and tab != "submit":
 		# A request detail is always the "My Requests" tab's own drill-down -
 		# a name in the URL always wins over an unrelated ?tab= value.
 		tab = "requests"
@@ -58,14 +60,45 @@ def get_context(context):
 	context.detail = None
 
 	if tab == "submit":
-		if not frappe.has_permission("Correspondence Request", "create"):
-			frappe.throw(
-				frappe._("You are not permitted to submit correspondence requests."),
-				frappe.PermissionError,
-			)
+		if not name and not frappe.has_permission("Correspondence Request", "create"):
+			frappe.throw(frappe._("You are not permitted to submit correspondence requests."), frappe.PermissionError)
 		context.title = frappe._("New Correspondence Request")
 		context.submitter = get_submitter_context()
+		# Rendered server-side (like the rest of this page) rather than fetched
+		# by the page's own JS - the list is site-configurable (see Document
+		# Access Profile / Confidentiality Level), not a fixed set of 3, so the
+		# radio pillgroup below is built from whatever this call returns instead
+		# of 3 hardcoded options.
 		context.confidentiality_levels = get_confidentiality_levels()
+		context.edit_request = None
+		context.edit_json = "null"
+		context.existing_attachments = []
+		if name:
+			doc = frappe.get_doc("Correspondence Request", name)
+			doc.check_permission("read")
+			doc.check_permission("write")
+			if doc.owner != frappe.session.user or doc.status not in ("Draft", "Needs Revision"):
+				frappe.throw(frappe._("Only your own drafts and revision requests can be edited here."), frappe.PermissionError)
+			editable_fields = (
+				"name", "status", "request_type", "subject", "party_or_department", "draft_text",
+				"suggested_priority", "suggested_confidentiality", "note_to_registrar", "decision_note",
+				"correspondence_category", "correspondence_sub_category", "category_is_group",
+			)
+			context.edit_request = {field: doc.get(field) for field in editable_fields}
+			context.edit_request.update({
+				field.fieldname: doc.get(field.fieldname)
+				for field in doc.meta.fields
+				if field.fieldname.startswith("csf_") and field.fieldtype not in ("Section Break", "Column Break", "Tab Break")
+			})
+			context.edit_json = frappe.as_json(context.edit_request)
+			context.title = frappe._("Edit Request")
+			context.submitter = {
+				"full_name": frappe.utils.get_fullname(doc.requested_by or doc.owner),
+				"department": doc.requesting_department,
+				"date": frappe.utils.format_date(doc.request_date or doc.creation),
+			}
+			context.existing_attachments = frappe.get_all("File", filters={"attached_to_doctype": doc.doctype, "attached_to_name": doc.name}, fields=["name", "file_name"])
+			log_event("View", reference_doctype=doc.doctype, reference_name=doc.name, reason="Requester Portal edit")
 		return context
 
 	# tab == "requests" (default)
@@ -110,12 +143,12 @@ def get_context(context):
 		# unrestricted read on this doctype for the *Diwan Portal* queue, but
 		# "My Requests" must always mean literally their own regardless of
 		# what else their role can see - that queue is a separate page.
-		context.requests = frappe.get_list(
+		context.requests = get_page(context,
 			"Correspondence Request",
 			filters={"owner": frappe.session.user},
 			fields=LIST_FIELDS,
 			order_by="modified desc",
-			limit_page_length=100,
+
 		)
 
 	return context

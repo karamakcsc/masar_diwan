@@ -11,10 +11,13 @@
 	</div>
 	<div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
 		<button class="diwan-btn diwan-btn--primary" id="open-camera-scan" type="button">{{ _("Scan with Camera") }}</button>
-		<input type="text" id="ref-input" class="diwan-field ref-code" dir="ltr"
+		<input type="text" id="ref-input" aria-label="{{ _('Reference No') }}" class="diwan-field ref-code" dir="ltr"
 			style="flex:1 1 260px; direction:ltr; unicode-bidi:bidi-override; border:1px solid var(--md-ink-100); border-radius:var(--radius-sm); padding:7px 10px;"
-			placeholder="{{ _('Reference number, then Enter') }}" value="{{ ref or '' }}" autofocus>
+			placeholder="{{ _('Reference number, then Enter') }}" value="{{ ref or '' }}">
+		<button class="diwan-btn" id="track-reference" type="button">{{ _("Track") }}</button>
 	</div>
+	<div id="scan-message" class="diwan-hint" role="status"></div>
+	<button class="diwan-btn" id="stop-camera-scan" type="button" hidden>{{ _("Stop camera") }}</button>
 	<div id="qr-reader" style="width:280px; display:none; margin-block-start:12px;"></div>
 </div>
 
@@ -48,11 +51,12 @@
 		<p><b>{{ _("Documents") }} ({{ e.documents | length }}):</b></p>
 		{% if e.documents %}
 		<div class="diwan-card" style="padding:0; margin-block-start:6px;">
-			<table class="diwan-table">
+			<div class="diwan-table-scroll" role="region" aria-label="{{ _('Results') }}" tabindex="0">
+		<table class="diwan-table">
 				<thead><tr>
-					<th>{{ _("Reference No") }}</th>
-					<th>{{ _("Party Type") }}</th>
-					<th>{{ _("Party") }}</th>
+					<th scope="col">{{ _("Reference No") }}</th>
+					<th scope="col">{{ _("Party Type") }}</th>
+					<th scope="col">{{ _("Party") }}</th>
 				</tr></thead>
 				<tbody>
 					{% for doc in e.documents %}
@@ -64,6 +68,7 @@
 					{% endfor %}
 				</tbody>
 			</table>
+	</div>
 		</div>
 		{% else %}
 		<div class="diwan-empty">{{ _("No documents in this envelope.") }}</div>
@@ -128,35 +133,55 @@ frappe.ready(function () {
 	{% endif %}
 
 	var input = document.getElementById("ref-input");
-	input.addEventListener("keydown", function (e) {
-		if (e.key === "Enter" && input.value) {
-			e.preventDefault();
-			window.location.href = "/track?ref=" + encodeURIComponent(input.value);
-		}
-	});
+	var message = document.getElementById("scan-message");
+	function trackReference() {
+		var ref = input.value.trim();
+		if (!ref) { message.textContent = __("Enter a reference number to continue."); input.focus(); return; }
+		window.location.href = "/track?ref=" + encodeURIComponent(ref) + "&via=barcode";
+	}
+	input.addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); trackReference(); } });
+	document.getElementById("track-reference").addEventListener("click", trackReference);
 
-	document.getElementById("open-camera-scan").addEventListener("click", function () {
-		var readerDiv = document.getElementById("qr-reader");
-		readerDiv.style.display = "block";
-		if (typeof Html5Qrcode === "undefined") {
-			readerDiv.innerHTML = "<div class=\"diwan-hint\">" + __("Camera scanner library failed to load") + "</div>";
-			return;
-		}
-		var scanner = new Html5Qrcode("qr-reader");
-		scanner.start(
-			{ facingMode: "environment" },
-			{ fps: 10, qrbox: 200 },
-			function (decodedText) {
-				scanner.stop();
+	var scanner = null;
+	var navigating = false;
+	var startButton = document.getElementById("open-camera-scan");
+	var stopButton = document.getElementById("stop-camera-scan");
+	var reader = document.getElementById("qr-reader");
+	async function stopCamera() {
+		stopButton.disabled = true;
+		try { if (scanner) await scanner.stop(); } catch (error) { /* Camera may already be stopped. */ }
+		scanner = null;
+		reader.style.display = "none";
+		stopButton.hidden = true;
+		stopButton.disabled = false;
+		startButton.disabled = false;
+	}
+	stopButton.addEventListener("click", async () => { await stopCamera(); startButton.focus(); });
+	startButton.addEventListener("click", async function () {
+		if (scanner || startButton.disabled) return;
+		if (typeof Html5Qrcode === "undefined") { message.textContent = __("Camera scanner library failed to load"); return; }
+		startButton.disabled = true;
+		message.textContent = __("Starting camera…");
+		reader.style.display = "block";
+		scanner = new Html5Qrcode("qr-reader");
+		try {
+			await scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 200 }, async decodedText => {
+				if (navigating) return;
+				navigating = true;
 				var ref = decodedText;
-				try {
-					var url = new URL(decodedText);
-					ref = url.searchParams.get("ref") || decodedText;
-				} catch (e) {}
+				try { ref = new URL(decodedText).searchParams.get("ref") || decodedText; } catch (error) { /* Plain reference QR. */ }
+				await stopCamera();
 				window.location.href = "/track?ref=" + encodeURIComponent(ref) + "&via=qr";
-			}
-		);
+			});
+			stopButton.hidden = false;
+			message.textContent = __("Point the camera at the QR code, or stop scanning to enter a reference.");
+		} catch (error) {
+			await stopCamera();
+			message.textContent = __("The camera could not start. Check camera access or enter the reference manually.");
+		}
 	});
+	window.addEventListener("pagehide", () => { if (scanner) scanner.stop().catch(() => {}); });
+
 });
 </script>
 {% endblock %}

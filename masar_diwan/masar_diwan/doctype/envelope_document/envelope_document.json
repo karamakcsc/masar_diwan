@@ -18,7 +18,8 @@
    "in_list_view": 1,
    "label": "Correspondence",
    "options": "Correspondence",
-   "reqd": 1
+   "reqd": 1,
+   "columns": 4
   },
   {
    "fetch_from": "correspondence.party",
@@ -27,7 +28,8 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Party",
-   "read_only": 1
+   "read_only": 1,
+   "columns": 4
   },
   {
    "fetch_from": "correspondence.party_type",
@@ -36,7 +38,8 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Party Type",
-   "read_only": 1
+   "read_only": 1,
+   "columns": 2
   }
  ],
  "grid_page_length": 50,

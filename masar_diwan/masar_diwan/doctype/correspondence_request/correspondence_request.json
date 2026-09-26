@@ -71,7 +71,8 @@
   },
   {
    "fieldname": "section_break_content",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Request details"
   },
   {
    "fieldname": "subject",
@@ -115,7 +116,8 @@
   },
   {
    "fieldname": "section_break_decision",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Review and outcome"
   },
   {
    "default": "Draft",

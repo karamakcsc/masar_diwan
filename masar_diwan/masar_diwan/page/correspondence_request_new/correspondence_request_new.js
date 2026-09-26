@@ -18,7 +18,7 @@
 frappe.pages["correspondence-request-new"].on_page_load = function (wrapper) {
 	const page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: "طلب مراسلة جديد",
+		title: __("New Correspondence Request"),
 		single_column: true,
 	});
 
@@ -26,21 +26,21 @@ frappe.pages["correspondence-request-new"].on_page_load = function (wrapper) {
 };
 
 const CRN_STEPS = [
-	{ key: "Draft", label: "مسودة" },
-	{ key: "Pending Review", label: "بانتظار المراجعة" },
-	{ key: "Under Review", label: "قيد المراجعة" },
-	{ key: "Approved", label: "معتمدة" },
-	{ key: "Approved & Numbered", label: "معتمدة ومرقّمة" },
+	{ key: "Draft", label: __("Draft") },
+	{ key: "Pending Review", label: __("Pending Review") },
+	{ key: "Under Review", label: __("Under Review") },
+	{ key: "Approved", label: __("Approved") },
+	{ key: "Approved & Numbered", label: __("Approved & Numbered") },
 ];
 
 const CRN_STATUS_META = {
-	Draft: { label: "مسودة", color: "grey" },
-	"Pending Review": { label: "بانتظار المراجعة", color: "orange" },
-	"Under Review": { label: "قيد المراجعة", color: "blue" },
-	"Needs Revision": { label: "بحاجة لتعديل", color: "yellow" },
-	Rejected: { label: "مرفوض", color: "red" },
-	Approved: { label: "معتمدة", color: "blue" },
-	"Approved & Numbered": { label: "معتمدة ومرقّمة", color: "green" },
+	Draft: { label: __("Draft"), color: "grey" },
+	"Pending Review": { label: __("Pending Review"), color: "orange" },
+	"Under Review": { label: __("Under Review"), color: "blue" },
+	"Needs Revision": { label: __("Needs Revision"), color: "yellow" },
+	Rejected: { label: __("Rejected"), color: "red" },
+	Approved: { label: __("Approved"), color: "blue" },
+	"Approved & Numbered": { label: __("Approved & Numbered"), color: "green" },
 };
 
 // Fallback shown only until the real Confidentiality Level list (which can
@@ -49,7 +49,7 @@ const CRN_STATUS_META = {
 // site has exactly these 3 levels; this object is replaced wholesale by
 // fetch_confidentiality_levels() as soon as that call returns.
 const CRN_CONFIDENTIALITY_FALLBACK = {
-	Normal: { label: "عادي", active_class: "btn-secondary" },
+	Normal: { label: __("Normal"), active_class: "btn-secondary" },
 };
 
 class CorrespondenceRequestNew {
@@ -73,8 +73,8 @@ class CorrespondenceRequestNew {
 				const meta = this.confidentiality_meta[key];
 				const is_active = this.confidentiality === key;
 				const cls = is_active ? meta.active_class : "btn-outline-secondary";
-				return `<button type="button" class="btn ${cls} crn-confidentiality-pill" data-value="${key}">${frappe.utils.escape_html(
-					meta.label
+				return `<button type="button" class="btn ${cls} crn-confidentiality-pill" aria-pressed="${is_active}" data-value="${frappe.utils.escape_html(key)}">${frappe.utils.escape_html(
+					__(meta.label)
 				)}</button>`;
 			})
 			.join("");
@@ -307,14 +307,15 @@ class CorrespondenceRequestNew {
 		const $body = $(this.page.body).empty();
 
 		this.page.set_indicator(status_meta.label, status_meta.color);
-		this.page.set_primary_action("إرسال للمراجعة", () => this.save($body, "submit"));
-		this.page.set_secondary_action("حفظ كمسودة", () => this.save($body, "draft"));
+		this.page.set_primary_action(__("Submit for Review"), () => this.save($body, "submit"));
+		this.page.set_secondary_action(__("Save as Draft"), () => this.save($body, "draft"));
 
 		$body.html(`
-			<div class="correspondence-request-new-page" dir="rtl">
+			<div class="correspondence-request-new-page" dir="${document.documentElement.dir || "ltr"}">
+				<div class="crn-save-feedback" role="status" tabindex="-1"></div>
 				${
 					this.saved_name
-						? `<div class="alert alert-info">تم حفظ الطلب كمسودة برقم
+						? `<div class="alert alert-info">${__("Draft saved with reference")}
 							<a href="/app/correspondence-request/${encodeURIComponent(this.saved_name)}">
 								${esc(this.saved_name)}
 							</a></div>`
@@ -323,65 +324,65 @@ class CorrespondenceRequestNew {
 				<div class="row">
 					<div class="col-lg-8">
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">بيانات أساسية</h6>
-							<label class="crn-readonly-label d-block mt-2">نوع المعاملة <span class="text-danger">*</span></label>
+							<h6 class="card-title">${__("Request details")}</h6>
+							<label class="crn-readonly-label d-block mt-2">${__("Request Type")} <span class="text-danger">*</span></label>
 							<div class="row">
 								<div class="col-4">
 									<button type="button" class="btn ${
 										this.request_type === "Incoming" ? "btn-primary" : "btn-outline-primary"
-									} crn-type-btn" data-value="Incoming">
+									} crn-type-btn" aria-pressed="${this.request_type === "Incoming"}" data-value="Incoming">
 										${icon("down-arrow", "lg")}
-										<span>وارد</span>
+										<span>${__("Incoming")}</span>
 									</button>
 								</div>
 								<div class="col-4">
 									<button type="button" class="btn ${
 										this.request_type === "Outgoing" ? "btn-primary" : "btn-outline-primary"
-									} crn-type-btn" data-value="Outgoing">
+									} crn-type-btn" aria-pressed="${this.request_type === "Outgoing"}" data-value="Outgoing">
 										${icon("up-arrow", "lg")}
-										<span>صادر</span>
+										<span>${__("Outgoing")}</span>
 									</button>
 								</div>
 								<div class="col-4">
 									<button type="button" class="btn ${
 										this.request_type === "Internal" ? "btn-primary" : "btn-outline-primary"
-									} crn-type-btn" data-value="Internal">
+									} crn-type-btn" aria-pressed="${this.request_type === "Internal"}" data-value="Internal">
 										${icon("home", "lg")}
-										<span>داخلي</span>
+										<span>${__("Internal")}</span>
 									</button>
 								</div>
 							</div>
 
 							<div class="row mt-3">
 								<div class="col-sm-6">
-									<div class="crn-readonly-label">مقدَّم من</div>
+									<div class="crn-readonly-label">${__("Submitted by")}</div>
 									<div class="crn-readonly-value crn-submitter-line">...</div>
 								</div>
 								<div class="col-sm-6">
-									<div class="crn-readonly-label">تاريخ الطلب</div>
+									<div class="crn-readonly-label">${__("Request Date")}</div>
 									<div class="crn-readonly-value crn-date-line">...</div>
 								</div>
 							</div>
 
 							<div class="form-group mt-3">
-								<label>الموضوع <span class="text-danger">*</span></label>
-								<input type="text" class="form-control" id="crn-subject" value="${esc(prefill.subject || "")}">
+								<label for="crn-subject">${__("Subject")} <span class="text-danger">*</span></label>
+								<input type="text" class="form-control" id="crn-subject" maxlength="140" aria-required="true" value="${esc(prefill.subject || "")}">
 							</div>
 							<div class="form-group mb-0">
-								<label>الجهة / القسم المستهدف</label>
+								<label for="crn-party">${__("Party / Department")}</label>
 								<input type="text" class="form-control" id="crn-party" value="${esc(prefill.party_or_department || "")}">
 							</div>
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">التصنيف</h6>
+							<h6 class="card-title">${__("Classification")}</h6>
 							<div class="row">
 								<div class="col-sm-6 form-group">
-									<label>الفئة</label>
+									<label for="crn-category">${__("Category")}</label>
 									<select class="form-control" id="crn-category"><option value="">-</option></select>
 								</div>
 								<div class="col-sm-6 form-group" id="crn-subcategory-group" style="display:none;">
-									<label>الفئة الفرعية</label>
+									<label for="crn-subcategory">${__("Sub Category")}</label>
 									<select class="form-control" id="crn-subcategory"><option value="">-</option></select>
 								</div>
 							</div>
@@ -389,26 +390,26 @@ class CorrespondenceRequestNew {
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">نص المسودة</h6>
+							<h6 class="card-title">${__("Draft Text")}</h6>
 							<div id="crn-draft-text-wrapper"></div>
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">الأولوية ودرجة السرية المقترحتان</h6>
+							<h6 class="card-title">${__("Priority and confidentiality")}</h6>
 							<div class="row">
 								<div class="col-sm-6">
-									<label class="d-block">الأولوية</label>
+									<label class="d-block">${__("Priority")}</label>
 									<div class="btn-group" role="group">
 										<button type="button" class="btn ${
 											this.priority === "Normal" ? "btn-primary" : "btn-outline-secondary"
-										} crn-priority-pill" data-value="Normal">عادي</button>
+										} crn-priority-pill" aria-pressed="${this.priority === "Normal"}" data-value="Normal">${__("Normal")}</button>
 										<button type="button" class="btn ${
 											this.priority === "Urgent" ? "btn-primary" : "btn-outline-secondary"
-										} crn-priority-pill" data-value="Urgent">عاجل</button>
+										} crn-priority-pill" aria-pressed="${this.priority === "Urgent"}" data-value="Urgent">${__("Urgent")}</button>
 									</div>
 								</div>
 								<div class="col-sm-6">
-									<label class="d-block">درجة السرية</label>
+									<label class="d-block">${__("Confidentiality")}</label>
 									<div class="btn-group" id="crn-confidentiality-group" role="group">
 										${this.build_confidentiality_pills_html()}
 									</div>
@@ -417,23 +418,23 @@ class CorrespondenceRequestNew {
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">مرفقات مبدئية</h6>
-							<div class="crn-dropzone" id="crn-dropzone">
-								اسحب وأفلت الملفات هنا، أو اضغط للاختيار
-								<input type="file" id="crn-file-input" multiple style="display:none;">
+							<h6 class="card-title">${__("Attachments")}</h6>
+							<div class="crn-dropzone" id="crn-dropzone" role="button" tabindex="0" aria-label="${__("Choose attachments")}">
+								${__("Drop files here or choose files")}
+								<input type="file" id="crn-file-input" aria-label="${__("Attachments")}" multiple style="display:none;">
 							</div>
 							<div id="crn-file-list"></div>
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">ملاحظة لأمين الديوان</h6>
-							<textarea class="form-control" id="crn-note" rows="2">${esc(prefill.note_to_registrar || "")}</textarea>
+							<h6 class="card-title">${__("Note to Registrar")}</h6>
+							<textarea class="form-control" id="crn-note" aria-label="${__("Note to Registrar")}" rows="2">${esc(prefill.note_to_registrar || "")}</textarea>
 						</div></div>
 					</div>
 
 					<div class="col-lg-4">
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">حالة الطلب</h6>
+							<h6 class="card-title">${__("Request status")}</h6>
 							${this.render_stepper_vertical(status)}
 						</div></div>
 
@@ -446,7 +447,7 @@ class CorrespondenceRequestNew {
 						<div class="card mb-3 bg-light border-0"><div class="card-body">
 							<div class="crn-help-card">
 								<div>${icon("solid-info", "sm")}</div>
-								<div class="small text-muted">بعد الإرسال، تتم مراجعة طلبك من قبل أمين الديوان وقد يُطلب منك تعديله قبل اعتماده وتسجيله رسمياً.</div>
+								<div class="small text-muted">${__("The Diwan team will review your request and may ask for changes before registering it.")}</div>
 							</div>
 						</div></div>
 					</div>
@@ -456,7 +457,7 @@ class CorrespondenceRequestNew {
 
 		this.draft_text_control = frappe.ui.form.make_control({
 			parent: $body.find("#crn-draft-text-wrapper"),
-			df: { fieldtype: "Text Editor", fieldname: "draft_text" },
+			df: { fieldtype: "Text Editor", fieldname: "draft_text", label: __("Draft Text") },
 			render_input: true,
 			only_input: true,
 		});
@@ -491,66 +492,65 @@ class CorrespondenceRequestNew {
 	// pickers and dynamic fields silently reset to empty the moment the
 	// form re-rendered, even though the draft itself still had the right
 	// values saved server-side.
-	fetch_categories($body, restoreCategory, restoreSubCategory) {
-		frappe.call({
-			method: "masar_diwan.api.requests.get_top_level_categories",
-			callback: (r) => {
-				this.categories_meta = {};
-				const $select = $body.find("#crn-category");
-				(r.message || []).forEach((cat) => {
-					this.categories_meta[cat.name] = cat;
-					$select.append(`<option value="${frappe.utils.escape_html(cat.name)}">${frappe.utils.escape_html(cat.title)}</option>`);
-				});
-				if (restoreCategory && this.categories_meta[restoreCategory]) {
-					$select.val(restoreCategory);
-					this.on_category_change($body, restoreSubCategory);
-				}
-			},
-		});
+	async fetch_categories($body, restoreCategory, restoreSubCategory) {
+		this.category_loading = true;
+		const $select = $body.find("#crn-category").prop("disabled", true);
+		try {
+			const r = await frappe.call({ method: "masar_diwan.api.requests.get_top_level_categories" });
+			this.categories_meta = {};
+			(r.message || []).forEach(cat => {
+				this.categories_meta[cat.name] = cat;
+				$select.append(new Option(cat.title, cat.name));
+			});
+			if (restoreCategory && this.categories_meta[restoreCategory]) $select.val(restoreCategory);
+			await this.on_category_change($body, restoreSubCategory);
+		} catch (error) {
+			frappe.msgprint(__("Categories could not be loaded. Reload this page to try again."));
+		} finally { $select.prop("disabled", false); }
 	}
 
-	on_category_change($body, restoreSubCategory) {
+	async on_category_change($body, restoreSubCategory) {
+		const sequence = this.category_sequence = (this.category_sequence || 0) + 1;
+		this.category_loading = true;
 		const category = $body.find("#crn-category").val();
 		this.correspondence_category = category || null;
 		this.correspondence_sub_category = restoreSubCategory || null;
-		const meta = this.categories_meta && this.categories_meta[category];
-		const $subGroup = $body.find("#crn-subcategory-group");
-		const $subSelect = $body.find("#crn-subcategory").empty().append('<option value="">-</option>');
-
-		if (meta && meta.is_group) {
-			$subGroup.show();
-			frappe.call({
-				method: "masar_diwan.api.requests.get_sub_categories",
-				args: { correspondence_category: category },
-				callback: (r) => {
-					(r.message || []).forEach((sub) => {
-						$subSelect.append(`<option value="${frappe.utils.escape_html(sub.name)}">${frappe.utils.escape_html(sub.title)}</option>`);
-					});
-					if (restoreSubCategory) $subSelect.val(restoreSubCategory);
-					this.fetch_dynamic_fields($body);
-				},
-			});
-		} else {
-			$subGroup.hide();
-			this.fetch_dynamic_fields($body);
-		}
+		const isGroup = Boolean(this.categories_meta?.[category]?.is_group);
+		const $subSelect = $body.find("#crn-subcategory").empty().append(new Option("-", ""));
+		$body.find("#crn-subcategory-group").toggle(isGroup);
+		$subSelect.prop("required", isGroup).prop("disabled", true);
+		try {
+			if (isGroup) {
+				const r = await frappe.call({ method: "masar_diwan.api.requests.get_sub_categories", args: { correspondence_category: category } });
+				if (sequence !== this.category_sequence) return;
+				(r.message || []).forEach(sub => $subSelect.append(new Option(sub.title, sub.name)));
+				if (restoreSubCategory) $subSelect.val(restoreSubCategory);
+				this.correspondence_sub_category = $subSelect.val() || null;
+			}
+			await this.fetch_dynamic_fields($body, sequence);
+		} catch (error) {
+			if (sequence === this.category_sequence) frappe.msgprint(__("Category fields could not be loaded. Select the category again to retry."));
+		} finally { if (sequence === this.category_sequence) $subSelect.prop("disabled", false); }
 	}
 
-	fetch_dynamic_fields($body) {
-		frappe.call({
-			method: "masar_diwan.api.requests.get_dynamic_fields",
-			args: {
+	async fetch_dynamic_fields($body, sequence) {
+		if (sequence === undefined) sequence = this.category_sequence = (this.category_sequence || 0) + 1;
+		this.category_loading = true;
+		const host = $body.find("#crn-dynamic-fields")[0];
+		this._prefill_dynamic_values = Object.assign({}, this._prefill_dynamic_values, window.masarDiwanDynamicFields.collectValues(host));
+		host.setAttribute("aria-busy", "true");
+		try {
+			const r = await frappe.call({ method: "masar_diwan.api.requests.get_dynamic_fields", args: {
 				correspondence_category: this.correspondence_category,
 				correspondence_sub_category: this.correspondence_sub_category,
-			},
-			callback: (r) => {
-				window.masarDiwanDynamicFields.render(
-					$body.find("#crn-dynamic-fields")[0],
-					r.message || [],
-					this._prefill_dynamic_values
-				);
-			},
-		});
+			} });
+			if (sequence !== this.category_sequence || !host.isConnected) return;
+			Object.assign(this._prefill_dynamic_values, window.masarDiwanDynamicFields.collectValues(host));
+			window.masarDiwanDynamicFields.render(host, r.message || [], this._prefill_dynamic_values);
+			this.category_loading = false;
+		} catch (error) {
+			if (sequence === this.category_sequence) frappe.msgprint(__("Category fields could not be loaded. Select the category again to retry."));
+		} finally { if (sequence === this.category_sequence) host.setAttribute("aria-busy", "false"); }
 	}
 
 	fetch_submitter_context($body) {
@@ -570,14 +570,14 @@ class CorrespondenceRequestNew {
 	bind_events($body) {
 		$body.find(".crn-type-btn").on("click", (e) => {
 			this.request_type = $(e.currentTarget).data("value");
-			$body.find(".crn-type-btn").removeClass("btn-primary").addClass("btn-outline-primary");
-			$(e.currentTarget).removeClass("btn-outline-primary").addClass("btn-primary");
+			$body.find(".crn-type-btn").attr("aria-pressed", "false").removeClass("btn-primary").addClass("btn-outline-primary");
+			$(e.currentTarget).attr("aria-pressed", "true").removeClass("btn-outline-primary").addClass("btn-primary");
 		});
 
 		$body.find(".crn-priority-pill").on("click", (e) => {
 			this.priority = $(e.currentTarget).data("value");
-			$body.find(".crn-priority-pill").removeClass("btn-primary").addClass("btn-outline-secondary");
-			$(e.currentTarget).removeClass("btn-outline-secondary").addClass("btn-primary");
+			$body.find(".crn-priority-pill").attr("aria-pressed", "false").removeClass("btn-primary").addClass("btn-outline-secondary");
+			$(e.currentTarget).attr("aria-pressed", "true").removeClass("btn-outline-secondary").addClass("btn-primary");
 		});
 
 		// Delegated (not bound directly to the .crn-confidentiality-pill
@@ -590,11 +590,11 @@ class CorrespondenceRequestNew {
 				const $el = $(el);
 				const meta = this.confidentiality_meta[$el.data("value")];
 				if (!meta) return;
-				$el.removeClass(`btn-outline-secondary ${meta.active_class}`).addClass("btn-outline-secondary");
+				$el.attr("aria-pressed", "false").removeClass(`btn-outline-secondary ${meta.active_class}`).addClass("btn-outline-secondary");
 			});
 			const meta = this.confidentiality_meta[this.confidentiality];
 			if (meta) {
-				$(e.currentTarget).removeClass("btn-outline-secondary").addClass(meta.active_class);
+				$(e.currentTarget).attr("aria-pressed", "true").removeClass("btn-outline-secondary").addClass(meta.active_class);
 			}
 		});
 
@@ -606,7 +606,15 @@ class CorrespondenceRequestNew {
 
 		const $dropzone = $body.find("#crn-dropzone");
 		const $file_input = $body.find("#crn-file-input");
-		$dropzone.on("click", () => $file_input.trigger("click"));
+		$dropzone.on("click", (event) => {
+			if (event.target !== $file_input[0]) $file_input[0].click();
+		});
+		$dropzone.on("keydown", event => {
+			if (event.key === "Enter" || event.key === " ") {
+				event.preventDefault();
+				$file_input[0].click();
+			}
+		});
 		$file_input.on("change", (e) => {
 			this.add_files($body, e.target.files);
 			e.target.value = "";
@@ -643,7 +651,7 @@ class CorrespondenceRequestNew {
 					<div class="crn-file-name">${esc(f.name)}</div>
 					<div class="crn-file-size">${this.format_file_size(f.size)}</div>
 				</div>
-				<a href="#" class="text-danger crn-remove-file" data-idx="${idx}">&times;</a>
+				<button type="button" class="btn btn-link text-danger crn-remove-file" aria-label="${esc(__("Remove attachment") + ": " + f.name)}" data-idx="${idx}">&times;</button>
 			</div>`).appendTo($list);
 		});
 		$list.find(".crn-remove-file").on("click", (e) => {
@@ -654,33 +662,42 @@ class CorrespondenceRequestNew {
 		});
 	}
 
-	upload_pending_files(docname) {
-		if (!this.pending_files.length) return Promise.resolve();
-		const files = this.pending_files;
-		this.pending_files = [];
-		return new Promise((resolve) => {
-			const uploader = new frappe.ui.FileUploader({
-				doctype: "Correspondence Request",
-				docname: docname,
-				folder: "Home/Attachments",
-				files: files,
-				allow_multiple: true,
-				on_success: () => {},
-			});
-			Promise.resolve(uploader.upload_files()).then(resolve, resolve);
-		});
+	async upload_pending_files(docname) {
+		const results = await Promise.all(this.pending_files.map(async file => {
+			const body = new FormData();
+			body.append("file", file);
+			body.append("doctype", "Correspondence Request");
+			body.append("docname", docname);
+			body.append("is_private", "1");
+			try {
+				const response = await fetch("/api/method/upload_file", {
+					method: "POST", headers: { "X-Frappe-CSRF-Token": frappe.csrf_token }, body,
+				});
+				if (!response.ok) return false;
+				const result = await response.json();
+				return Boolean(result.message && result.message.name);
+			} catch (error) { return false; }
+		}));
+		this.pending_files = this.pending_files.filter((file, index) => !results[index]);
+		if (this.pending_files.length) throw new Error("attachment-upload");
 	}
 
 	async save($body, action) {
+		if (this.saving) return;
+		if (this.category_loading) { frappe.msgprint(__("Wait for the category fields to finish loading before saving.")); return; }
+		const subcategory = $body.find("#crn-subcategory")[0];
+		if (subcategory.required && !subcategory.checkValidity()) { subcategory.reportValidity(); subcategory.focus(); return; }
 		const subject = $body.find("#crn-subject").val().trim();
 		if (!this.request_type || !subject) {
 			frappe.msgprint({
-				message: __("الرجاء اختيار نوع المعاملة وإدخال الموضوع قبل المتابعة."),
+				message: __("Select a request type and enter a subject to continue."),
 				indicator: "orange",
 			});
 			return;
 		}
 
+		if (!window.masarDiwanDynamicFields.validate($body.find("#crn-dynamic-fields")[0])) return;
+		this.saving = true;
 		const fields = Object.assign(
 			{
 				request_type: this.request_type,
@@ -696,7 +713,7 @@ class CorrespondenceRequestNew {
 			window.masarDiwanDynamicFields.collectValues($body.find("#crn-dynamic-fields")[0])
 		);
 
-		frappe.dom.freeze(action === "submit" ? __("جارٍ الإرسال للمراجعة...") : __("جارٍ حفظ المسودة..."));
+		frappe.dom.freeze(action === "submit" ? __("Submitting for review…") : __("Saving draft…"));
 
 		try {
 			let doc;
@@ -724,10 +741,18 @@ class CorrespondenceRequestNew {
 				this.render_confirmation(doc);
 			} else {
 				frappe.dom.unfreeze();
-				frappe.show_alert({ message: __("تم حفظ الطلب كمسودة"), indicator: "green" });
+				frappe.show_alert({ message: __("Saved as draft."), indicator: "green" });
 				this.render_form(Object.assign({}, fields, { name: doc.name, status: doc.status }));
 			}
-		} catch (e) {
+		} catch (error) {
+			this.render_file_list($body);
+			$body.find(".crn-save-feedback").addClass("alert alert-danger").text(
+				error.message === "attachment-upload"
+					? __("Draft saved, but some attachments failed to upload. Retry to upload the remaining files before submitting.")
+					: __("Could not complete this action. Your entered details are still available; please try again.")
+			).trigger("focus");
+		} finally {
+			this.saving = false;
 			frappe.dom.unfreeze();
 		}
 	}
@@ -740,32 +765,33 @@ class CorrespondenceRequestNew {
 
 		const $body = $(this.page.body).empty();
 		$body.html(`
-			<div class="correspondence-request-new-page" dir="rtl">
+			<div class="correspondence-request-new-page" dir="${document.documentElement.dir || "ltr"}">
+				<div class="crn-save-feedback" role="status" tabindex="-1"></div>
 				<div class="row">
 					<div class="col-lg-8">
 						<div class="card"><div class="card-body text-center py-5">
 							<div class="crn-success-icon">&#10003;</div>
-							<h4 class="mt-3">تم إرسال الطلب للمراجعة بنجاح</h4>
-							<p class="text-muted">رقم الطلب: <strong>${esc(doc.name)}</strong></p>
+							<h4 class="mt-3">${__("Request submitted for review")}</h4>
+							<p class="text-muted">${__("Request reference:")} <strong>${esc(doc.name)}</strong></p>
 							<div class="mt-4">
-								<button type="button" class="btn btn-default" id="crn-view-request">عرض الطلب</button>
-								<button type="button" class="btn btn-primary" id="crn-new-request">تقديم طلب آخر</button>
+								<button type="button" class="btn btn-default" id="crn-view-request">${__("View Request")}</button>
+								<button type="button" class="btn btn-primary" id="crn-new-request">${__("New Request")}</button>
 							</div>
 						</div></div>
 					</div>
 					<div class="col-lg-4">
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">حالة الطلب</h6>
+							<h6 class="card-title">${__("Request status")}</h6>
 							${this.render_stepper_vertical(doc.status)}
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body text-center">
-							<h6 class="card-title text-right">رمز التتبع (QR)</h6>
+							<h6 class="card-title text-right">${__("Tracking QR Code")}</h6>
 							<div class="crn-qr-disabled-wrap">
 								${this.render_fake_qr_svg()}
 								<div class="crn-qr-lock">${frappe.utils.icon("restriction", "xs")}</div>
 							</div>
-							<div class="text-muted small mt-2">سيتم توليد رمز QR للتتبع تلقائياً بعد اعتماد الطلب وتسجيله كمراسلة رسمية.</div>
+							<div class="text-muted small mt-2">${__("A tracking QR code becomes available after approval and official registration.")}</div>
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body text-center">

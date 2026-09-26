@@ -10,6 +10,7 @@
  ],
  "fields": [
   {
+   "description": "Users with this role can read documents at this confidentiality level across departments.",
    "fieldname": "role",
    "fieldtype": "Link",
    "in_list_view": 1,

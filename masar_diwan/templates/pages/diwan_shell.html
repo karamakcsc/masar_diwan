@@ -1,15 +1,6 @@
 {% extends "templates/base.html" %}
-{#
-Shared chrome for the three masar_diwan portals (Requester/Diwan/Track):
-56px icon rail + 220px nav panel (collapsing to a hamburger drawer under
-640px) + 48px navbar + page body with breadcrumb/title/status/primary
-action. Individual pages extend this and fill in the blocks below rather
-than repeating the shell markup three times, since all three portals must
-look identical in chrome per the design spec.
-
-Expects, from get_context(): portal_nav (list of {route, label, icon}),
-active_route, user_fullname, lang (current frappe.local.lang).
-#}
+{# Shared portal navigation, language switch, page actions, and accessible
+mobile drawer. Expects portal_nav, active_route, user_fullname, and lang. #}
 
 {% block navbar %}{% endblock %}
 {% block footer %}{% endblock %}
@@ -18,6 +9,7 @@ active_route, user_fullname, lang (current frappe.local.lang).
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/masar_diwan/css/diwan-tokens.css">
 <link rel="stylesheet" href="/assets/masar_diwan/css/diwan-portal.css">
 {% endblock %}
 
@@ -44,35 +36,37 @@ active_route, user_fullname, lang (current frappe.local.lang).
 {% endmacro %}
 
 {% macro nav_panel(id_prefix) %}
-<div class="diwan-rail">
+<div class="diwan-rail" aria-hidden="true">
 	<div class="diwan-rail__mark" title="{{ _('Masar Diwan') }}">م</div>
 	{% for item in portal_nav %}
 	<a class="diwan-rail__icon {{ 'is-active' if item.route == active_route else '' }}"
-		href="{{ item.route }}" title="{{ _(item.label) }}">{{ nav_icon(item.icon) }}</a>
+		href="{{ item.route }}" aria-label="{{ _(item.label) }}" title="{{ _(item.label) }}" tabindex="-1">{{ nav_icon(item.icon) }}</a>
 	{% endfor %}
 </div>
-<div class="diwan-nav">
+<nav class="diwan-nav" aria-label="{{ _(portal_section_title or 'Portal') }}">
+	<div class="diwan-nav__brand">{{ _("Masar Diwan") }}</div>
 	<div class="diwan-nav__section-title">{{ _(portal_section_title or "Portal") }}</div>
 	{% for item in portal_nav %}
-	<a class="diwan-nav__item {{ 'is-active' if item.route == active_route else '' }}" href="{{ item.route }}">
+	<a class="diwan-nav__item {{ 'is-active' if item.route == active_route else '' }}" href="{{ item.route }}" {% if item.route == active_route %}aria-current="page"{% endif %}>
 		{{ nav_icon(item.icon) }}
 		<span>{{ _(item.label) }}</span>
 	</a>
 	{% endfor %}
-</div>
+</nav>
 {% endmacro %}
 
 {% block content %}
 <div class="diwan-app" dir="{{ 'rtl' if is_rtl() else 'ltr' }}">
+	<a class="diwan-skip-link" href="#diwan-content">{{ _("Skip to content") }}</a>
 	<div class="diwan-shell">
 		{{ nav_panel("desktop") }}
 
 		<div class="diwan-main">
 			<div class="diwan-navbar">
-				<button class="diwan-navbar__hamburger" data-diwan-hamburger type="button" aria-label="{{ _('Menu') }}">
+				<button class="diwan-navbar__hamburger" data-diwan-hamburger type="button" aria-label="{{ _('Menu') }}" aria-controls="diwan-navigation" aria-expanded="false">
 					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
 				</button>
-				<input class="diwan-navbar__search" type="text" placeholder="{{ _('Search') }}..." disabled>
+				<a class="diwan-navbar__search" href="/track">{{ nav_icon("search") }} <span>{{ _("Track correspondence") }}</span></a>
 				<div class="diwan-navbar__spacer"></div>
 				<div class="diwan-navbar__lang">
 					<a href="?_lang=en" class="{{ 'is-active' if lang == 'en' else '' }}">EN</a>
@@ -83,7 +77,7 @@ active_route, user_fullname, lang (current frappe.local.lang).
 				{% endif %}
 			</div>
 
-			<div class="diwan-content">
+			<main class="diwan-content" id="diwan-content" tabindex="-1">
 				<div class="diwan-page-header">
 					<div class="diwan-breadcrumb">{% block diwan_breadcrumb %}{% endblock %}</div>
 					<div class="diwan-page-header__row">
@@ -95,12 +89,20 @@ active_route, user_fullname, lang (current frappe.local.lang).
 				</div>
 
 				{% block diwan_body %}{% endblock %}
-			</div>
+				{% if pagination is defined and (pagination.previous_url or pagination.next_url) %}
+				<nav class="diwan-pagination" aria-label="{{ _('Pagination') }}">
+					{% if pagination.previous_url %}<a class="diwan-btn" href="{{ pagination.previous_url }}" rel="prev">{{ _("Previous page") }}</a>{% endif %}
+					<span>{{ _("Page {0}").format(pagination.page) }}</span>
+					{% if pagination.next_url %}<a class="diwan-btn" href="{{ pagination.next_url }}" rel="next">{{ _("Next page") }}</a>{% endif %}
+				</nav>
+				{% endif %}
+			</main>
 		</div>
 	</div>
 
 	<div class="diwan-drawer-scrim" data-diwan-scrim></div>
-	<div class="diwan-drawer" data-diwan-drawer>
+	<div class="diwan-drawer" id="diwan-navigation" data-diwan-drawer role="dialog" aria-modal="true" aria-label="{{ _('Menu') }}" hidden inert>
+		<button class="diwan-drawer__close diwan-btn" type="button" data-diwan-close>{{ _("Close menu") }}</button>
 		{{ nav_panel("mobile") }}
 	</div>
 </div>

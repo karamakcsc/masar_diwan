@@ -10,6 +10,7 @@
  ],
  "fields": [
   {
+   "description": "Bypasses department checks for this document type. Confidentiality rules still apply unless that level also lists this role as a bypass.",
    "fieldname": "role",
    "fieldtype": "Link",
    "in_list_view": 1,

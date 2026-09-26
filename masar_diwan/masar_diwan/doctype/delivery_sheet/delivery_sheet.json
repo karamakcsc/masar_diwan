@@ -2,7 +2,7 @@
  "actions": [],
  "allow_bulk_edit": 1,
  "allow_rename": 1,
- "autoname": "format:\u0643\u0634\u0641-{YYYY}-{###}",
+ "autoname": "format:كشف-{YYYY}-{###}",
  "creation": "2026-09-15 23:45:24.457666",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -50,7 +50,8 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Recipient Party",
-   "reqd": 1
+   "reqd": 1,
+   "in_standard_filter": 1
   },
   {
    "fieldname": "courier_name",
@@ -59,7 +60,8 @@
   },
   {
    "fieldname": "section_break_addr",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Delivery destination"
   },
   {
    "fieldname": "delivery_address",
@@ -68,17 +70,20 @@
   },
   {
    "fieldname": "section_break_items",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Documents to deliver"
   },
   {
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Correspondence Items",
-   "options": "Delivery Sheet Item"
+   "options": "Delivery Sheet Item",
+   "description": "Select each correspondence once and review its subject before dispatch."
   },
   {
    "fieldname": "section_break_status",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Delivery confirmation"
   },
   {
    "default": "Pending Delivery",
@@ -108,7 +113,8 @@
   {
    "fieldname": "signed_sheet_image",
    "fieldtype": "Attach",
-   "label": "Signed Sheet Image"
+   "label": "Signed Sheet Image",
+   "description": "Attach the signed receipt before confirming receipt."
   }
  ],
  "grid_page_length": 50,
@@ -176,5 +182,6 @@
  "sort_order": "DESC",
  "states": [],
  "title_field": "delivery_sheet_no",
- "track_changes": 1
+ "track_changes": 1,
+ "default_print_format": "Delivery Sheet Print"
 }

@@ -5,9 +5,11 @@ import frappe
 from frappe import _
 
 from masar_diwan.permissions import get_permission_query_conditions
+from masar_diwan.utils.report_filters import correspondence_filters
 
 
 def execute(filters=None):
+	filter_clause, filter_values = correspondence_filters(filters, "creation")
 	columns = [
 		{"label": _("Reference No"), "fieldname": "name", "fieldtype": "Link", "options": "Correspondence", "width": 130},
 		{"label": _("Subject"), "fieldname": "subject", "fieldtype": "Data", "width": 220},
@@ -45,10 +47,11 @@ def execute(filters=None):
 			on tl.parent = `tabCorrespondence`.name and tl.parenttype = 'Correspondence'
 		where tl.note like %(pattern)s
 			{permission_clause}
+			{filter_clause}
 		group by `tabCorrespondence`.name
 		order by `tabCorrespondence`.creation desc
 		""",
-		{"pattern": "%to Completed%"},
+		{"pattern": "%to Completed%", **filter_values},
 		as_dict=True,
 	)
 

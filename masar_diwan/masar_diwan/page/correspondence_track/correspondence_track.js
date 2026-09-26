@@ -33,7 +33,15 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 		});
 	}
 
-	const filters_wrapper = $('<div class="row" style="margin: 10px 0;"></div>').appendTo(page.body);
+	page.add_button(__("Track"), () => lookup_ref(scan_field.get_value()));
+	scan_field.$input.on("keydown", event => {
+		if (event.key === "Enter") { event.preventDefault(); lookup_ref(scan_field.get_value()); }
+	});
+
+	$(`<section class="md-form-guide md-track-intro">
+		<div class="md-form-guide__title">${__("Find correspondence or track a reference")}</div>
+		<p>${__("Enter an exact reference to track a document, or search by reference and subject below.")}</p>
+	</section>`).appendTo(page.body);
 	const search_text = page.add_field({
 		fieldtype: "Data",
 		fieldname: "search_text",
@@ -41,36 +49,37 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 	});
 	page.add_button(__("Search"), () => run_search(), { btn_type: "btn-primary" });
 
-	const detail_wrapper = $('<div class="correspondence-track-detail"></div>').appendTo(page.body);
-	const results_wrapper = $('<div class="correspondence-track-results" style="margin-top: 15px;"></div>').appendTo(
+	const detail_wrapper = $('<div class="correspondence-track-detail" aria-live="polite" tabindex="-1"></div>').appendTo(page.body);
+	const results_wrapper = $('<div class="correspondence-track-results" aria-live="polite" style="margin-top: 15px;"></div>').appendTo(
 		page.body
 	);
 	const envelope_results_wrapper = $(
 		'<div class="correspondence-track-results" style="margin-top: 15px;"></div>'
 	).appendTo(page.body);
 
-	function run_search() {
-		const text = search_text.get_value();
-		frappe.call({
-			method: "masar_diwan.api.portal.search_correspondence",
-			args: { text },
-			callback(r) {
-				render_correspondence_results(r.message || []);
-			},
-		});
-		// Envelope has always been a real, separate reference type
-		// get_tracking_detail()/the scan field already handle (see the
-		// Envelope-tracking follow-up above) - this search box only ever
-		// queried Correspondence until now, a real inconsistency: scanning
-		// an envelope's exact reference worked, but searching for one by
-		// partial text/envelope number here silently found nothing.
-		frappe.call({
-			method: "masar_diwan.api.portal.search_envelopes",
-			args: { text },
-			callback(r) {
-				render_envelope_results(r.message || []);
-			},
-		});
+	let searchSequence = 0;
+	let detailSequence = 0;
+	search_text.$input.on("keydown", event => {
+		if (event.key === "Enter") { event.preventDefault(); run_search(); }
+	});
+
+	async function run_search() {
+		const sequence = ++searchSequence;
+		const text = (search_text.get_value() || "").trim();
+		await Promise.all([
+			[results_wrapper, "search_correspondence", render_correspondence_results],
+			[envelope_results_wrapper, "search_envelopes", render_envelope_results],
+		].map(async ([wrapper, method, render]) => {
+			wrapper.attr("aria-busy", "true").html(`<div class="md-empty-state">${__("Searching…")}</div>`);
+			try {
+				const result = await frappe.call({ method: "masar_diwan.api.portal." + method, args: { text } });
+				if (sequence === searchSequence) render(result.message || []);
+			} catch (error) {
+				if (sequence === searchSequence) wrapper.html(`<div class="alert alert-danger">${__("Search could not be completed. Please try again.")}</div>`);
+			} finally {
+				if (sequence === searchSequence) wrapper.attr("aria-busy", "false");
+			}
+		}));
 	}
 
 	function render_correspondence_results(rows) {
@@ -79,26 +88,27 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 			results_wrapper
 		);
 		if (!rows.length) {
-			$(`<div class="text-muted">${__("No results")}</div>`).appendTo(results_wrapper);
+			results_wrapper.html(`<div class="md-empty-state">${__("No matching correspondence. Try another reference or subject.")}</div>`);
 			return;
 		}
+		const scroll = $('<div class="md-table-scroll" tabindex="0"></div>').attr({ role: "region", "aria-label": __("Search results") }).appendTo(results_wrapper);
 		const table = $(`
 			<table class="table table-bordered">
 				<thead><tr>
-					<th>${__("Reference No")}</th>
-					<th>${__("Subject")}</th>
-					<th>${__("Status")}</th>
-					<th>${__("Department")}</th>
+					<th scope="col">${__("Reference No")}</th>
+					<th scope="col">${__("Subject")}</th>
+					<th scope="col">${__("Status")}</th>
+					<th scope="col">${__("Department")}</th>
 				</tr></thead>
 				<tbody></tbody>
 			</table>
-		`).appendTo(results_wrapper);
+		`).appendTo(scroll);
 		const tbody = table.find("tbody");
 		rows.forEach((row) => {
 			$(`<tr>
-				<td><a href="#" class="track-row-link ref-code">${frappe.utils.escape_html(row.reference_no)}</a></td>
+				<td><a href="/track?ref=${encodeURIComponent(row.name)}" class="track-row-link ref-code">${frappe.utils.escape_html(row.reference_no)}</a></td>
 				<td>${frappe.utils.escape_html(row.subject || "")}</td>
-				<td>${frappe.utils.escape_html(row.status || "")}</td>
+				<td>${frappe.utils.escape_html(__(row.status || ""))}</td>
 				<td>${frappe.utils.escape_html(row.department || "")}</td>
 			</tr>`)
 				.appendTo(tbody)
@@ -116,24 +126,25 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 			envelope_results_wrapper
 		);
 		if (!rows.length) {
-			$(`<div class="text-muted">${__("No results")}</div>`).appendTo(envelope_results_wrapper);
+			$(`<div class="text-muted">${__("No results")}</div>`).appendTo(scroll);
 			return;
 		}
+		const scroll = $('<div class="md-table-scroll" tabindex="0"></div>').attr({ role: "region", "aria-label": __("Envelopes") }).appendTo(envelope_results_wrapper);
 		const table = $(`
 			<table class="table table-bordered">
 				<thead><tr>
-					<th>${__("Envelope No")}</th>
-					<th>${__("Status")}</th>
-					<th>${__("Creation Date")}</th>
-					<th>${__("Linked Delivery Sheet")}</th>
+					<th scope="col">${__("Envelope No")}</th>
+					<th scope="col">${__("Status")}</th>
+					<th scope="col">${__("Creation Date")}</th>
+					<th scope="col">${__("Linked Delivery Sheet")}</th>
 				</tr></thead>
 				<tbody></tbody>
 			</table>
-		`).appendTo(envelope_results_wrapper);
+		`).appendTo(scroll);
 		const tbody = table.find("tbody");
 		rows.forEach((row) => {
 			$(`<tr>
-				<td><a href="#" class="track-row-link ref-code">${frappe.utils.escape_html(row.envelope_no)}</a></td>
+				<td><a href="/track?ref=${encodeURIComponent(row.name)}" class="track-row-link ref-code">${frappe.utils.escape_html(row.envelope_no)}</a></td>
 				<td>${frappe.utils.escape_html(__(row.status || ""))}</td>
 				<td>${row.creation_date ? frappe.datetime.str_to_user(row.creation_date) : "-"}</td>
 				<td>${row.linked_delivery_sheet ? `<span class="ref-code">${frappe.utils.escape_html(row.linked_delivery_sheet)}</span>` : "-"}</td>
@@ -147,14 +158,22 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 		});
 	}
 
-	function lookup_ref(ref) {
-		frappe.call({
-			method: "masar_diwan.api.portal.get_tracking_detail",
-			args: { ref, via: "barcode" },
-			callback(r) {
-				render_detail(r.message);
-			},
-		});
+	async function lookup_ref(ref) {
+		ref = (ref || "").trim();
+		if (!ref) return;
+		const sequence = ++detailSequence;
+		detail_wrapper.attr("aria-busy", "true").html(`<div class="md-empty-state">${__("Loading document…")}</div>`);
+		try {
+			const result = await frappe.call({
+				method: "masar_diwan.api.portal.get_tracking_detail",
+				args: { ref, via: "barcode" },
+			});
+			if (sequence === detailSequence) render_detail(result.message);
+		} catch (error) {
+			if (sequence === detailSequence) detail_wrapper.html(`<div class="alert alert-danger">${__("The document could not be loaded. Please try again.")}</div>`);
+		} finally {
+			if (sequence === detailSequence) detail_wrapper.attr("aria-busy", "false");
+		}
 	}
 
 	function render_detail(data) {
@@ -192,7 +211,7 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 		detail_wrapper.html(`
 			<div class="card correspondence-track-card">
 				<div class="correspondence-track-card__header">
-					<a class="ref-code" href="/app/correspondence/${encodeURIComponent(d.name)}">${frappe.utils.escape_html(d.reference_no)}</a>
+					<a class="ref-code" href="/desk/correspondence/${encodeURIComponent(d.name)}">${frappe.utils.escape_html(d.reference_no)}</a>
 					${confidentiality_badge_html(d.confidentiality)}
 				</div>
 				<div class="card-body">
@@ -227,7 +246,7 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 		detail_wrapper.html(`
 			<div class="card correspondence-track-card">
 				<div class="correspondence-track-card__header">
-					<a class="ref-code" href="/app/envelope/${encodeURIComponent(e.name)}">${frappe.utils.escape_html(e.envelope_no)}</a>
+					<a class="ref-code" href="/desk/envelope/${encodeURIComponent(e.name)}">${frappe.utils.escape_html(e.envelope_no)}</a>
 				</div>
 				<div class="card-body">
 					<div style="display:flex; gap:16px; flex-wrap:wrap-reverse; align-items:flex-start;">
@@ -240,7 +259,7 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 					<p><b>${__("Documents")} (${(e.documents || []).length}):</b></p>
 					${
 						rows
-							? `<table class="table table-bordered"><thead><tr><th>${__("Reference No")}</th><th>${__("Party Type")}</th><th>${__("Party")}</th></tr></thead><tbody>${rows}</tbody></table>`
+							? `<div class="md-table-scroll" role="region" aria-label="${__("Documents")}" tabindex="0"><table class="table table-bordered"><thead><tr><th scope="col">${__("Reference No")}</th><th scope="col">${__("Party Type")}</th><th scope="col">${__("Party")}</th></tr></thead><tbody>${rows}</tbody></table></div>`
 							: `<div class="text-muted">${__("No documents in this envelope.")}</div>`
 					}
 				</div>

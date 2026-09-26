@@ -20,35 +20,42 @@
    "in_list_view": 1,
    "label": "Correspondence Type",
    "options": "Correspondence Type",
-   "reqd": 1
+   "reqd": 1,
+   "columns": 4
   },
   {
    "fieldname": "prefix",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Prefix",
-   "reqd": 1
+   "reqd": 1,
+   "columns": 2
   },
   {
    "default": "0",
    "fieldname": "current_number",
    "fieldtype": "Int",
    "in_list_view": 1,
-   "label": "Current Number"
+   "label": "Current Number",
+   "columns": 2,
+   "description": "The last issued number. The next reference increments this counter."
   },
   {
    "default": "1",
    "fieldname": "reset_yearly",
    "fieldtype": "Check",
    "in_list_view": 1,
-   "label": "Reset Yearly"
+   "label": "Reset Yearly",
+   "columns": 2
   },
   {
    "fieldname": "last_reset_year",
    "fieldtype": "Int",
    "hidden": 1,
    "label": "Last Reset Year",
-   "read_only": 1
+   "read_only": 1,
+   "in_list_view": 0,
+   "description": "Year of the last annual reset."
   }
  ],
  "grid_page_length": 50,
