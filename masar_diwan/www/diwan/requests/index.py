@@ -1,6 +1,7 @@
 import frappe
 
 from masar_diwan.access_log import log_event
+from masar_diwan.api.requests import get_confidentiality_levels, get_submitter_context
 from masar_diwan.utils.dynamic_fields import get_dynamic_field_values_for_display
 from masar_diwan.utils.portal_nav import REQUESTER_PORTAL_NAV as PORTAL_NAV
 
@@ -26,6 +27,13 @@ DETAIL_FIELDS = LIST_FIELDS + [
 
 
 def get_context(context):
+	"""Requester Portal - merged 2026-09-26 (was /diwan/submit + /diwan/requests,
+	two separate pages/routes). One URL, ?tab=submit|requests (requests is the
+	default - "My Requests" is the natural landing view), so a requester no
+	longer needs to know two separate bookmarks for "file something new" vs.
+	"check what I already filed" - the existing side-nav/rail already just
+	needed its two links pointed at this one page's two tab values (see
+	portal_nav.py) rather than two separate page files."""
 	if frappe.session.user == "Guest":
 		frappe.local.flags.redirect_location = "/login?redirect-to=/diwan/requests"
 		raise frappe.Redirect
@@ -35,11 +43,32 @@ def get_context(context):
 	context.user_fullname = frappe.utils.get_fullname(frappe.session.user)
 	context.portal_nav = PORTAL_NAV
 	context.portal_section_title = "Requester Portal"
-	context.active_route = "/diwan/requests"
 
 	name = frappe.form_dict.get("name")
+	tab = frappe.form_dict.get("tab") or "requests"
+	if tab not in ("submit", "requests"):
+		tab = "requests"
+	if name:
+		# A request detail is always the "My Requests" tab's own drill-down -
+		# a name in the URL always wins over an unrelated ?tab= value.
+		tab = "requests"
+	context.active_tab = tab
+	context.active_route = "/diwan/requests" if tab == "requests" else f"/diwan/requests?tab={tab}"
+
 	context.detail = None
 
+	if tab == "submit":
+		if not frappe.has_permission("Correspondence Request", "create"):
+			frappe.throw(
+				frappe._("You are not permitted to submit correspondence requests."),
+				frappe.PermissionError,
+			)
+		context.title = frappe._("New Correspondence Request")
+		context.submitter = get_submitter_context()
+		context.confidentiality_levels = get_confidentiality_levels()
+		return context
+
+	# tab == "requests" (default)
 	if name:
 		context.title = frappe._("Request {0}").format(name)
 		# frappe.get_doc + has_permission (not ignore_permissions) so a
@@ -67,10 +96,6 @@ def get_context(context):
 				filters={"attached_to_doctype": "Correspondence Request", "attached_to_name": name},
 				fields=["name", "file_name"],
 			)
-			# Matches queue/index.py's own detail branch, which already logs a
-			# "View" event here - a requester opening their own request detail
-			# is just as much a view worth auditing as a Diwan Officer opening
-			# it from the queue; this page had been silently skipping it.
 			log_event(
 				"View",
 				reference_doctype="Correspondence Request",

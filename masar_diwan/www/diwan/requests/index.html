@@ -1,31 +1,118 @@
 {% extends "templates/pages/diwan_shell.html" %}
 
 {% block diwan_breadcrumb %}
-<a href="/diwan/submit">{{ _("Requester Portal") }}</a> / {{ _("My Requests") }}
-{% if detail and not detail.not_found %} / {{ detail.name }}{% endif %}
+<a href="/diwan/requests">{{ _("Requester Portal") }}</a> /
+{% if active_tab == "submit" %}{{ _("New Request") }}
+{% elif detail and not detail.not_found %}{{ _("My Requests") }} / {{ detail.name }}
+{% else %}{{ _("My Requests") }}
+{% endif %}
 {% endblock %}
 
-{% block diwan_title %}
-{%- if detail -%}
-	{%- if detail.not_found -%}{{ _("Not Found") }}{%- else -%}{{ detail.subject }}{%- endif -%}
-{%- else -%}
-	{{ _("My Requests") }}
-{%- endif -%}
-{% endblock %}
+{% block diwan_title %}{{ title }}{% endblock %}
 
 {% block diwan_status %}
-{% if detail and not detail.not_found %}<span id="status-pill"></span>{% endif %}
+{% if active_tab == "requests" and detail and not detail.not_found %}<span id="status-pill"></span>{% endif %}
 {% endblock %}
 
 {% block diwan_primary_action %}
-{% if not detail %}
-<a class="diwan-btn diwan-btn--primary" href="/diwan/submit">{{ _("New Request") }}</a>
+{% if active_tab == "submit" %}
+<button class="diwan-btn" id="save-draft-btn" type="button">{{ _("Save as Draft") }}</button>
+<button class="diwan-btn diwan-btn--primary" id="submit-btn" type="button">{{ _("Submit for Review") }}</button>
+{% elif not detail %}
+<a class="diwan-btn diwan-btn--primary" href="/diwan/requests?tab=submit">{{ _("New Request") }}</a>
 {% elif detail.status == "Needs Revision" and detail.owner == frappe.session.user %}
 <button class="diwan-btn diwan-btn--primary" id="resubmit-btn" type="button">{{ _("Edit & Resubmit") }}</button>
 {% endif %}
 {% endblock %}
 
 {% block diwan_body %}
+{% if active_tab == "submit" %}
+
+<div class="diwan-card">
+	<div class="diwan-hint" style="margin-block-end:12px;">
+		{{ _("Submitted by") }}: <b>{{ submitter.full_name }}</b>
+		{% if submitter.department %} &mdash; {{ submitter.department }}{% endif %}
+		&mdash; {{ submitter.date }}
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Request Type") }} *</label>
+		<div class="diwan-pillgroup" data-pillgroup="request_type">
+			<input type="radio" name="request_type" id="rt-incoming" value="Incoming" checked>
+			<label for="rt-incoming">{{ _("Incoming") }}</label>
+			<input type="radio" name="request_type" id="rt-outgoing" value="Outgoing">
+			<label for="rt-outgoing">{{ _("Outgoing") }}</label>
+			<input type="radio" name="request_type" id="rt-internal" value="Internal">
+			<label for="rt-internal">{{ _("Internal") }}</label>
+		</div>
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Subject") }} *</label>
+		<input type="text" id="field-subject" maxlength="140">
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Party / Department") }}</label>
+		<input type="text" id="field-party" placeholder="{{ _('Who is this correspondence with?') }}">
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Category") }}</label>
+		<select id="field-category"><option value="">-</option></select>
+	</div>
+
+	<div class="diwan-field" id="subcategory-field" style="display:none;">
+		<label>{{ _("Sub Category") }}</label>
+		<select id="field-subcategory"><option value="">-</option></select>
+	</div>
+
+	<div id="dynamic-fields"></div>
+
+	<div class="diwan-field">
+		<label>{{ _("Draft Text") }}</label>
+		<textarea id="field-draft-text" rows="6"></textarea>
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Suggested Priority") }}</label>
+		<div class="diwan-pillgroup" data-pillgroup="suggested_priority">
+			<input type="radio" name="suggested_priority" id="pr-normal" value="Normal" checked>
+			<label for="pr-normal">{{ _("Normal") }}</label>
+			<input type="radio" name="suggested_priority" id="pr-urgent" value="Urgent">
+			<label for="pr-urgent">{{ _("Urgent") }}</label>
+		</div>
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Suggested Confidentiality") }}</label>
+		{# Rendered from Confidentiality Level records (see index.py) - not a
+		   hardcoded 3-option list, since the site's own configured levels can
+		   vary (Document Access Profile is N-level-capable). #}
+		<div class="diwan-pillgroup" data-pillgroup="suggested_confidentiality">
+			{% for level in confidentiality_levels %}
+			<input type="radio" name="suggested_confidentiality" id="cf-{{ loop.index0 }}" value="{{ level.name }}"{% if loop.first %} checked{% endif %}>
+			<label for="cf-{{ loop.index0 }}">{{ _(level.level_name) }}</label>
+			{% endfor %}
+		</div>
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Note to Registrar") }}</label>
+		<textarea id="field-note" rows="3"></textarea>
+	</div>
+
+	<div class="diwan-field">
+		<label>{{ _("Attachments") }}</label>
+		<input type="file" id="field-attachments" multiple>
+		<div id="attachment-list" style="margin-block-start:8px;"></div>
+	</div>
+
+	<div id="form-message"></div>
+</div>
+
+{% else %}
+
 {% if not detail %}
 	{% if requests %}
 	<div class="diwan-card" style="padding:0;">
@@ -129,11 +216,192 @@
 		</div>
 	</div>
 {% endif %}
+
+{% endif %}
 {% endblock %}
 
 {% block diwan_script %}
 <script>
 frappe.ready(function () {
+	{% if active_tab == "submit" %}
+	var stagedFiles = [];
+	var savedDocname = null;
+
+	function fieldValue(id) {
+		return document.getElementById(id).value;
+	}
+	function pillValue(name) {
+		var checked = document.querySelector('input[name="' + name + '"]:checked');
+		return checked ? checked.value : null;
+	}
+	function showMessage(text, isError) {
+		var el = document.getElementById("form-message");
+		el.innerHTML = '<div class="diwan-hint" style="color:' +
+			(isError ? "var(--md-danger)" : "var(--md-success)") + ';margin-block-start:10px;">' +
+			frappe.utils.escape_html(text) + "</div>";
+	}
+
+	function renderAttachments() {
+		var list = document.getElementById("attachment-list");
+		list.innerHTML = "";
+		stagedFiles.forEach(function (file, idx) {
+			var row = document.createElement("div");
+			row.className = "diwan-attachment";
+			row.innerHTML = "<span>" + frappe.utils.escape_html(file.name) +
+				" (" + Math.round(file.size / 1024) + " KB)</span>" +
+				'<span class="diwan-attachment__remove" data-idx="' + idx + '">&times;</span>';
+			list.appendChild(row);
+		});
+		list.querySelectorAll("[data-idx]").forEach(function (el) {
+			el.addEventListener("click", function () {
+				stagedFiles.splice(parseInt(el.dataset.idx, 10), 1);
+				renderAttachments();
+			});
+		});
+	}
+
+	document.getElementById("field-attachments").addEventListener("change", function (e) {
+		stagedFiles = stagedFiles.concat(Array.prototype.slice.call(e.target.files));
+		renderAttachments();
+	});
+
+	var categoriesMeta = {};
+
+	function fetchDynamicFields() {
+		frappe.call({
+			method: "masar_diwan.api.requests.get_dynamic_fields",
+			args: {
+				correspondence_category: fieldValue("field-category") || null,
+				correspondence_sub_category: fieldValue("field-subcategory") || null,
+			},
+		}).then(function (r) {
+			window.masarDiwanDynamicFields.render(document.getElementById("dynamic-fields"), r.message || []);
+		});
+	}
+
+	frappe.call({ method: "masar_diwan.api.requests.get_top_level_categories" }).then(function (r) {
+		var select = document.getElementById("field-category");
+		(r.message || []).forEach(function (cat) {
+			categoriesMeta[cat.name] = cat;
+			var opt = document.createElement("option");
+			opt.value = cat.name;
+			opt.textContent = cat.title;
+			select.appendChild(opt);
+		});
+	});
+
+	document.getElementById("field-category").addEventListener("change", function () {
+		var category = this.value;
+		var subGroup = document.getElementById("subcategory-field");
+		var subSelect = document.getElementById("field-subcategory");
+		subSelect.innerHTML = '<option value="">-</option>';
+
+		if (category && categoriesMeta[category] && categoriesMeta[category].is_group) {
+			subGroup.style.display = "";
+			frappe.call({
+				method: "masar_diwan.api.requests.get_sub_categories",
+				args: { correspondence_category: category },
+			}).then(function (r) {
+				(r.message || []).forEach(function (sub) {
+					var opt = document.createElement("option");
+					opt.value = sub.name;
+					opt.textContent = sub.title;
+					subSelect.appendChild(opt);
+				});
+			});
+		} else {
+			subGroup.style.display = "none";
+		}
+		fetchDynamicFields();
+	});
+
+	document.getElementById("field-subcategory").addEventListener("change", fetchDynamicFields);
+
+	function uploadStagedFiles(docname) {
+		var uploads = stagedFiles.map(function (file) {
+			var fd = new FormData();
+			fd.append("file", file);
+			fd.append("doctype", "Correspondence Request");
+			fd.append("docname", docname);
+			fd.append("is_private", "1");
+			return fetch("/api/method/upload_file", {
+				method: "POST",
+				headers: { "X-Frappe-CSRF-Token": frappe.csrf_token },
+				body: fd,
+			});
+		});
+		return Promise.all(uploads);
+	}
+
+	function buildDoc() {
+		return Object.assign(
+			{
+				doctype: "Correspondence Request",
+				request_type: pillValue("request_type"),
+				subject: fieldValue("field-subject"),
+				party_or_department: fieldValue("field-party"),
+				draft_text: fieldValue("field-draft-text"),
+				suggested_priority: pillValue("suggested_priority"),
+				suggested_confidentiality: pillValue("suggested_confidentiality"),
+				note_to_registrar: fieldValue("field-note"),
+				correspondence_category: fieldValue("field-category") || null,
+				correspondence_sub_category: fieldValue("field-subcategory") || null,
+			},
+			window.masarDiwanDynamicFields.collectValues(document.getElementById("dynamic-fields"))
+		);
+	}
+
+	function saveDoc(callback) {
+		if (!fieldValue("field-subject")) {
+			showMessage(__("Subject is required."), true);
+			return;
+		}
+		var call = savedDocname
+			? frappe.call({
+				method: "frappe.client.set_value",
+				args: {
+					doctype: "Correspondence Request",
+					name: savedDocname,
+					fieldname: buildDoc(),
+				},
+			})
+			: frappe.call({
+				method: "frappe.client.insert",
+				args: { doc: buildDoc() },
+			});
+
+		call.then(function (r) {
+			savedDocname = r.message.name;
+			uploadStagedFiles(savedDocname).then(function () {
+				stagedFiles = [];
+				renderAttachments();
+				callback && callback(savedDocname);
+			});
+		}).catch(function () {
+			showMessage(__("Could not save the request. Please check the required fields."), true);
+		});
+	}
+
+	document.getElementById("save-draft-btn").addEventListener("click", function () {
+		saveDoc(function (name) {
+			showMessage(__("Saved as draft.") + " (" + name + ")", false);
+		});
+	});
+
+	document.getElementById("submit-btn").addEventListener("click", function () {
+		saveDoc(function (name) {
+			frappe.call({
+				method: "frappe.model.workflow.apply_workflow",
+				args: { doc: { doctype: "Correspondence Request", name: name }, action: "Submit" },
+			}).then(function () {
+				window.location.href = "/diwan/requests?name=" + encodeURIComponent(name);
+			}).catch(function () {
+				showMessage(__("Saved as draft, but could not submit for review."), true);
+			});
+		});
+	});
+
+	{% else %}
 	document.querySelectorAll(".request-status-pill").forEach(function (el) {
 		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.status);
 	});
@@ -187,6 +455,7 @@ frappe.ready(function () {
 			});
 		});
 	}
+	{% endif %}
 });
 </script>
 {% endblock %}

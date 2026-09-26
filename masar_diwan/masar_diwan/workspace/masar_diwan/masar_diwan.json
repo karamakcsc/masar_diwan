@@ -23,7 +23,7 @@
  "label": "Masar Diwan",
  "link_type": "DocType",
  "links": [],
- "modified": "2026-09-26 04:07:11.351530",
+ "modified": "2026-09-26 19:25:25.740550",
  "modified_by": "Administrator",
  "module": "Masar Diwan",
  "name": "Masar Diwan",
@@ -160,35 +160,35 @@
    "doc_view": "",
    "label": "Diwan Bulk Approve",
    "type": "URL",
-   "url": "/diwan/tray"
+   "url": "/diwan/queue?tab=tray"
   },
   {
    "color": "Green",
    "doc_view": "",
    "label": "Delivery Sheets (Portal)",
    "type": "URL",
-   "url": "/diwan/delivery_sheets"
+   "url": "/diwan/queue?tab=delivery_sheets"
   },
   {
    "color": "Yellow",
    "doc_view": "",
    "label": "Envelopes (Portal)",
    "type": "URL",
-   "url": "/diwan/envelopes"
+   "url": "/diwan/queue?tab=envelopes"
   },
   {
    "color": "Grey",
    "doc_view": "",
    "label": "Access Log (Portal)",
    "type": "URL",
-   "url": "/diwan/audit_log"
+   "url": "/diwan/queue?tab=audit_log"
   },
   {
    "color": "Pink",
    "doc_view": "",
    "label": "Submit Request (Portal)",
    "type": "URL",
-   "url": "/diwan/submit"
+   "url": "/diwan/requests?tab=submit"
   },
   {
    "color": "Pink",

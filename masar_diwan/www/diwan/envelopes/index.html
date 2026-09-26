@@ -1,47 +1,5 @@
-{% extends "templates/pages/diwan_shell.html" %}
-
-{% block diwan_breadcrumb %}<a href="/diwan/queue">{{ _("Diwan Portal") }}</a> / {{ _("Envelopes") }}{% endblock %}
-{% block diwan_title %}{{ _("Envelopes") }}{% endblock %}
-
-{% block diwan_body %}
-{% if envelopes %}
-<div class="diwan-card" style="padding:0;">
-	<table class="diwan-table">
-		<thead><tr>
-			<th>{{ _("No.") }}</th>
-			<th>{{ _("Status") }}</th>
-			<th>{{ _("Delivery Sheet") }}</th>
-			<th>{{ _("Created") }}</th>
-			<th></th>
-		</tr></thead>
-		<tbody>
-			{% for e in envelopes %}
-			<tr>
-				<td><span class="ref-code">{{ e.name }}</span></td>
-				<td><span class="env-status-pill" data-status="{{ e.status }}"></span></td>
-				<td>{{ e.linked_delivery_sheet or "-" }}</td>
-				<td>{{ frappe.utils.format_date(e.creation_date) if e.creation_date else "-" }}</td>
-				<td>
-					<a class="diwan-btn" target="_blank"
-						href="/printview?doctype=Envelope&name={{ e.name | urlencode }}&format=Envelope+Label">{{ _("Print") }}</a>
-				</td>
-			</tr>
-			{% endfor %}
-		</tbody>
-	</table>
-</div>
-{% else %}
-<div class="diwan-empty">{{ _("No envelopes yet.") }}</div>
-{% endif %}
-{% endblock %}
-
-{% block diwan_script %}
-<script>
-frappe.ready(function () {
-	var STATUS_CLASS = { "Open": "pending", "Sent": "review", "Archived": "approved" };
-	document.querySelectorAll(".env-status-pill").forEach(function (el) {
-		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.status, STATUS_CLASS);
-	});
-});
-</script>
-{% endblock %}
+{# This page's own index.py always redirects before rendering - see there
+   for why. This file exists only so Frappe's website router recognizes
+   /diwan/envelopes as a real route at all (TemplatePage.can_render()
+   requires a template file to exist, regardless of what the paired .py
+   does). #}
