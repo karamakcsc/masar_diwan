@@ -6,6 +6,8 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
+from masar_diwan.utils.transfer_log import log_transfer_event
+
 
 class DeliverySheet(Document):
 	def after_insert(self):
@@ -37,6 +39,24 @@ class DeliverySheet(Document):
 			self.proof_uploaded_on = now_datetime()
 
 	def on_update(self):
-		if self.status == "Receipt Confirmed":
-			for row in self.items:
-				frappe.db.set_value("Correspondence", row.correspondence, "delivery_sheet", self.name)
+		# Linked immediately on being added to the sheet, regardless of
+		# status (not gated on "Receipt Confirmed" - that used to mean a
+		# Correspondence's own `delivery_sheet` field only reflected reality
+		# once delivery was already confirmed, well after staff started
+		# actually handling it). Mirrors Envelope.on_update()'s own
+		# new-link-only logging and bidirectional clear-on-removal, so a
+		# correspondence pulled off a still-pending sheet doesn't keep a
+		# stale link either.
+		current = {row.correspondence for row in self.items}
+
+		for ref in current:
+			if frappe.db.get_value("Correspondence", ref, "delivery_sheet") != self.name:
+				frappe.db.set_value("Correspondence", ref, "delivery_sheet", self.name)
+				log_transfer_event(ref, "Added to Delivery Sheet", _("Added to Delivery Sheet {0}").format(self.name))
+
+		previously_linked = frappe.get_all(
+			"Correspondence", filters={"delivery_sheet": self.name}, pluck="name"
+		)
+		for ref in previously_linked:
+			if ref not in current:
+				frappe.db.set_value("Correspondence", ref, "delivery_sheet", None)

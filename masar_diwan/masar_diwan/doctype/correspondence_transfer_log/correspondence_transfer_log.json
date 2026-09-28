@@ -28,7 +28,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Action Type",
-   "options": "Submit for Review\nSend Back for Revision\nReferral\nReturn for Review\nCompleted\nArchived\nStatus Change",
+   "options": "Submit for Review\nSend Back for Revision\nReferral\nReturn for Review\nCompleted\nArchived\nStatus Change\nEnveloped\nAdded to Delivery Sheet",
    "read_only": 1
   },
   {

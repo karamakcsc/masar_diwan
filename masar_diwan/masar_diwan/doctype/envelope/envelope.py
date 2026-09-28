@@ -2,9 +2,11 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 
 from masar_diwan.utils.qrcode_utils import attach_tracking_qr_code
+from masar_diwan.utils.transfer_log import log_transfer_event
 
 
 class Envelope(Document):
@@ -38,10 +40,16 @@ class Envelope(Document):
 		attach_tracking_qr_code(self, ref=self.name)
 
 	def on_update(self):
+		# Checked against the correspondence's own current `envelope` value
+		# (not just re-set unconditionally) so a plain re-save of an
+		# already-linked envelope doesn't append a duplicate Transfer Log
+		# row every time - only a genuinely new link is logged.
 		current = {row.correspondence for row in self.envelope_documents}
 
 		for ref in current:
-			frappe.db.set_value("Correspondence", ref, "envelope", self.name)
+			if frappe.db.get_value("Correspondence", ref, "envelope") != self.name:
+				frappe.db.set_value("Correspondence", ref, "envelope", self.name)
+				log_transfer_event(ref, "Enveloped", _("Added to Envelope {0}").format(self.name))
 
 		previously_linked = frappe.get_all(
 			"Correspondence", filters={"envelope": self.name}, pluck="name"
