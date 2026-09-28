@@ -1,68 +1,185 @@
 [
  {
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Correspondence Category",
-  "is_group": 0,
-  "modified": "2026-09-24 03:50:18.755113",
-  "name": "Invoices",
-  "old_parent": null,
-  "parent_correspondence_category": "Financial",
-  "title": "Invoices"
- },
- {
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Correspondence Category",
-  "is_group": 0,
-  "modified": "2026-09-15 23:09:42.467090",
-  "name": "General",
-  "old_parent": null,
-  "parent_correspondence_category": null,
-  "title": "General"
- },
- {
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Correspondence Category",
-  "is_group": 1,
-  "modified": "2026-09-24 04:01:49.668960",
-  "name": "Financial",
-  "old_parent": null,
-  "parent_correspondence_category": null,
-  "title": "Financial"
- },
- {
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Correspondence Category",
-  "is_group": 0,
-  "modified": "2026-09-16 00:00:58.852932",
   "name": "Administrative",
-  "old_parent": null,
+  "title": "Administrative",
   "parent_correspondence_category": null,
-  "title": "Administrative"
+  "is_group": 1,
+  "disabled": 0,
+  "dynamic_fields": []
  },
  {
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Correspondence Category",
-  "is_group": 0,
-  "modified": "2026-09-16 00:00:58.854924",
-  "name": "Legal",
-  "old_parent": null,
+  "name": "Financial",
+  "title": "Financial",
   "parent_correspondence_category": null,
-  "title": "Legal"
+  "is_group": 1,
+  "disabled": 0,
+  "dynamic_fields": []
  },
  {
-  "disabled": 0,
-  "docstatus": 0,
-  "doctype": "Correspondence Category",
+  "name": "General",
+  "title": "General",
+  "parent_correspondence_category": null,
   "is_group": 0,
-  "modified": "2026-09-16 00:00:58.856941",
+  "disabled": 0,
+  "dynamic_fields": []
+ },
+ {
   "name": "Human Resources",
-  "old_parent": null,
+  "title": "Human Resources",
   "parent_correspondence_category": null,
-  "title": "Human Resources"
+  "is_group": 0,
+  "disabled": 0,
+  "dynamic_fields": []
+ },
+ {
+  "name": "Legal",
+  "title": "Legal",
+  "parent_correspondence_category": null,
+  "is_group": 0,
+  "disabled": 0,
+  "dynamic_fields": []
+ },
+ {
+  "name": "Chueqs",
+  "title": "Chueqs",
+  "parent_correspondence_category": "Financial",
+  "is_group": 0,
+  "disabled": 0,
+  "dynamic_fields": [
+   {
+    "label": "Cheuqe No",
+    "fieldname_slug": "cheuqe_no_52508e",
+    "fieldtype": "Data",
+    "options": null,
+    "link_scope": "core",
+    "reqd": 0,
+    "sort_order": 0,
+    "is_active": 1,
+    "definition_mode": "New Field",
+    "reuse_fieldname_slug": null
+   },
+   {
+    "label": "Bank",
+    "fieldname_slug": "bank_fde21c",
+    "fieldtype": "Data",
+    "options": null,
+    "link_scope": "core",
+    "reqd": 0,
+    "sort_order": 0,
+    "is_active": 1,
+    "definition_mode": "New Field",
+    "reuse_fieldname_slug": null
+   },
+   {
+    "label": "Cheuqe Date",
+    "fieldname_slug": "cheuqe_date_193e50",
+    "fieldtype": "Date",
+    "options": null,
+    "link_scope": "core",
+    "reqd": 0,
+    "sort_order": 0,
+    "is_active": 1,
+    "definition_mode": "New Field",
+    "reuse_fieldname_slug": null
+   }
+  ]
+ },
+ {
+  "name": "Invoices",
+  "title": "Invoices",
+  "parent_correspondence_category": "Financial",
+  "is_group": 0,
+  "disabled": 0,
+  "dynamic_fields": [
+   {
+    "label": "Inoice Date",
+    "fieldname_slug": "hgfj_476c2c",
+    "fieldtype": "Data",
+    "options": "Item",
+    "link_scope": "erpnext",
+    "reqd": 1,
+    "sort_order": 0,
+    "is_active": 1,
+    "definition_mode": "New Field",
+    "reuse_fieldname_slug": "hgfj_476c2c"
+   },
+   {
+    "label": "Invoice No",
+    "fieldname_slug": "jhgjk_585e11",
+    "fieldtype": "Data",
+    "options": "Sales Invoice",
+    "link_scope": "erpnext",
+    "reqd": 1,
+    "sort_order": 0,
+    "is_active": 1,
+    "definition_mode": "New Field",
+    "reuse_fieldname_slug": null
+   }
+  ]
+ },
+ {
+  "name": "تعميم",
+  "title": "تعميم",
+  "parent_correspondence_category": "Administrative",
+  "is_group": 0,
+  "disabled": 0,
+  "dynamic_fields": []
+ },
+ {
+  "name": "صيانة",
+  "title": "صيانة",
+  "parent_correspondence_category": "Administrative",
+  "is_group": 0,
+  "disabled": 0,
+  "dynamic_fields": [
+   {
+    "label": "Employee Name",
+    "fieldname_slug": "employee_name_974208",
+    "fieldtype": "Link",
+    "options": "Employee",
+    "link_scope": "erpnext",
+    "reqd": 0,
+    "sort_order": 0,
+    "is_active": 1,
+    "definition_mode": "New Field",
+    "reuse_fieldname_slug": null
+   },
+   {
+    "label": "Sales Invoice No",
+    "fieldname_slug": "sales_invoice_no_00e538",
+    "fieldtype": "Link",
+    "options": "Sales Invoice",
+    "link_scope": "erpnext",
+    "reqd": 0,
+    "sort_order": 0,
+    "is_active": 1,
+    "definition_mode": "New Field",
+    "reuse_fieldname_slug": null
+   },
+   {
+    "label": "Date",
+    "fieldname_slug": "date_490a14",
+    "fieldtype": "Date",
+    "options": null,
+    "link_scope": "core",
+    "reqd": 0,
+    "sort_order": 0,
+    "is_active": 1,
+    "definition_mode": "New Field",
+    "reuse_fieldname_slug": null
+   },
+   {
+    "label": "Name",
+    "fieldname_slug": "name_b2c79c",
+    "fieldtype": "Data",
+    "options": null,
+    "link_scope": "core",
+    "reqd": 1,
+    "sort_order": 0,
+    "is_active": 1,
+    "definition_mode": "New Field",
+    "reuse_fieldname_slug": null
+   }
+  ]
  }
 ]

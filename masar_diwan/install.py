@@ -304,13 +304,48 @@ def ensure_correspondence_categories():
 	record of that exact name doesn't already exist, and never touches an
 	existing one's fields (dynamic_fields included) again after that first
 	creation.
+
+	2026-09-29: the seed's own path had a real bug (an extra "masar_diwan"
+	path segment pointed at a folder that never existed), meaning this had
+	silently seeded *zero* categories on every install since the redesign
+	above, until it was actually checked for a genuinely fresh install. Also
+	extended to seed each category's `dynamic_fields` too (previously only
+	the bare category record) - the seed file was regenerated from this
+	site's own live category tree at the same time, so a fresh install
+	elsewhere now gets every category/field that exists here today, not just
+	the original 6. This still can't silently overwrite a later live edit
+	the same way the old fixture did - it only ever creates a category that
+	doesn't exist yet, never touches one that does - so re-running the seed
+	regeneration whenever categories/fields change meaningfully is safe to
+	do freely, unlike the fixture it replaced.
 	"""
 	try:
-		path = frappe.get_app_path("masar_diwan", "masar_diwan", "seed_data", "correspondence_category_seed.json")
+		# get_app_path("masar_diwan", *joins) already resolves from the app's
+		# own module root (apps/masar_diwan/masar_diwan/) - an extra leading
+		# "masar_diwan" join here silently pointed at a path that never
+		# existed (.../masar_diwan/masar_diwan/masar_diwan/seed_data/...,
+		# one level too deep), and the bare `if not exists: return` right
+		# after it meant this had been seeding *zero* categories on every
+		# fresh install since the 2026-09-24 seed-based redesign, with
+		# nothing anywhere to reveal it - confirmed directly, not assumed
+		# (os.path.exists() on the old computed path really does return
+		# False). Fixed the path, and turned the "file missing" case into a
+		# real logged error instead of a silent no-op - this file is meant
+		# to always ship with the app, so its absence is worth knowing
+		# about, not quietly tolerating forever.
+		path = frappe.get_app_path("masar_diwan", "seed_data", "correspondence_category_seed.json")
 		if not os.path.exists(path):
+			frappe.log_error(title="masar_diwan: correspondence category seed file not found", message=path)
 			return
 		with open(path) as f:
 			seed_records = json.load(f)
+		# Parents before children - a leaf category's own
+		# parent_correspondence_category Link must already exist for its
+		# insert to validate. The file itself is written in this order
+		# already (see write_seed-style regeneration), but sorting here too
+		# means a future hand-edit that puts a child before its parent still
+		# creates correctly rather than throwing a LinkValidationError.
+		seed_records = sorted(seed_records, key=lambda r: bool(r.get("parent_correspondence_category")))
 		for record in seed_records:
 			if frappe.db.exists("Correspondence Category", record["name"]):
 				continue
@@ -321,6 +356,7 @@ def ensure_correspondence_categories():
 					"parent_correspondence_category": record.get("parent_correspondence_category"),
 					"is_group": record.get("is_group", 0),
 					"disabled": record.get("disabled", 0),
+					"dynamic_fields": record.get("dynamic_fields", []),
 				}
 			).insert(ignore_permissions=True)
 		frappe.db.commit()
