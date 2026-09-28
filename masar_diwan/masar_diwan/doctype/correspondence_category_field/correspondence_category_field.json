@@ -42,7 +42,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "Data",
    "fieldname": "fieldtype",
    "fieldtype": "Select",
    "in_list_view": 1,

@@ -2,6 +2,7 @@ import json
 import os
 
 import frappe
+from frappe import _
 from frappe.modules.import_file import import_file_by_path
 
 ROLES = [
@@ -408,12 +409,30 @@ def ensure_dynamic_fields():
 			_ensure_column_break(doctype, column_break_anchor)
 
 		previous_field = dict.fromkeys(DYNAMIC_FIELD_TARGET_DOCTYPES, DYNAMIC_FIELD_SECTION_FIELDNAME)
+		failed_labels = []
 		for i, slug in enumerate(ordered_slugs):
 			if i == half:
 				for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
 					previous_field[doctype] = DYNAMIC_FIELD_COLUMN_BREAK_FIELDNAME
 			info = by_slug[slug]
-			created_at = _ensure_dynamic_custom_field(slug, info["row"], info["active_categories"], previous_field)
+			# One field's own failure (typically: its category was just
+			# changed to an incompatible fieldtype while real records still
+			# hold values that can't convert - see
+			# _apply_dynamic_custom_field_update()'s own savepoint) must not
+			# abort the sync for every other category's fields too - this
+			# used to be a single try/except around the *entire* function,
+			# so one bad field silently froze the whole layout (every
+			# category, not just the one being edited) with nothing but a
+			# buried Error Log entry to show for it. The failed field simply
+			# keeps whatever position/settings it already had from its last
+			# successful sync (previous_field is deliberately not advanced
+			# for it) rather than blocking every field after it.
+			try:
+				created_at = _ensure_dynamic_custom_field(slug, info["row"], info["active_categories"], previous_field)
+			except Exception:
+				frappe.log_error(title=f"masar_diwan: failed to sync dynamic field '{slug}'")
+				failed_labels.append(info["row"].label or slug)
+				created_at = {}
 			for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
 				if created_at.get(doctype):
 					previous_field[doctype] = f"{DYNAMIC_FIELD_PREFIX}{slug}"
@@ -422,6 +441,16 @@ def ensure_dynamic_fields():
 
 		for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
 			frappe.clear_cache(doctype=doctype)
+
+		if failed_labels:
+			frappe.msgprint(
+				_(
+					"Could not update {0} - its new settings conflict with data already stored on "
+					"existing records. It keeps its previous configuration for now; see Error Log for details."
+				).format(", ".join(frappe.bold(label) for label in failed_labels)),
+				indicator="orange",
+				title=_("Some dynamic fields were not updated"),
+			)
 	except Exception:
 		frappe.log_error(title="masar_diwan: failed to ensure dynamic fields")
 
@@ -564,6 +593,29 @@ def _apply_dynamic_custom_field_update(doctype, fieldname, existing_name, curren
 	a SQL column Frappe can alter in place (Link, like Data, is a plain
 	varchar(140) at the DB level) - this is not a generic "always safe"
 	shortcut, just correct for this engine's fixed set of options.
+
+	**Real stored values that can't convert to the new type are checked for
+	up front, in Python, before touching anything** - not left to MariaDB's
+	own `ALTER TABLE ... MODIFY` to discover and reject. This matters more
+	than it looks: `ALTER TABLE` is a DDL statement, and DDL implicitly
+	commits whatever transaction was already open in MariaDB/MySQL *before*
+	it even runs - confirmed the hard way, empirically, not assumed - a
+	`frappe.db.savepoint()`/`rollback(save_point=...)` wrapped around the
+	delete-then-recreate below looked correct on paper and even passed once
+	in testing, but failed to reproduce reliably: the delete + the
+	recreated Custom Field's own row are *already permanently committed* by
+	the time the subsequent failed `ALTER TABLE` would otherwise be rolled
+	back to that savepoint, so the savepoint is a no-op for this exact
+	failure class. `CAST(...)` in a plain read-only `SELECT` was tried next
+	as a cheaper pre-check and rejected too - confirmed live that MariaDB's
+	`CAST` silently returns `NULL` with a warning for an unconvertible
+	value instead of raising, even under `STRICT_TRANS_TABLES`, so it can't
+	tell a bad value apart from a genuinely empty one. What's actually used
+	instead: fetch the column's own distinct non-empty values (a small,
+	cheap read for a handful of dynamic-field rows) and validate each one
+	in Python with the exact semantics the new type needs - if any value
+	would not survive, refuse the whole change outright, before deleting
+	anything, and surface why via a real exception the caller can log/show.
 	"""
 	from frappe.custom.doctype.customize_form.customize_form import CustomizeForm
 
@@ -579,9 +631,62 @@ def _apply_dynamic_custom_field_update(doctype, fieldname, existing_name, curren
 		cf.save(ignore_permissions=True)
 		return
 
-	frappe.delete_doc("Custom Field", existing_name, ignore_permissions=True, force=True)
-	cf = frappe.get_doc({"doctype": "Custom Field", "dt": doctype, "fieldname": fieldname, **wanted})
-	cf.insert(ignore_permissions=True)
+	bad_value = _first_inconvertible_value(doctype, fieldname, new_fieldtype)
+	if bad_value is not None:
+		frappe.throw(
+			_(
+				"Cannot change {0} on {1} to {2} - at least one existing record already stores "
+				"{3}, which isn't a valid {2} value. Fix or clear it on the affected record(s) first."
+			).format(frappe.bold(fieldname), doctype, new_fieldtype, frappe.bold(bad_value)),
+			title=_("Incompatible Values"),
+		)
+
+	# Kept as defense-in-depth for whatever the check above doesn't cover
+	# (e.g. an unrelated error unrelated to data conversion) - the
+	# conversion itself is now pre-validated above, so this delete+recreate
+	# should not normally fail at all.
+	sp = "sp_" + frappe.generate_hash(length=10)
+	frappe.db.savepoint(sp)
+	try:
+		frappe.delete_doc("Custom Field", existing_name, ignore_permissions=True, force=True)
+		cf = frappe.get_doc({"doctype": "Custom Field", "dt": doctype, "fieldname": fieldname, **wanted})
+		cf.insert(ignore_permissions=True)
+	except Exception:
+		frappe.db.rollback(save_point=sp)
+		raise
+	else:
+		frappe.db.release_savepoint(sp)
+
+
+def _first_inconvertible_value(doctype, fieldname, new_fieldtype):
+	"""None if every already-stored value in this column would survive
+	becoming `new_fieldtype`, else the first offending raw value found.
+	Select/Link both stay a plain varchar(140) at the DB level (same as
+	Data), so there's nothing to check for those - only Int/Currency/
+	Date/Check actually change SQL column type."""
+	if new_fieldtype not in ("Int", "Currency", "Date", "Check"):
+		return None
+
+	values = frappe.db.sql_list(
+		f"select distinct `{fieldname}` from `tab{doctype}` where `{fieldname}` is not null and `{fieldname}` != ''"
+	)
+	for value in values:
+		if new_fieldtype in ("Int", "Check"):
+			try:
+				int(value)
+			except (TypeError, ValueError):
+				return value
+		elif new_fieldtype == "Currency":
+			try:
+				float(value)
+			except (TypeError, ValueError):
+				return value
+		elif new_fieldtype == "Date":
+			try:
+				frappe.utils.getdate(value)
+			except Exception:
+				return value
+	return None
 
 
 def _remove_orphaned_dynamic_fields(current_slugs):
