@@ -37,10 +37,10 @@
   "follow_up_date",
   "linked_correspondence",
   "section_break_related",
+  "source_request",
   "related_document_type",
   "related_document",
   "column_break_related",
-  "source_request",
   "delivery_sheet",
   "envelope",
   "section_break_followup",
@@ -241,12 +241,14 @@
   {
    "fieldname": "related_document_type",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Related Document Type",
    "options": "DocType"
   },
   {
    "fieldname": "related_document",
    "fieldtype": "Dynamic Link",
+   "hidden": 1,
    "label": "Related Document",
    "options": "related_document_type"
   },
@@ -317,7 +319,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-09-26 04:59:45.465027",
+ "modified": "2026-09-29 00:00:10.745771",
  "modified_by": "Administrator",
  "module": "Masar Diwan",
  "name": "Correspondence",

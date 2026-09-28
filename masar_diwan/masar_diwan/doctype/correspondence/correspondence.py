@@ -86,10 +86,35 @@ class Correspondence(Document):
 	def after_insert(self):
 		attach_tracking_qr_code(self)
 
+	# (before_status, after_status) -> action_type, matching Correspondence
+	# Workflow's own 6 real transitions exactly (see correspondence_workflow.json)
+	# rather than inventing separate wording - every value here already has an
+	# Arabic translation in translations/ar.csv under its own name (as a
+	# workflow action/status), so this needed no new translation work either.
+	TRANSITION_ACTION_TYPES = {
+		("Draft", "Under Review"): "Submit for Review",
+		("Under Review", "Draft"): "Send Back for Revision",
+		("Under Review", "Referred / In Progress"): "Referral",
+		("Referred / In Progress", "Under Review"): "Return for Review",
+		("Referred / In Progress", "Completed"): "Completed",
+		("Completed", "Archived"): "Archived",
+	}
+
 	def log_status_transition(self):
 		"""Append a Transfer Log row whenever status changes, regardless of
 		whether the change came from a Workflow Action or a direct save -
 		this must not depend on Workflow Transition hooks alone.
+
+		action_type used to be hardcoded to the literal string "Referral" for
+		every single transition, regardless of what actually happened -
+		confirmed live (2026-09-28) as a real, visible bug: a document driven
+		through Under Review -> Referred/In Progress -> Completed showed
+		"Referral" for both rows, even though only the first one was an
+		actual referral. Now derived from the real (before, after) status
+		pair via TRANSITION_ACTION_TYPES, falling back to the generic
+		"Status Change" for any pair that doesn't match one of this
+		workflow's own defined transitions (e.g. a future workflow change,
+		or a direct status edit that skips states).
 		"""
 		if self.is_new():
 			return
@@ -106,7 +131,7 @@ class Correspondence(Document):
 			"transfer_log",
 			{
 				"date": now_datetime(),
-				"action_type": "Referral",
+				"action_type": self.TRANSITION_ACTION_TYPES.get((before.status, self.status), "Status Change"),
 				"from_user": before.current_owner,
 				"to_user": self.current_owner,
 				"to_department": self.department,

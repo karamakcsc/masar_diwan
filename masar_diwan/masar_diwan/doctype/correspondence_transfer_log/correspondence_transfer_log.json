@@ -28,7 +28,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Action Type",
-   "options": "Referral\nReply\nComment\nView\nScan",
+   "options": "Submit for Review\nSend Back for Revision\nReferral\nReturn for Review\nCompleted\nArchived\nStatus Change",
    "read_only": 1
   },
   {
