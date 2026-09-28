@@ -57,3 +57,16 @@ class Envelope(Document):
 		for ref in previously_linked:
 			if ref not in current:
 				frappe.db.set_value("Correspondence", ref, "envelope", None)
+
+	def on_trash(self):
+		"""Same reasoning as Correspondence.on_trash() - Envelope is one of
+		the doctypes registered in hooks.py's `ignore_links_on_delete` so
+		deleting it isn't blocked by its own real cross-references; this is
+		what actually clears them instead of leaving them dangling."""
+		frappe.db.set_value("Correspondence", {"envelope": self.name}, "envelope", None)
+		if self.linked_delivery_sheet:
+			ds = frappe.get_doc("Delivery Sheet", self.linked_delivery_sheet)
+			remaining = [row for row in ds.items if row.envelope != self.name]
+			if len(remaining) != len(ds.items):
+				ds.items = remaining
+				ds.save(ignore_permissions=True)

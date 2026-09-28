@@ -86,6 +86,36 @@ class Correspondence(Document):
 	def after_insert(self):
 		attach_tracking_qr_code(self)
 
+	def on_trash(self):
+		"""Deleting a Correspondence must not leave any other transactional
+		document pointing at a name that no longer exists - real, reported
+		pain ("a loop between screens" trying to manually unlink everything
+		before Frappe's own default "linked with X" block would even let the
+		delete happen). This doctype is one of several registered in
+		hooks.py's `ignore_links_on_delete` specifically so that default
+		block never runs in the first place for these cross-references -
+		this method is what actually keeps them honest instead, covering
+		every real Link this doctype participates in (see CLAUDE.md's
+		reverse-reference map for how this was derived, not guessed)."""
+		if self.envelope:
+			env = frappe.get_doc("Envelope", self.envelope)
+			remaining = [row for row in env.envelope_documents if row.correspondence != self.name]
+			if len(remaining) != len(env.envelope_documents):
+				env.envelope_documents = remaining
+				env.save(ignore_permissions=True)
+		if self.delivery_sheet:
+			ds = frappe.get_doc("Delivery Sheet", self.delivery_sheet)
+			remaining = [row for row in ds.items if row.correspondence != self.name]
+			if len(remaining) != len(ds.items):
+				ds.items = remaining
+				ds.save(ignore_permissions=True)
+		if self.source_request:
+			frappe.db.set_value("Correspondence Request", self.source_request, "resulting_correspondence", None)
+		frappe.db.set_value(
+			"Internal Mail Movement", {"related_correspondence": self.name}, "related_correspondence", None
+		)
+		frappe.db.set_value("Correspondence", {"linked_correspondence": self.name}, "linked_correspondence", None)
+
 	# (before_status, after_status) -> action_type, matching Correspondence
 	# Workflow's own 6 real transitions exactly (see correspondence_workflow.json)
 	# rather than inventing separate wording - every value here already has an

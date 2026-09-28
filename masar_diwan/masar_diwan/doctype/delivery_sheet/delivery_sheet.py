@@ -116,3 +116,16 @@ class DeliverySheet(Document):
 		for ref in previously_linked_envelopes:
 			if ref not in current_envelopes:
 				frappe.db.set_value("Envelope", ref, "linked_delivery_sheet", None)
+
+	def on_trash(self):
+		"""Same reasoning as Correspondence.on_trash() - Delivery Sheet is
+		one of the doctypes registered in hooks.py's `ignore_links_on_delete`
+		so deleting it isn't blocked by its own real cross-references; this
+		clears them instead of leaving them dangling. Reads self.items
+		directly (no separate lookup needed) since the child table is still
+		fully populated at this point in the delete."""
+		for row in self.items:
+			if row.correspondence:
+				frappe.db.set_value("Correspondence", row.correspondence, "delivery_sheet", None)
+			elif row.envelope:
+				frappe.db.set_value("Envelope", row.envelope, "linked_delivery_sheet", None)

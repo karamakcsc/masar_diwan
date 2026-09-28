@@ -131,6 +131,17 @@ class CorrespondenceRequest(Document):
 		correspondence.insert(ignore_permissions=True)
 		self.db_set("resulting_correspondence", correspondence.name)
 
+	def on_trash(self):
+		"""Same reasoning as Correspondence.on_trash() - Correspondence
+		Request is one of the doctypes registered in hooks.py's
+		`ignore_links_on_delete` so deleting it isn't blocked by its own
+		real cross-reference; this clears it instead of leaving it
+		dangling. The resulting Correspondence itself (already numbered,
+		already real) is untouched - only the backlink to the now-gone
+		request is cleared."""
+		if self.resulting_correspondence:
+			frappe.db.set_value("Correspondence", self.resulting_correspondence, "source_request", None)
+
 	def _copy_dynamic_field_values(self, correspondence):
 		"""Dynamic fields (masar_diwan.install.ensure_dynamic_fields()) are
 		defined once per Correspondence Category and mirrored onto both this

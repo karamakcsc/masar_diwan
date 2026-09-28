@@ -229,8 +229,30 @@ scheduler_events = {
 
 # Ignore links to specified DocTypes when deleting documents
 # -----------------------------------------------------------
-
-# ignore_links_on_delete = ["Communication", "ToDo"]
+#
+# Lists the doctype that HOLDS a reference, not the one being deleted -
+# Frappe's own check_if_doc_is_linked()/check_if_doc_is_dynamically_linked()
+# would otherwise block deleting any of Correspondence/Correspondence
+# Request/Envelope/Delivery Sheet/Internal Mail Movement the moment any
+# OTHER one of them (or a real Access Log Entry/Workflow Action row) still
+# references it - exactly the "loop between screens, manually unlinking
+# everything first" pain reported directly. Each of the 5 transactional
+# doctypes below has its own on_trash() that actually clears every real
+# cross-reference (see each one's own docstring) - this hook only removes
+# Frappe's default block so that cleanup gets a chance to run at all.
+# Access Log Entry's own rows are deliberately left untouched (an
+# immutable audit trail, by this app's own long-standing design - see
+# CLAUDE.md), and Workflow Action is Frappe's own ephemeral action-item
+# doctype (the same category "ToDo" above already gets a pass for).
+ignore_links_on_delete = [
+	"Correspondence",
+	"Correspondence Request",
+	"Envelope",
+	"Delivery Sheet",
+	"Internal Mail Movement",
+	"Access Log Entry",
+	"Workflow Action",
+]
 
 # Request Events
 # ----------------
