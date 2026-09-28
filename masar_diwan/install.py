@@ -386,7 +386,19 @@ def ensure_dynamic_fields():
 		# on every sync just because dict iteration order isn't guaranteed
 		# to match insertion order across a full server restart.
 		ordered_slugs = sorted(by_slug.keys(), key=lambda s: (by_slug[s]["row"].label or "", s))
-		half = -(-len(ordered_slugs) // 2)  # ceil division - the extra field (if odd) goes in column 1
+
+		# Interleaved (row-major), not contiguous halves - asked for
+		# explicitly with a hand-drawn diagram: reading the alphabetical
+		# list left-to-right/top-to-bottom, item 1 is column 1's first row,
+		# item 2 is column 2's first row, item 3 is column 1's second row,
+		# and so on - not "fill column 1 completely, then column 2" (the
+		# original design), which could leave the two columns looking
+		# lopsided in practice whenever depends_on hides more of one
+		# column's fields than the other's for a given record's category.
+		column1_slugs = ordered_slugs[0::2]
+		column2_slugs = ordered_slugs[1::2]
+		layout_slugs = column1_slugs + column2_slugs
+		half = len(column1_slugs)  # column 1 gets the extra field when the count is odd, same as before
 
 		all_active_categories = sorted({c for info in by_slug.values() for c in info["active_categories"]})
 
@@ -401,7 +413,6 @@ def ensure_dynamic_fields():
 		# break anchored to a field _remove_orphaned_dynamic_fields() had
 		# just deleted, since nothing ever revisited it once column 2 was
 		# empty.
-		column1_slugs = ordered_slugs[:half]
 		for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
 			column_break_anchor = (
 				f"{DYNAMIC_FIELD_PREFIX}{column1_slugs[-1]}" if column1_slugs else DYNAMIC_FIELD_SECTION_FIELDNAME
@@ -410,7 +421,7 @@ def ensure_dynamic_fields():
 
 		previous_field = dict.fromkeys(DYNAMIC_FIELD_TARGET_DOCTYPES, DYNAMIC_FIELD_SECTION_FIELDNAME)
 		failed_labels = []
-		for i, slug in enumerate(ordered_slugs):
+		for i, slug in enumerate(layout_slugs):
 			if i == half:
 				for doctype in DYNAMIC_FIELD_TARGET_DOCTYPES:
 					previous_field[doctype] = DYNAMIC_FIELD_COLUMN_BREAK_FIELDNAME
@@ -418,8 +429,8 @@ def ensure_dynamic_fields():
 			# One field's own failure (typically: its category was just
 			# changed to an incompatible fieldtype while real records still
 			# hold values that can't convert - see
-			# _apply_dynamic_custom_field_update()'s own savepoint) must not
-			# abort the sync for every other category's fields too - this
+			# _apply_dynamic_custom_field_update()'s own pre-flight check)
+			# must not abort the sync for every other category's fields too - this
 			# used to be a single try/except around the *entire* function,
 			# so one bad field silently froze the whole layout (every
 			# category, not just the one being edited) with nothing but a
