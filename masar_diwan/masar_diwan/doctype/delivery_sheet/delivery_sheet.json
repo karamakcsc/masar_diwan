@@ -21,7 +21,10 @@
   "status",
   "column_break_2",
   "actual_delivery_datetime",
-  "proof_uploaded_on"
+  "proof_uploaded_on",
+  "more_info_tab",
+  "qr_code_img",
+  "qr_code"
  ],
  "fields": [
   {
@@ -103,6 +106,24 @@
    "fieldtype": "Datetime",
    "label": "Proof Uploaded On",
    "read_only": 1
+  },
+  {
+   "fieldname": "more_info_tab",
+   "fieldtype": "Tab Break",
+   "label": "More Info"
+  },
+  {
+   "fieldname": "qr_code",
+   "fieldtype": "Attach Image",
+   "hidden": 1,
+   "label": "QR Code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "qr_code_img",
+   "fieldtype": "Image",
+   "label": "QR Code Img",
+   "options": "qr_code"
   }
  ],
  "grid_page_length": 50,

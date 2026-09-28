@@ -48,6 +48,9 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 	const envelope_results_wrapper = $(
 		'<div class="correspondence-track-results" style="margin-top: 15px;"></div>'
 	).appendTo(page.body);
+	const delivery_sheet_results_wrapper = $(
+		'<div class="correspondence-track-results" style="margin-top: 15px;"></div>'
+	).appendTo(page.body);
 
 	function run_search() {
 		const text = search_text.get_value();
@@ -69,6 +72,13 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 			args: { text },
 			callback(r) {
 				render_envelope_results(r.message || []);
+			},
+		});
+		frappe.call({
+			method: "masar_diwan.api.portal.search_delivery_sheets",
+			args: { text },
+			callback(r) {
+				render_delivery_sheet_results(r.message || []);
 			},
 		});
 	}
@@ -147,6 +157,43 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 		});
 	}
 
+	function render_delivery_sheet_results(rows) {
+		delivery_sheet_results_wrapper.empty();
+		$(`<div class="text-muted small" style="margin-bottom:4px;">${__("Delivery Sheets")} (${rows.length})</div>`).appendTo(
+			delivery_sheet_results_wrapper
+		);
+		if (!rows.length) {
+			$(`<div class="text-muted">${__("No results")}</div>`).appendTo(delivery_sheet_results_wrapper);
+			return;
+		}
+		const table = $(`
+			<table class="table table-bordered">
+				<thead><tr>
+					<th>${__("Delivery Sheet No")}</th>
+					<th>${__("Status")}</th>
+					<th>${__("Delivery Method")}</th>
+					<th>${__("Recipient Party")}</th>
+				</tr></thead>
+				<tbody></tbody>
+			</table>
+		`).appendTo(delivery_sheet_results_wrapper);
+		const tbody = table.find("tbody");
+		rows.forEach((row) => {
+			$(`<tr>
+				<td><a href="#" class="track-row-link ref-code">${frappe.utils.escape_html(row.delivery_sheet_no)}</a></td>
+				<td>${frappe.utils.escape_html(__(row.status || ""))}</td>
+				<td>${frappe.utils.escape_html(__(row.delivery_method || ""))}</td>
+				<td>${frappe.utils.escape_html(row.recipient_party || "")}</td>
+			</tr>`)
+				.appendTo(tbody)
+				.find(".track-row-link")
+				.on("click", (e) => {
+					e.preventDefault();
+					lookup_ref(row.name);
+				});
+		});
+	}
+
 	function lookup_ref(ref) {
 		frappe.call({
 			method: "masar_diwan.api.portal.get_tracking_detail",
@@ -177,6 +224,10 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 			render_envelope_detail(data.data);
 			return;
 		}
+		if (data.doctype === "Delivery Sheet") {
+			render_delivery_sheet_detail(data.data);
+			return;
+		}
 		const d = data.data;
 		const attachments = (data.attachments || [])
 			.map(
@@ -202,6 +253,8 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 							<p><b>${__("Subject")}:</b> ${frappe.utils.escape_html(d.subject || "")}</p>
 							<p><b>${__("Status")}:</b> ${frappe.utils.escape_html(__(d.status || ""))}</p>
 							<p><b>${__("Department")}:</b> ${frappe.utils.escape_html(d.department || "")}</p>
+							${d.envelope ? `<p><b>${__("Envelope")}:</b> <span class="ref-code">${frappe.utils.escape_html(d.envelope)}</span></p>` : ""}
+							${d.delivery_sheet ? `<p><b>${__("Delivery Sheet")}:</b> <span class="ref-code">${frappe.utils.escape_html(d.delivery_sheet)}</span></p>` : ""}
 						</div>
 						${qr_html}
 					</div>
@@ -242,6 +295,45 @@ frappe.pages["correspondence-track"].on_page_load = function (wrapper) {
 						rows
 							? `<table class="table table-bordered"><thead><tr><th>${__("Reference No")}</th><th>${__("Party Type")}</th><th>${__("Party")}</th></tr></thead><tbody>${rows}</tbody></table>`
 							: `<div class="text-muted">${__("No documents in this envelope.")}</div>`
+					}
+				</div>
+			</div>
+		`);
+	}
+
+	function render_delivery_sheet_detail(sheet) {
+		const rows = (sheet.contents || [])
+			.map(
+				(item) => `<tr>
+					<td>${frappe.utils.escape_html(__(item.type))}</td>
+					<td><span class="ref-code">${frappe.utils.escape_html(item.name)}</span></td>
+					<td>${frappe.utils.escape_html(item.subject || "-")}</td>
+				</tr>`
+			)
+			.join("");
+		const qr_html = sheet.qr_code
+			? `<div style="flex:0 0 auto; text-align:center;"><img src="${frappe.utils.escape_html(sheet.qr_code)}" alt="${__("Tracking QR Code")}" style="width:110px; height:110px; object-fit:contain; border:1px solid var(--md-ink-100, #eff2f5); border-radius:9px;"></div>`
+			: "";
+		detail_wrapper.html(`
+			<div class="card correspondence-track-card">
+				<div class="correspondence-track-card__header">
+					<a class="ref-code" href="/app/delivery-sheet/${encodeURIComponent(sheet.name)}">${frappe.utils.escape_html(sheet.delivery_sheet_no)}</a>
+				</div>
+				<div class="card-body">
+					<div style="display:flex; gap:16px; flex-wrap:wrap-reverse; align-items:flex-start;">
+						<div style="flex:1 1 220px;">
+							<p><b>${__("Status")}:</b> ${frappe.utils.escape_html(__(sheet.status || ""))}</p>
+							<p><b>${__("Delivery Method")}:</b> ${frappe.utils.escape_html(__(sheet.delivery_method || ""))}</p>
+							<p><b>${__("Recipient Party")}:</b> ${frappe.utils.escape_html(sheet.recipient_party || "")}</p>
+							${sheet.courier_name ? `<p><b>${__("Courier Name")}:</b> ${frappe.utils.escape_html(sheet.courier_name)}</p>` : ""}
+						</div>
+						${qr_html}
+					</div>
+					<p><b>${__("Items")} (${(sheet.contents || []).length}):</b></p>
+					${
+						rows
+							? `<table class="table table-bordered"><thead><tr><th>${__("Type")}</th><th>${__("Reference")}</th><th>${__("Subject")}</th></tr></thead><tbody>${rows}</tbody></table>`
+							: `<div class="text-muted">${__("No items on this delivery sheet.")}</div>`
 					}
 				</div>
 			</div>

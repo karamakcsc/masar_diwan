@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "correspondence",
+  "envelope",
   "subject",
   "attachment_count"
  ],
@@ -17,8 +18,14 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Correspondence",
-   "options": "Correspondence",
-   "reqd": 1
+   "options": "Correspondence"
+  },
+  {
+   "fieldname": "envelope",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Envelope",
+   "options": "Envelope"
   },
   {
    "fieldname": "subject",

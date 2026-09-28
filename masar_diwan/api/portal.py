@@ -41,6 +41,8 @@ RESULT_FIELDS = [
 	"document_date",
 	"modified",
 	"qr_code",
+	"delivery_sheet",
+	"envelope",
 ]
 
 
@@ -188,6 +190,52 @@ def search_envelopes(text=None):
 	return rows
 
 
+DELIVERY_SHEET_RESULT_FIELDS = [
+	"name",
+	"delivery_sheet_no",
+	"status",
+	"delivery_method",
+	"recipient_party",
+	"courier_name",
+]
+
+
+@frappe.whitelist()
+def search_delivery_sheets(text=None):
+	"""Delivery Sheet's own counterpart to search_envelopes() - same
+	reasoning applies: no department/confidentiality tiering, no custom
+	permission_query_conditions hook, so a plain frappe.get_list() already
+	enforces the same real DocPerm rows frappe.has_permission() does
+	elsewhere here, and the same has_permission guard is needed up front
+	since get_list() throws outright for a role with zero read access
+	(Correspondence Employee has none on Delivery Sheet either)."""
+	user = frappe.session.user
+	if user == "Guest":
+		frappe.throw(_("Please log in"), frappe.PermissionError)
+
+	if not frappe.has_permission("Delivery Sheet", "read", user=user):
+		return []
+
+	or_filters = None
+	if text:
+		or_filters = [
+			["delivery_sheet_no", "like", f"%{text}%"],
+			["recipient_party", "like", f"%{text}%"],
+		]
+
+	rows = frappe.get_list(
+		"Delivery Sheet",
+		or_filters=or_filters,
+		fields=DELIVERY_SHEET_RESULT_FIELDS,
+		order_by="modified desc",
+		limit_page_length=100,
+	)
+
+	log_event("View", reason="Delivery Sheet search")
+
+	return rows
+
+
 @frappe.whitelist(allow_guest=True)
 def get_tracking_detail(ref: str, via: str = "qr"):
 	user = frappe.session.user
@@ -201,6 +249,9 @@ def get_tracking_detail(ref: str, via: str = "qr"):
 
 	if frappe.db.exists("Envelope", ref):
 		return _get_envelope_tracking_detail(ref, user, event_type)
+
+	if frappe.db.exists("Delivery Sheet", ref):
+		return _get_delivery_sheet_tracking_detail(ref, user, event_type)
 
 	log_event(
 		event_type,
@@ -291,6 +342,54 @@ def _get_envelope_tracking_detail(ref, user, event_type):
 			"linked_delivery_sheet": doc.linked_delivery_sheet,
 			"qr_code": doc.qr_code,
 			"documents": documents,
+		},
+	}
+
+
+def _get_delivery_sheet_tracking_detail(ref, user, event_type):
+	# Same reasoning as Envelope's own tracking detail above - Delivery
+	# Sheet has no department/confidentiality tiering either, so its real
+	# DocPerm via frappe.has_permission() is the whole access rule.
+	allowed = frappe.has_permission("Delivery Sheet", "read", doc=ref, user=user)
+
+	log_event(
+		event_type,
+		result="Success" if allowed else "Denied",
+		reason=None if allowed else "No read permission",
+		reference_doctype="Delivery Sheet",
+		reference_name=ref,
+	)
+
+	if not allowed:
+		return {"found": True, "restricted": True, "doctype": "Delivery Sheet"}
+
+	doc = frappe.get_doc("Delivery Sheet", ref)
+	# Named "contents", not "items" - result.data is a plain dict, and Jinja
+	# resolves `s.items` to the dict's own built-in .items() method before
+	# ever trying a key lookup, so a genuine "items" key here would render
+	# as a bound method instead of the list (confirmed the hard way: a real
+	# TypeError, "object of type builtin_function_or_method has no len()").
+	contents = []
+	for row in doc.items:
+		if row.correspondence:
+			contents.append({"type": "Correspondence", "name": row.correspondence, "reference_no": row.correspondence, "subject": row.subject})
+		else:
+			contents.append({"type": "Envelope", "name": row.envelope, "subject": row.subject})
+
+	return {
+		"found": True,
+		"restricted": False,
+		"doctype": "Delivery Sheet",
+		"data": {
+			"name": doc.name,
+			"delivery_sheet_no": doc.delivery_sheet_no,
+			"status": doc.status,
+			"delivery_method": doc.delivery_method,
+			"recipient_party": doc.recipient_party,
+			"courier_name": doc.courier_name,
+			"actual_delivery_datetime": doc.actual_delivery_datetime,
+			"qr_code": doc.qr_code,
+			"contents": contents,
 		},
 	}
 

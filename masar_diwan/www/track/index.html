@@ -21,7 +21,7 @@
 {% if ref %}
 <div class="diwan-card" id="result-card">
 	{% if not result.found %}
-		<div class="diwan-empty">{{ _("No correspondence or envelope found for this reference.") }}</div>
+		<div class="diwan-empty">{{ _("No correspondence, envelope, or delivery sheet found for this reference.") }}</div>
 	{% elif result.restricted %}
 		<div class="diwan-restricted">
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
@@ -68,6 +68,49 @@
 		{% else %}
 		<div class="diwan-empty">{{ _("No documents in this envelope.") }}</div>
 		{% endif %}
+	{% elif result.doctype == "Delivery Sheet" %}
+		{% set s = result.data %}
+		<div class="diwan-result-header">
+			<div class="diwan-card__title"><span class="ref-code">{{ s.delivery_sheet_no }}</span></div>
+			<span class="ds-status-pill" data-status="{{ s.status }}"></span>
+		</div>
+		<div style="display:flex; gap:20px; flex-wrap:wrap-reverse; align-items:flex-start; margin-block-start:8px;">
+			<div style="flex:1 1 260px;">
+				<p><b>{{ _("Delivery Method") }}:</b> {{ s.delivery_method or "-" }}</p>
+				<p><b>{{ _("Recipient Party") }}:</b> {{ s.recipient_party or "-" }}</p>
+				{% if s.courier_name %}<p><b>{{ _("Courier Name") }}:</b> {{ s.courier_name }}</p>{% endif %}
+				{% if s.actual_delivery_datetime %}<p><b>{{ _("Actual Delivery Datetime") }}:</b> {{ frappe.utils.format_datetime(s.actual_delivery_datetime) }}</p>{% endif %}
+			</div>
+			{% if s.qr_code %}
+			<div style="flex:0 0 auto; text-align:center;">
+				<img src="{{ s.qr_code }}" alt="{{ _('Tracking QR Code') }}"
+					style="width:140px; height:140px; object-fit:contain; border:1px solid var(--md-ink-100); border-radius:var(--radius-sm);">
+			</div>
+			{% endif %}
+		</div>
+		<p><b>{{ _("Items") }} ({{ s.contents | length }}):</b></p>
+		{% if s.contents %}
+		<div class="diwan-card" style="padding:0; margin-block-start:6px;">
+			<table class="diwan-table">
+				<thead><tr>
+					<th>{{ _("Type") }}</th>
+					<th>{{ _("Reference") }}</th>
+					<th>{{ _("Subject") }}</th>
+				</tr></thead>
+				<tbody>
+					{% for item in s.contents %}
+					<tr>
+						<td>{{ _(item.type) }}</td>
+						<td><span class="ref-code">{{ item.name }}</span></td>
+						<td>{{ item.subject or "-" }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		{% else %}
+		<div class="diwan-empty">{{ _("No items on this delivery sheet.") }}</div>
+		{% endif %}
 	{% else %}
 		{% set d = result.data %}
 		<div class="diwan-result-header">
@@ -82,6 +125,8 @@
 				<p><b>{{ _("Party") }}:</b> {{ d.party or "-" }}</p>
 				<p><b>{{ _("Department") }}:</b> {{ d.department or "-" }}</p>
 				<p><b>{{ _("Document Date") }}:</b> {{ frappe.utils.format_date(d.document_date) if d.document_date else "-" }}</p>
+				{% if d.envelope %}<p><b>{{ _("Envelope") }}:</b> <span class="ref-code">{{ d.envelope }}</span></p>{% endif %}
+				{% if d.delivery_sheet %}<p><b>{{ _("Delivery Sheet") }}:</b> <span class="ref-code">{{ d.delivery_sheet }}</span></p>{% endif %}
 			</div>
 			{% if d.qr_code %}
 			<div style="flex:0 0 auto; text-align:center;">
@@ -109,7 +154,7 @@
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 frappe.ready(function () {
-	{% if ref and result and result.found and not result.restricted and result.doctype != "Envelope" %}
+	{% if ref and result and result.found and not result.restricted and result.doctype != "Envelope" and result.doctype != "Delivery Sheet" %}
 	var pillHost = document.getElementById("result-status-pill");
 	if (pillHost) pillHost.innerHTML = diwanPortal.statusPillHtml({{ (result.data.status or "") | tojson }}, diwanPortal.CORRESPONDENCE_STATUS_CLASS);
 	var confHost = document.getElementById("result-confidentiality-pill");
@@ -124,6 +169,16 @@ frappe.ready(function () {
 	var ENVELOPE_STATUS_CLASS = { "Open": "pending", "Sent": "review", "Archived": "approved" };
 	document.querySelectorAll(".env-status-pill").forEach(function (el) {
 		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.status, ENVELOPE_STATUS_CLASS);
+	});
+	{% endif %}
+
+	{% if ref and result and result.found and not result.restricted and result.doctype == "Delivery Sheet" %}
+	// Same status vocabulary/class mapping www/diwan/queue's own delivery
+	// sheets tab already uses - kept identical here rather than inventing
+	// a second one.
+	var DS_STATUS_CLASS = { "Pending Delivery": "pending", "Delivered": "review", "Receipt Confirmed": "approved" };
+	document.querySelectorAll(".ds-status-pill").forEach(function (el) {
+		el.outerHTML = diwanPortal.statusPillHtml(el.dataset.status, DS_STATUS_CLASS);
 	});
 	{% endif %}
 

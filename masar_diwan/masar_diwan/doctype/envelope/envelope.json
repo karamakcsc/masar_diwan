@@ -50,7 +50,8 @@
    "fieldname": "linked_delivery_sheet",
    "fieldtype": "Link",
    "label": "Linked Delivery Sheet",
-   "options": "Delivery Sheet"
+   "options": "Delivery Sheet",
+   "read_only": 1
   },
   {
    "fieldname": "qr_code",

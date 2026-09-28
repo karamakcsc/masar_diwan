@@ -43,6 +43,7 @@ def after_install():
 	ensure_correspondence_categories()
 	ensure_dynamic_fields()
 	ensure_envelope_qr_codes()
+	ensure_delivery_sheet_qr_codes()
 
 
 def before_migrate():
@@ -62,6 +63,7 @@ def after_migrate():
 	ensure_correspondence_categories()
 	ensure_dynamic_fields()
 	ensure_envelope_qr_codes()
+	ensure_delivery_sheet_qr_codes()
 	try:
 		migrate_legacy_department_to_erpnext()
 	except Exception:
@@ -620,6 +622,26 @@ def ensure_envelope_qr_codes():
 			frappe.db.commit()
 	except Exception:
 		frappe.log_error(title="masar_diwan: ensure_envelope_qr_codes failed")
+
+
+def ensure_delivery_sheet_qr_codes():
+	"""Same backfill as ensure_envelope_qr_codes() above, for Delivery
+	Sheet's own qr_code field (added 2026-09-28, alongside /track support
+	for tracking a Delivery Sheet directly) - any Delivery Sheet created
+	before that change would otherwise show no QR forever."""
+	from masar_diwan.utils.qrcode_utils import attach_tracking_qr_code
+
+	try:
+		missing = frappe.get_all(
+			"Delivery Sheet", filters={"qr_code": ["in", ["", None]]}, pluck="name"
+		)
+		for name in missing:
+			doc = frappe.get_doc("Delivery Sheet", name)
+			attach_tracking_qr_code(doc, ref=doc.name)
+		if missing:
+			frappe.db.commit()
+	except Exception:
+		frappe.log_error(title="masar_diwan: ensure_delivery_sheet_qr_codes failed")
 
 
 def ensure_workspace_sidebar():
