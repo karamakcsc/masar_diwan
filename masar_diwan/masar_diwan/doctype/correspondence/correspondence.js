@@ -47,11 +47,27 @@ frappe.ui.form.on("Correspondence", {
 			};
 		});
 
+		setTimeout(function () {
+			window.masarDiwanDesk.reflowDynamicFieldColumns(frm);
+		}, 0);
+
 		if (frm.is_new()) {
 			return;
 		}
 		render_source_request_banner(frm);
 		render_registered_dashboard_section(frm);
+	},
+
+	correspondence_category(frm) {
+		setTimeout(function () {
+			window.masarDiwanDesk.reflowDynamicFieldColumns(frm);
+		}, 0);
+	},
+
+	correspondence_sub_category(frm) {
+		setTimeout(function () {
+			window.masarDiwanDesk.reflowDynamicFieldColumns(frm);
+		}, 0);
 	},
 });
 

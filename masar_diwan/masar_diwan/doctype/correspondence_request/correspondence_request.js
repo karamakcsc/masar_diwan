@@ -21,5 +21,19 @@ frappe.ui.form.on('Correspondence Request', {
             };
         });
 
+        setTimeout(function () {
+            window.masarDiwanDesk.reflowDynamicFieldColumns(frm);
+        }, 0);
+
+    },
+    correspondence_category: function(frm) {
+        setTimeout(function () {
+            window.masarDiwanDesk.reflowDynamicFieldColumns(frm);
+        }, 0);
+    },
+    correspondence_sub_category: function(frm) {
+        setTimeout(function () {
+            window.masarDiwanDesk.reflowDynamicFieldColumns(frm);
+        }, 0);
     }
 });

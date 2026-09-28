@@ -46,8 +46,58 @@ window.masarDiwanDesk = (function () {
 		);
 	}
 
+	// The "Additional Fields" section (masar_diwan/install.py's
+	// ensure_dynamic_fields()) lays out every dynamic field from every
+	// Correspondence Category in ONE shared, globally-alphabetical
+	// two-column split - correct at that global level, but a single
+	// category's own visible subset (the only fields depends_on lets a
+	// real Correspondence/Correspondence Request actually show) can still
+	// land lopsided across the two columns purely by where its fields
+	// happened to fall in the *global* alphabetical order, since column
+	// assignment is a static property of each Custom Field, not something
+	// recomputed per visible category (real screenshot, 2026-09-29: a
+	// category with 3 fields showed 1 in column 1 and 2 in column 2).
+	//
+	// Reflowed here instead, client-side, after every render/dependency
+	// re-evaluation: gather only the currently-VISIBLE csf_ fields (in the
+	// form's own field_order, so the alphabetical intent is preserved),
+	// then redistribute them 1st/3rd/5th.. into column 1 and 2nd/4th/6th..
+	// into column 2 - moving already-rendered control wrappers between the
+	// two real `.form-column` containers Frappe itself created for the
+	// Section/Column Break pair, not re-rendering anything.
+	function reflowDynamicFieldColumns(frm) {
+		var columnBreakField = frm.fields_dict["csf_column_break"];
+		if (!columnBreakField || !columnBreakField.$wrapper) return;
+		var col2 = columnBreakField.$wrapper.closest(".form-column");
+		if (!col2.length) return;
+		var col1 = col2.prev(".form-column");
+		if (!col1.length) return;
+
+		var order = frm.meta.fields.map(function (df) {
+			return df.fieldname;
+		});
+		var visible = Object.keys(frm.fields_dict)
+			.filter(function (fieldname) {
+				if (fieldname.indexOf("csf_") !== 0) return false;
+				if (fieldname === "csf_section" || fieldname === "csf_column_break") return false;
+				var field = frm.fields_dict[fieldname];
+				return field.$wrapper && !field.df.hidden_due_to_dependency && !field.df.hidden;
+			})
+			.map(function (fieldname) {
+				return frm.fields_dict[fieldname];
+			})
+			.sort(function (a, b) {
+				return order.indexOf(a.df.fieldname) - order.indexOf(b.df.fieldname);
+			});
+
+		visible.forEach(function (field, i) {
+			(i % 2 === 0 ? col1 : col2).append(field.$wrapper);
+		});
+	}
+
 	return {
 		CORRESPONDENCE_WORKFLOW_STEPS: CORRESPONDENCE_WORKFLOW_STEPS,
 		renderCorrespondenceStepper: renderCorrespondenceStepper,
+		reflowDynamicFieldColumns: reflowDynamicFieldColumns,
 	};
 })();
