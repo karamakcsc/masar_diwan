@@ -9,6 +9,23 @@ from frappe.utils import now_datetime
 from masar_diwan.utils.transfer_log import log_transfer_event
 
 
+def on_file_attached(file_doc, method=None):
+	"""Registered against File's own after_insert (hooks.py) - a plain
+	sidebar attachment never touches DeliverySheet.validate()/on_update()
+	at all, so proof_uploaded_on (still a real, useful "when was proof
+	first attached" timestamp) can only be tracked from here now that
+	there's no dedicated signed_sheet_image field to watch for a
+	before/after change on. Only ever set once, on the first attachment -
+	later attachments (more than one supporting document is expected,
+	the whole reason this replaced the single Attach field) don't move it."""
+	if file_doc.attached_to_doctype != "Delivery Sheet" or not file_doc.attached_to_name:
+		return
+	if not frappe.db.get_value("Delivery Sheet", file_doc.attached_to_name, "proof_uploaded_on"):
+		frappe.db.set_value(
+			"Delivery Sheet", file_doc.attached_to_name, "proof_uploaded_on", now_datetime()
+		)
+
+
 class DeliverySheet(Document):
 	def after_insert(self):
 		self.db_set("delivery_sheet_no", self.name, update_modified=False)
@@ -16,7 +33,6 @@ class DeliverySheet(Document):
 	def validate(self):
 		self.populate_item_details()
 		self.validate_receipt_confirmation()
-		self.track_proof_upload()
 
 	def populate_item_details(self):
 		for row in self.items:
@@ -27,16 +43,20 @@ class DeliverySheet(Document):
 			)
 
 	def validate_receipt_confirmation(self):
+		"""Replaces the old dedicated `signed_sheet_image` Attach field -
+		staff attach proof via Frappe's own generic file-attachment sidebar
+		instead (a delivery can need more than one supporting document, e.g.
+		a signed sheet plus an ID scan, which one Attach field could never
+		hold), and this just confirms at least one such attachment exists
+		before receipt can be confirmed."""
 		before = self.get_doc_before_save()
 		if not before or before.status == self.status:
 			return
-		if self.status == "Receipt Confirmed" and not self.signed_sheet_image:
-			frappe.throw(_("Upload the signed sheet image before confirming receipt"))
+		if self.status == "Receipt Confirmed" and not self._has_attachment():
+			frappe.throw(_("Attach at least one supporting document (e.g. the signed delivery sheet) before confirming receipt."))
 
-	def track_proof_upload(self):
-		before = self.get_doc_before_save()
-		if before and not before.signed_sheet_image and self.signed_sheet_image:
-			self.proof_uploaded_on = now_datetime()
+	def _has_attachment(self):
+		return frappe.db.count("File", {"attached_to_doctype": "Delivery Sheet", "attached_to_name": self.name}) > 0
 
 	def on_update(self):
 		# Linked immediately on being added to the sheet, regardless of

@@ -182,6 +182,9 @@ doc_events = {
 	"Internal Mail Movement": {
 		"on_update": "masar_diwan.notifications.on_internal_mail_movement_update",
 	},
+	"File": {
+		"after_insert": "masar_diwan.masar_diwan.doctype.delivery_sheet.delivery_sheet.on_file_attached",
+	},
 }
 
 # Scheduled Tasks

@@ -21,8 +21,7 @@
   "status",
   "column_break_2",
   "actual_delivery_datetime",
-  "proof_uploaded_on",
-  "signed_sheet_image"
+  "proof_uploaded_on"
  ],
  "fields": [
   {
@@ -104,11 +103,6 @@
    "fieldtype": "Datetime",
    "label": "Proof Uploaded On",
    "read_only": 1
-  },
-  {
-   "fieldname": "signed_sheet_image",
-   "fieldtype": "Attach",
-   "label": "Signed Sheet Image"
   }
  ],
  "grid_page_length": 50,
