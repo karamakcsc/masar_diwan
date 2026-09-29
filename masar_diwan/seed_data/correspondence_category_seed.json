@@ -40,12 +40,24 @@
   "dynamic_fields": []
  },
  {
-  "name": "Chueqs",
-  "title": "Chueqs",
+  "name": "Cheuqe",
+  "title": "Cheuqe",
   "parent_correspondence_category": "Financial",
   "is_group": 0,
   "disabled": 0,
   "dynamic_fields": [
+   {
+    "label": "Cheuqe Type",
+    "fieldname_slug": "cheuqe_type_bf479c",
+    "fieldtype": "Select",
+    "options": "\nIncoming\nOutgoing\nReturn",
+    "link_scope": "core",
+    "reqd": 0,
+    "sort_order": 0,
+    "is_active": 1,
+    "definition_mode": "New Field",
+    "reuse_fieldname_slug": null
+   },
    {
     "label": "Cheuqe No",
     "fieldname_slug": "cheuqe_no_52508e",
@@ -71,9 +83,45 @@
     "reuse_fieldname_slug": null
    },
    {
+    "label": "Beneficiary Name",
+    "fieldname_slug": "beneficiary_name_0cb3fa",
+    "fieldtype": "Data",
+    "options": null,
+    "link_scope": "core",
+    "reqd": 0,
+    "sort_order": 0,
+    "is_active": 1,
+    "definition_mode": "New Field",
+    "reuse_fieldname_slug": null
+   },
+   {
     "label": "Cheuqe Date",
     "fieldname_slug": "cheuqe_date_193e50",
     "fieldtype": "Date",
+    "options": null,
+    "link_scope": "core",
+    "reqd": 0,
+    "sort_order": 0,
+    "is_active": 1,
+    "definition_mode": "New Field",
+    "reuse_fieldname_slug": null
+   },
+   {
+    "label": "Status",
+    "fieldname_slug": "status_5738b5",
+    "fieldtype": "Select",
+    "options": "\nDepositor\nCollector\nReturning",
+    "link_scope": "core",
+    "reqd": 0,
+    "sort_order": 0,
+    "is_active": 1,
+    "definition_mode": "New Field",
+    "reuse_fieldname_slug": null
+   },
+   {
+    "label": "Note",
+    "fieldname_slug": "note_54421d",
+    "fieldtype": "Data",
     "options": null,
     "link_scope": "core",
     "reqd": 0,

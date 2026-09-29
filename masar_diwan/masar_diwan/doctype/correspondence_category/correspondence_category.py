@@ -59,6 +59,28 @@ class CorrespondenceCategory(Document):
 
 		ensure_dynamic_fields()
 
+	def after_rename(self, old_name, new_name, merge):
+		# Renaming a category (frappe.rename_doc) never calls on_update() -
+		# only before_rename/after_rename, confirmed directly against
+		# frappe/model/rename_doc.py - so without this, a rename left every
+		# Custom Field's depends_on/mandatory_depends_on (and the shared
+		# "Additional Fields" section's own depends_on) referencing the
+		# *old* category name forever, since that name is baked into those
+		# eval-string conditions as a literal, not a live reference. Real,
+		# reported symptom: dynamic fields silently stopped appearing for a
+		# category the moment it was renamed, even though Frappe's own
+		# rename cascade correctly updated every actual Link field (the
+		# child rows' own `parent`, and every Correspondence/Correspondence
+		# Request already pointing at this category) to the new name -
+		# only the *derived* eval-string conditions were left stale, since
+		# nothing had ever re-generated them. ensure_dynamic_fields() reads
+		# category names fresh from the DB on every call, so simply
+		# re-running it here regenerates every condition with the name this
+		# category now actually has.
+		from masar_diwan.install import ensure_dynamic_fields
+
+		ensure_dynamic_fields()
+
 	def _generate_fieldname_slug(self, label):
 		for _attempt in range(5):
 			ascii_part = re.sub(r"[^a-zA-Z0-9]+", "_", label or "").strip("_").lower()
