@@ -18,7 +18,7 @@
 frappe.pages["correspondence-request-new"].on_page_load = function (wrapper) {
 	const page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: "طلب مراسلة جديد",
+		title: __("New Correspondence Request"),
 		single_column: true,
 	});
 
@@ -26,21 +26,21 @@ frappe.pages["correspondence-request-new"].on_page_load = function (wrapper) {
 };
 
 const CRN_STEPS = [
-	{ key: "Draft", label: "مسودة" },
-	{ key: "Pending Review", label: "بانتظار المراجعة" },
-	{ key: "Under Review", label: "قيد المراجعة" },
-	{ key: "Approved", label: "معتمدة" },
-	{ key: "Approved & Numbered", label: "معتمدة ومرقّمة" },
+	{ key: "Draft", label: __("Draft") },
+	{ key: "Pending Review", label: __("Pending Review") },
+	{ key: "Under Review", label: __("Under Review") },
+	{ key: "Approved", label: __("Approved") },
+	{ key: "Approved & Numbered", label: __("Approved & Numbered") },
 ];
 
 const CRN_STATUS_META = {
-	Draft: { label: "مسودة", color: "grey" },
-	"Pending Review": { label: "بانتظار المراجعة", color: "orange" },
-	"Under Review": { label: "قيد المراجعة", color: "blue" },
-	"Needs Revision": { label: "بحاجة لتعديل", color: "yellow" },
-	Rejected: { label: "مرفوض", color: "red" },
-	Approved: { label: "معتمدة", color: "blue" },
-	"Approved & Numbered": { label: "معتمدة ومرقّمة", color: "green" },
+	Draft: { label: __("Draft"), color: "grey" },
+	"Pending Review": { label: __("Pending Review"), color: "orange" },
+	"Under Review": { label: __("Under Review"), color: "blue" },
+	"Needs Revision": { label: __("Needs Revision"), color: "yellow" },
+	Rejected: { label: __("Rejected"), color: "red" },
+	Approved: { label: __("Approved"), color: "blue" },
+	"Approved & Numbered": { label: __("Approved & Numbered"), color: "green" },
 };
 
 // Fallback shown only until the real Confidentiality Level list (which can
@@ -49,7 +49,7 @@ const CRN_STATUS_META = {
 // site has exactly these 3 levels; this object is replaced wholesale by
 // fetch_confidentiality_levels() as soon as that call returns.
 const CRN_CONFIDENTIALITY_FALLBACK = {
-	Normal: { label: "عادي", active_class: "btn-secondary" },
+	Normal: { label: __("Normal"), active_class: "btn-secondary" },
 };
 
 class CorrespondenceRequestNew {
@@ -307,14 +307,14 @@ class CorrespondenceRequestNew {
 		const $body = $(this.page.body).empty();
 
 		this.page.set_indicator(status_meta.label, status_meta.color);
-		this.page.set_primary_action("إرسال للمراجعة", () => this.save($body, "submit"));
-		this.page.set_secondary_action("حفظ كمسودة", () => this.save($body, "draft"));
+		this.page.set_primary_action(__("Submit for Review"), () => this.save($body, "submit"));
+		this.page.set_secondary_action(__("Save as Draft"), () => this.save($body, "draft"));
 
 		$body.html(`
-			<div class="correspondence-request-new-page" dir="rtl">
+			<div class="correspondence-request-new-page" dir="${frappe.utils.is_rtl() ? "rtl" : "ltr"}">
 				${
 					this.saved_name
-						? `<div class="alert alert-info">تم حفظ الطلب كمسودة برقم
+						? `<div class="alert alert-info">${__("Request saved as draft with number")}
 							<a href="/app/correspondence-request/${encodeURIComponent(this.saved_name)}">
 								${esc(this.saved_name)}
 							</a></div>`
@@ -323,15 +323,15 @@ class CorrespondenceRequestNew {
 				<div class="row">
 					<div class="col-lg-8">
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">بيانات أساسية</h6>
-							<label class="crn-readonly-label d-block mt-2">نوع المعاملة <span class="text-danger">*</span></label>
+							<h6 class="card-title">${__("Basic Information")}</h6>
+							<label class="crn-readonly-label d-block mt-2">${__("Request Type")} <span class="text-danger">*</span></label>
 							<div class="row">
 								<div class="col-4">
 									<button type="button" class="btn ${
 										this.request_type === "Incoming" ? "btn-primary" : "btn-outline-primary"
 									} crn-type-btn" data-value="Incoming">
 										${icon("down-arrow", "lg")}
-										<span>وارد</span>
+										<span>${__("Incoming")}</span>
 									</button>
 								</div>
 								<div class="col-4">
@@ -339,7 +339,7 @@ class CorrespondenceRequestNew {
 										this.request_type === "Outgoing" ? "btn-primary" : "btn-outline-primary"
 									} crn-type-btn" data-value="Outgoing">
 										${icon("up-arrow", "lg")}
-										<span>صادر</span>
+										<span>${__("Outgoing")}</span>
 									</button>
 								</div>
 								<div class="col-4">
@@ -347,41 +347,41 @@ class CorrespondenceRequestNew {
 										this.request_type === "Internal" ? "btn-primary" : "btn-outline-primary"
 									} crn-type-btn" data-value="Internal">
 										${icon("home", "lg")}
-										<span>داخلي</span>
+										<span>${__("Internal")}</span>
 									</button>
 								</div>
 							</div>
 
 							<div class="row mt-3">
 								<div class="col-sm-6">
-									<div class="crn-readonly-label">مقدَّم من</div>
+									<div class="crn-readonly-label">${__("Submitted by")}</div>
 									<div class="crn-readonly-value crn-submitter-line">...</div>
 								</div>
 								<div class="col-sm-6">
-									<div class="crn-readonly-label">تاريخ الطلب</div>
+									<div class="crn-readonly-label">${__("Request Date")}</div>
 									<div class="crn-readonly-value crn-date-line">...</div>
 								</div>
 							</div>
 
 							<div class="form-group mt-3">
-								<label>الموضوع <span class="text-danger">*</span></label>
+								<label>${__("Subject")} <span class="text-danger">*</span></label>
 								<input type="text" class="form-control" id="crn-subject" value="${esc(prefill.subject || "")}">
 							</div>
 							<div class="form-group mb-0">
-								<label>الجهة / القسم المستهدف</label>
+								<label>${__("Party / Department")}</label>
 								<input type="text" class="form-control" id="crn-party" value="${esc(prefill.party_or_department || "")}">
 							</div>
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">التصنيف</h6>
+							<h6 class="card-title">${__("Classification")}</h6>
 							<div class="row">
 								<div class="col-sm-6 form-group">
-									<label>الفئة</label>
+									<label>${__("Category")}</label>
 									<select class="form-control" id="crn-category"><option value="">-</option></select>
 								</div>
 								<div class="col-sm-6 form-group" id="crn-subcategory-group" style="display:none;">
-									<label>الفئة الفرعية</label>
+									<label>${__("Sub Category")}</label>
 									<select class="form-control" id="crn-subcategory"><option value="">-</option></select>
 								</div>
 							</div>
@@ -389,26 +389,26 @@ class CorrespondenceRequestNew {
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">نص المسودة</h6>
+							<h6 class="card-title">${__("Draft Text")}</h6>
 							<div id="crn-draft-text-wrapper"></div>
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">الأولوية ودرجة السرية المقترحتان</h6>
+							<h6 class="card-title">${__("Suggested Priority and Confidentiality")}</h6>
 							<div class="row">
 								<div class="col-sm-6">
-									<label class="d-block">الأولوية</label>
+									<label class="d-block">${__("Priority")}</label>
 									<div class="btn-group" role="group">
 										<button type="button" class="btn ${
 											this.priority === "Normal" ? "btn-primary" : "btn-outline-secondary"
-										} crn-priority-pill" data-value="Normal">عادي</button>
+										} crn-priority-pill" data-value="Normal">${__("Normal")}</button>
 										<button type="button" class="btn ${
 											this.priority === "Urgent" ? "btn-primary" : "btn-outline-secondary"
-										} crn-priority-pill" data-value="Urgent">عاجل</button>
+										} crn-priority-pill" data-value="Urgent">${__("Urgent")}</button>
 									</div>
 								</div>
 								<div class="col-sm-6">
-									<label class="d-block">درجة السرية</label>
+									<label class="d-block">${__("Confidentiality Level")}</label>
 									<div class="btn-group" id="crn-confidentiality-group" role="group">
 										${this.build_confidentiality_pills_html()}
 									</div>
@@ -417,23 +417,23 @@ class CorrespondenceRequestNew {
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">مرفقات مبدئية</h6>
+							<h6 class="card-title">${__("Initial Attachments")}</h6>
 							<div class="crn-dropzone" id="crn-dropzone">
-								اسحب وأفلت الملفات هنا، أو اضغط للاختيار
+								${__("Drag and drop files here, or click to select")}
 								<input type="file" id="crn-file-input" multiple style="display:none;">
 							</div>
 							<div id="crn-file-list"></div>
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">ملاحظة لأمين الديوان</h6>
+							<h6 class="card-title">${__("Note to Registrar")}</h6>
 							<textarea class="form-control" id="crn-note" rows="2">${esc(prefill.note_to_registrar || "")}</textarea>
 						</div></div>
 					</div>
 
 					<div class="col-lg-4">
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">حالة الطلب</h6>
+							<h6 class="card-title">${__("Request Status")}</h6>
 							${this.render_stepper_vertical(status)}
 						</div></div>
 
@@ -446,7 +446,7 @@ class CorrespondenceRequestNew {
 						<div class="card mb-3 bg-light border-0"><div class="card-body">
 							<div class="crn-help-card">
 								<div>${icon("solid-info", "sm")}</div>
-								<div class="small text-muted">بعد الإرسال، تتم مراجعة طلبك من قبل أمين الديوان وقد يُطلب منك تعديله قبل اعتماده وتسجيله رسمياً.</div>
+								<div class="small text-muted">${__("After you submit, your request is reviewed by the Diwan registrar and may be returned to you for changes before it is approved and officially registered.")}</div>
 							</div>
 						</div></div>
 					</div>
@@ -675,7 +675,7 @@ class CorrespondenceRequestNew {
 		const subject = $body.find("#crn-subject").val().trim();
 		if (!this.request_type || !subject) {
 			frappe.msgprint({
-				message: __("الرجاء اختيار نوع المعاملة وإدخال الموضوع قبل المتابعة."),
+				message: __("Please select a request type and enter a subject before continuing."),
 				indicator: "orange",
 			});
 			return;
@@ -696,7 +696,7 @@ class CorrespondenceRequestNew {
 			window.masarDiwanDynamicFields.collectValues($body.find("#crn-dynamic-fields")[0])
 		);
 
-		frappe.dom.freeze(action === "submit" ? __("جارٍ الإرسال للمراجعة...") : __("جارٍ حفظ المسودة..."));
+		frappe.dom.freeze(action === "submit" ? __("Submitting for review...") : __("Saving draft..."));
 
 		try {
 			let doc;
@@ -724,7 +724,7 @@ class CorrespondenceRequestNew {
 				this.render_confirmation(doc);
 			} else {
 				frappe.dom.unfreeze();
-				frappe.show_alert({ message: __("تم حفظ الطلب كمسودة"), indicator: "green" });
+				frappe.show_alert({ message: __("Request saved as draft"), indicator: "green" });
 				this.render_form(Object.assign({}, fields, { name: doc.name, status: doc.status }));
 			}
 		} catch (e) {
@@ -740,32 +740,32 @@ class CorrespondenceRequestNew {
 
 		const $body = $(this.page.body).empty();
 		$body.html(`
-			<div class="correspondence-request-new-page" dir="rtl">
+			<div class="correspondence-request-new-page" dir="${frappe.utils.is_rtl() ? "rtl" : "ltr"}">
 				<div class="row">
 					<div class="col-lg-8">
 						<div class="card"><div class="card-body text-center py-5">
 							<div class="crn-success-icon">&#10003;</div>
-							<h4 class="mt-3">تم إرسال الطلب للمراجعة بنجاح</h4>
-							<p class="text-muted">رقم الطلب: <strong>${esc(doc.name)}</strong></p>
+							<h4 class="mt-3">${__("Request submitted for review successfully")}</h4>
+							<p class="text-muted">${__("Request No.")}: <strong>${esc(doc.name)}</strong></p>
 							<div class="mt-4">
-								<button type="button" class="btn btn-default" id="crn-view-request">عرض الطلب</button>
-								<button type="button" class="btn btn-primary" id="crn-new-request">تقديم طلب آخر</button>
+								<button type="button" class="btn btn-default" id="crn-view-request">${__("View Request")}</button>
+								<button type="button" class="btn btn-primary" id="crn-new-request">${__("Submit Another Request")}</button>
 							</div>
 						</div></div>
 					</div>
 					<div class="col-lg-4">
 						<div class="card mb-3"><div class="card-body">
-							<h6 class="card-title">حالة الطلب</h6>
+							<h6 class="card-title">${__("Request Status")}</h6>
 							${this.render_stepper_vertical(doc.status)}
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body text-center">
-							<h6 class="card-title text-right">رمز التتبع (QR)</h6>
+							<h6 class="card-title text-right">${__("Tracking QR Code")}</h6>
 							<div class="crn-qr-disabled-wrap">
 								${this.render_fake_qr_svg()}
 								<div class="crn-qr-lock">${frappe.utils.icon("restriction", "xs")}</div>
 							</div>
-							<div class="text-muted small mt-2">سيتم توليد رمز QR للتتبع تلقائياً بعد اعتماد الطلب وتسجيله كمراسلة رسمية.</div>
+							<div class="text-muted small mt-2">${__("A tracking QR code is generated automatically once the request is approved and registered as an official correspondence.")}</div>
 						</div></div>
 
 						<div class="card mb-3"><div class="card-body text-center">

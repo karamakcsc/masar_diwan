@@ -1067,6 +1067,16 @@ Reported directly with two screenshots: renamed the "Chueqs" category to "Cheuqe
 
 **Worth remembering for next time**: any mechanism that "creates X if a record named X doesn't already exist" (this seed, and by extension any similar future one) is inherently rename-blind - it has no way to know a missing name was *renamed away* rather than *never created*, and will happily recreate a stale duplicate the moment its own snapshot and live reality diverge on a name. The fix isn't to make the seed smarter (that would need real rename-tracking machinery for a one-time bootstrap seed, disproportionate to what it's for) - it's to keep the discipline this file already documented for the seed: regenerate it promptly after a meaningful category change, *including* a rename, not just after adding/editing fields.
 
+## 2026-10-08: full Arabic translation pass (`translations/ar.csv`) - uncommitted, awaiting review
+
+**Source language is English everywhere now.** A re-scan found no Arabic-source label in any DocType/Workspace/Report/Number Card/Workflow/Print Format JSON (disk *and* `bob.local` DB), so no DocType/report rename was needed. The only hard-coded Arabic UI was `correspondence_request_new.js` (the deliberate exception recorded in the 2026-09-21 restyle section) - converted to English source + `__()`; its `dir="rtl"` is now `frappe.utils.is_rtl() ? "rtl" : "ltr"` so English users don't get an RTL page. Also fixed a stale `Correspondence Type.prefix` description (`e.g. و, ص, د` -> `e.g. IN, OU, INT`) and wrapped two data-driven values in `www/diwan/queue/index.html` (`_(t.title)`, `_(e.reference_doctype)`).
+
+**v16 still loads `translations/ar.csv`** (`frappe.translate.get_translations_from_apps` reads CSV *and* `.mo`) - no `locale/ar.po` needed.
+
+**`ar.csv` conventions**: all values quoted, 2 columns, sorted case-insensitively, no BOM, no duplicates. Glossary terms override older rows and Frappe core where they conflict (Draft=مسودة, Incoming=وارد, Outgoing=صادر, Priority=الأولوية, Subject=الموضوع, Archived=مؤرشف, Completed=مكتمل, Reference No/Number=رقم المرجع, ...). Workspace headers are translated by their **entity-escaped** text (`frappe/public/js/frappe/views/workspace/blocks/header.js` does `__(escape_html(innerText))`), so the working key is `Delivery &amp; Distribution` - both `&amp;` and plain `&` rows are shipped. Several strings are translated at runtime through a variable (`_(item.label)`, `__(status)`, `_(t.title)`) - the extractor can't see those, so `scratchpad`-style extractors must add their source strings by hand (nav labels, `TAB_LABELS`, `portal_section_title`, seed category/dynamic-field labels, report filter Select options).
+
+**Seed data caveat**: `seed_data/correspondence_category_seed.json` ships sample labels with typos (`Cheuqe*`, `Inoice Date`) and two Arabic *record names* (`تعميم`, `صيانة`) - translated verbatim / left alone respectively; renaming a Correspondence Category is a data change (see the 2026-09-29 rename section), not a translation fix.
+
 ## Standing rules for whoever works on this repo next
 
 1. **Keep this file current in the same session, not "later."** Whenever a bug is found and fixed, a phase advances, or a real gotcha is discovered, update the relevant section here before moving on.

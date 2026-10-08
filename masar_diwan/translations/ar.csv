@@ -1,188 +1,439 @@
-About,معلومات عن النظام,
-Action Type,نوع العمل,
-Actual Date,التاريخ الفعلي,
-Archive,أرشيف,
-Archived,أرشفة,
-Attachments,المرفقات,
-Branch,فرع,
-Category,فئة,
-Channel,قناة,
-Comment,تعليق,
-Company,شركة,
-Completed,أكتمل,
-Contact,اتصال,
-Correspondence,مراسلة,
-Correspondence Category,فئة المراسلة,
-Correspondence Employee,موظف مراسلات,
-Correspondence Request,طلب مراسلة,
-Correspondence Settings,إعدادات المراسلات,
-Correspondence Transfer Log,سجل إحالة المراسلة,
-Correspondence Type,نوع المراسلة,
-Customer,العميل,
-Date,تاريخ,
-Delivery Sheet,كشف تسليم,
-Delivery Sheet Item,بند كشف التسليم,
-Department,قسم,
-Department Head,مسؤول قسم,
-Description,وصف,
-Diwan Officer,أمين الديوان,
-Documents,وثائق,
-Done,مُنجز,
-Download,تحميل,
-Draft,مشروع,
-Due Date,تاريخ الاستحقاق,
-Employee,الموظف,
-Envelope,مغلف,
-Envelope Document,وثيقة المغلف,
-Event Type,نوع الحدث,
-File Name,اسم الملف,
-Follow-up Action,إجراء متابعة,
-Frappe Support,دعم فرابيه,
-From User,من المستخدم,
-IP Address,عنوان IP,
-Incoming,الوارد,
-Internal,داخلي,
-Keyboard Shortcuts,اختصارات لوحة المفاتيح,
-Login,دخول,
-Masar Diwan,مسار ديوان,
-Note,ملاحظات,
-Open,فتح,
-Outgoing,الصادر,
-Party,الطرف المعني,
-Party Type,نوع الطرف,
-Pending Review,في انتظار المراجعة,
-Portal,البوابة,
-Portal Tracking User,مستخدم بوابة التتبع,
-Prefix,بادئة,
-Priority,أفضلية,
-QR Code,رمز الاستجابة السريعة,
-Reason,سبب,
-Reference Document Type,نوع المستند المرجعي,
-Reference Name,اسم المرجع,
-Rejected,مرفوض,
-Reply,رد,
-Request Type,نوع الطلب,
-Responsible,مسؤول,
-Result,نتيجة,
-Scan,مسح,
-Senior Management,الإدارة العليا,
-Sent,أرسلت,
-Status,الحالة,
-Status Change,تغيير الحالة,
-Subject,موضوع,
-Submit,إرسال,
-Success,نجاح,
-Supplier,المورد,
-System Health,صحة النظام,
-System Manager,مدير النظام,
-Title,العنوان,
-Urgent,عاجل,
-User,المستعمل,
-View,عرض,
-Access Log Entry,سجل الوصول,
-Access Log Report,تقرير سجل الوصول,
-Action Required,الإجراء المطلوب,
-Actual Delivery Datetime,تاريخ ووقت التسليم الفعلي,
-Authorized Viewers,المخوّلون بالاطلاع,
-Confidentiality,درجة السرية,
-Correspondence Authorized Viewer,مخوّل بالاطلاع على المراسلة,
-Correspondence Completion Time,مدة إنجاز المراسلات,
-Correspondence Items,بنود المراسلات,
-Correspondence Numbering Rule,قاعدة ترقيم المراسلات,
-Courier Name,اسم المندوب,
-Creation Date,تاريخ الإنشاء,
-Current Number,الرقم الحالي,
-Current Owner,المسؤول الحالي,
-Decision Note,ملاحظة القرار,
-Delivery Address,عنوان التسليم,
-Delivery Method,طريقة التسليم,
-Delivery Sheet No,رقم كشف التسليم,
-Device Info,معلومات الجهاز,
-Document Date,تاريخ الوثيقة,
-Draft Text,نص المسودة,
-Envelope No,رقم المغلف,
-Event Datetime,تاريخ ووقت الحدث,
-Follow-up,متابعة,
-Follow-up Actions,إجراءات المتابعة,
-Follow-up Date,تاريخ المتابعة,
-Is New IP,عنوان IP جديد,
-Last Reset Year,سنة آخر إعادة تصفير,
-Linked Correspondence,مراسلة مرتبطة,
-Linked Delivery Sheet,كشف تسليم مرتبط,
-Note to Registrar,ملاحظة لأمين الديوان,
-Numbering Rules,قواعد الترقيم,
-Overdue Correspondence,مراسلات متأخرة,
-Party / Department,الجهة / القسم,
-Performed By,نفّذه,
-Proof Uploaded On,تاريخ رفع إثبات الاستلام,
-QR Scan Policy for Restricted Correspondence,سياسة مسح QR للمراسلات المقيّدة,
-Recipient Party,الجهة المستلمة,
-Reference No,الرقم المرجعي,
-Related Document,المستند المرتبط,
-Related Document Type,نوع المستند المرتبط,
-Request Date,تاريخ الطلب,
-Requested By,مقدّم الطلب,
-Reset Yearly,إعادة التصفير سنوياً,
-Resulting Correspondence,المراسلة الناتجة,
-Signed Sheet Image,صورة الكشف الموقّع,
-Source Request,الطلب المصدر,
-Subject (English),الموضوع (بالإنجليزية),
-Suggested Confidentiality,درجة السرية المقترحة,
-Suggested Priority,الأولوية المقترحة,
-To Department,إلى القسم,
-To User,إلى المستخدم,
-Transfer Log,سجل الإحالة,
-Approved & Numbered,معتمدة ومرقّمة,
-Authorized Only,للمخوّلين فقط,
-Barcode Scan,مسح باركود,
-Confidential,سري,
-Delivered,تم التسليم,
-Denied,مرفوض,
-Desk,سطح المكتب,
-Direct Hand Delivery,تسليم مباشر باليد,
-Express Mail,بريد سريع,
-Hide Completely,إخفاء كامل,
-Highly Confidential,سري للغاية,
-Internal Courier,مندوب داخلي,
-Needs Revision,يحتاج تعديل,
-Normal,عادي,
-Pending Delivery,بانتظار التسليم,
-QR Scan,مسح رمز الاستجابة السريعة,
-Receipt Confirmed,تم تأكيد الاستلام,
-Referral,إحالة,
-Referred / In Progress,محالة / قيد الإجراء,
-Tray Decision,قرار صينية الديوان,
-Under Review,قيد المراجعة,
-Submit for Review,تقديم للمراجعة,
-Send Back for Revision,إعادة للتعديل,
-Refer,إحالة,
-Reject,رفض,
-Return for Review,إعادة للمراجعة,
-Mark Completed,تحديد كمكتمل,
-Start Review,بدء المراجعة,
-Request Revision,طلب تعديل,
-Approve & Register,اعتماد وتسجيل,
-Resubmit,إعادة تقديم,
-Mark Delivered,تحديد كمُسلَّم,
-Confirm Receipt,تأكيد الاستلام,
-Correspondence Request Workflow,سير عمل طلب المراسلة,
-Delivery Sheet Workflow,سير عمل كشف التسليم,
-Correspondence Workflow,سير عمل المراسلة,
-Delivery Sheet Print,طباعة كشف التسليم,
-Envelope Label,ليبل المغلف,
-Document Label,ليبل الوثيقة,
-Website User — Tracking Portal Only,مستخدم بوابة — للتتبع فقط,
-Scan with Camera,مسح بالكاميرا,
-Scan a Correspondence,مسح مراسلة,
-Search Correspondence,البحث عن مراسلة,
-Reference Not Found,لم يتم العثور على الرقم المرجعي,
-Restricted content,محتوى مقيّد,
-You are not authorized to view this correspondence,غير مخوّل بالاطلاع على هذه المراسلة,
-Enveloped,إدراج في مغلف,
-Added to Delivery Sheet,إضافة إلى كشف تسليم,
-Items,العناصر,
-Type,النوع,
-Reference,المرجع,
-Delivery Sheets,كشوفات تسليم,
-No items on this delivery sheet.,لا توجد عناصر في كشف التسليم هذا.,
-"No correspondence, envelope, or delivery sheet found for this reference.",لم يتم العثور على مراسلة أو مغلف أو كشف تسليم بهذا الرقم المرجعي.,
+"A decision note is required.","ملاحظة القرار مطلوبة."
+"A tracking QR code is generated automatically once the request is approved and registered as an official correspondence.","يُولَّد رمز QR للتتبع تلقائياً بعد اعتماد الطلب وتسجيله كمراسلة رسمية."
+"About","معلومات عن النظام"
+"Access Log Entry","سجل الوصول"
+"Access Log Report","تقرير سجل الوصول"
+"Action Required","الإجراء المطلوب"
+"Action Type","نوع العمل"
+"Actual Date","التاريخ الفعلي"
+"Actual Delivery Datetime","تاريخ ووقت التسليم الفعلي"
+"Added to Delivery Sheet","إضافة إلى كشف تسليم"
+"Added to Delivery Sheet {0}","أُضيفت إلى كشف التسليم {0}"
+"Added to Envelope {0}","أُضيفت إلى المغلف {0}"
+"Additional Fields","حقول إضافية"
+"Administrative","إداري"
+"After you submit, your request is reviewed by the Diwan registrar and may be returned to you for changes before it is approved and officially registered.","بعد الإرسال، يراجع أمين الديوان طلبك وقد يُعاد إليك لتعديله قبل اعتماده وتسجيله رسمياً."
+"An internal mail movement ({0}) from {1} to {2} is on its way: {3}","حركة بريد داخلي ({0}) من {1} إلى {2} في الطريق: {3}"
+"Approve","اعتماد"
+"Approve & Register","اعتماد وتسجيل"
+"Approve Selected","اعتماد المحدد"
+"Approved","معتمد"
+"Approved & Numbered","معتمد ومرقّم"
+"Archive","أرشفة"
+"Archived","مؤرشف"
+"Attach at least one supporting document (e.g. the signed delivery sheet) before confirming receipt.","أرفق مستنداً داعماً واحداً على الأقل (مثل كشف التسليم الموقّع) قبل تأكيد الاستلام."
+"Attachments","المرفقات"
+"Authorized Only","للمخوّلين فقط"
+"Authorized Viewer Doctype","نوع المستند للمخوّلين بالاطلاع"
+"Authorized Viewers","المخوّلون بالاطلاع"
+"Average Days to Complete","متوسط أيام الإنجاز"
+"Barcode Scan","مسح باركود"
+"Basic Information","بيانات أساسية"
+"Beneficiary Name","اسم المستفيد"
+"Branch","فرع"
+"Built once from the first Label entered (slugified + a short random suffix to avoid collisions), then locked. This is the real, permanent column name behind this field (as csf_<this value> on Correspondence Request/Correspondence) - it never changes again even if Label is edited later, so previously-entered data is never orphaned.","يُنشأ مرة واحدة من أول تسمية تُدخل (بعد تحويلها إلى صيغة مبسّطة مع لاحقة عشوائية قصيرة لتجنب التكرار) ثم يُقفل. هذا هو اسم العمود الحقيقي الدائم لهذا الحقل (بصيغة csf_<this value> في طلب المراسلة/المراسلة) - ولا يتغير أبداً حتى لو عُدّلت التسمية لاحقاً، فلا تُفقد البيانات المُدخلة سابقاً."
+"Bulk Approve","اعتماد جماعي"
+"Bypass Roles","أدوار التجاوز"
+"Camera scanner library failed to load","تعذّر تحميل مكتبة الماسح بالكاميرا"
+"Cannot change {0} on {1} to {2} - at least one existing record already stores {3}, which isn't a valid {2} value. Fix or clear it on the affected record(s) first.","لا يمكن تغيير {0} في {1} إلى {2} - يوجد سجل واحد على الأقل يخزّن حالياً {3} وهي قيمة غير صالحة لنوع {2}. صحّحها أو امسحها في السجلات المتأثرة أولاً."
+"Category","فئة"
+"Category cannot be changed - this Correspondence was registered from an approved request.","لا يمكن تغيير الفئة - سُجّلت هذه المراسلة من طلب معتمد."
+"Category Is Group","الفئة مجموعة"
+"Channel","قناة"
+"Check","خانة اختيار"
+"Cheuqe","شيك"
+"Cheuqe Date","تاريخ الشيك"
+"Cheuqe No","رقم الشيك"
+"Cheuqe Type","نوع الشيك"
+"Circular","تعميم"
+"Circulars distributed to multiple departments","تعاميم توزَّع على عدة أقسام"
+"Classification","التصنيف"
+"Clear","مسح"
+"Collector","المحصِّل"
+"Comment","تعليق"
+"Company","شركة"
+"Completed","مكتمل"
+"Completed Items","العناصر المكتملة"
+"Confidential","سري"
+"Confidentiality","درجة السرية"
+"Confidentiality Field","حقل درجة السرية"
+"Confidentiality Field {0} does not exist on {1}","حقل درجة السرية {0} غير موجود في {1}"
+"Confidentiality Level","درجة السرية"
+"Confidentiality Level Bypass Role","دور تجاوز درجة السرية"
+"Confirm Receipt","تأكيد الاستلام"
+"Contact","اتصال"
+"Content Description","وصف المحتوى"
+"Correspondence","مراسلة"
+"Correspondence - Archived","المراسلات - مؤرشفة"
+"Correspondence - Completed","المراسلات - مكتملة"
+"Correspondence - Draft","المراسلات - مسودة"
+"Correspondence - Referred or In Progress","المراسلات - محالة أو قيد الإجراء"
+"Correspondence - Under Review","المراسلات - قيد المراجعة"
+"Correspondence Authorized Viewer","مخوّل بالاطلاع على المراسلة"
+"Correspondence by Department","المراسلات حسب القسم"
+"Correspondence Category","فئة المراسلة"
+"Correspondence Category Field","حقل فئة المراسلة"
+"Correspondence Completion Time","مدة إنجاز المراسلات"
+"Correspondence Employee","موظف مراسلات"
+"Correspondence exchanged between internal departments","مراسلات متبادلة بين الأقسام الداخلية"
+"Correspondence Items","بنود المراسلات"
+"Correspondence Numbering Rule","قاعدة ترقيم المراسلات"
+"Correspondence Request","طلب مراسلة"
+"Correspondence Request Workflow","سير عمل طلب المراسلة"
+"Correspondence Settings","إعدادات المراسلات"
+"Correspondence Sub Category","الفئة الفرعية للمراسلة"
+"Correspondence Tracking","تتبع المراسلات"
+"Correspondence Transfer Log","سجل إحالة المراسلة"
+"Correspondence Trend","اتجاه المراسلات"
+"Correspondence Type","نوع المراسلة"
+"Correspondence Type for this batch","نوع المراسلة لهذه الدفعة"
+"Correspondence Type is required to generate a reference number","نوع المراسلة مطلوب لتوليد رقم المرجع"
+"Correspondence Type {0} has no prefix configured","لم تُضبط بادئة لنوع المراسلة {0}"
+"Correspondence Workflow","سير عمل المراسلة"
+"Could not acquire numbering lock for {0}, please try again","تعذّر الحصول على قفل الترقيم لـ {0}، يرجى المحاولة مرة أخرى"
+"Could not complete this action. Check the required fields above.","تعذّر إكمال هذا الإجراء. تحقق من الحقول المطلوبة أعلاه."
+"Could not generate a unique field name - please try saving again.","تعذّر توليد اسم حقل فريد - يرجى محاولة الحفظ مرة أخرى."
+"Could not save the request. Please check the required fields.","تعذّر حفظ الطلب. يرجى التحقق من الحقول المطلوبة."
+"Could not update {0} - its new settings conflict with data already stored on existing records. It keeps its previous configuration for now; see Error Log for details.","تعذّر تحديث {0} - إعداداته الجديدة تتعارض مع بيانات مخزّنة في سجلات موجودة. يحتفظ حالياً بإعداده السابق؛ راجع سجل الأخطاء للتفاصيل."
+"Courier","المندوب"
+"Courier Name","اسم المندوب"
+"Creation Date","تاريخ الإنشاء"
+"Current Number","الرقم الحالي"
+"Current Owner","المسؤول الحالي"
+"Customer","العميل"
+"Daily Transactions","المعاملات اليومية"
+"Date","تاريخ"
+"Date/Time","التاريخ/الوقت"
+"Days Overdue","أيام التأخير"
+"Days to Complete","أيام الإنجاز"
+"Decision","القرار"
+"Decision Note","ملاحظة القرار"
+"Defaults to the confirming user's full name, but is editable - the actual recipient may not be the System User who confirms receipt.","الافتراضي هو الاسم الكامل للمستخدم الذي يؤكد الاستلام، ويمكن تعديله - فقد لا يكون المستلم الفعلي هو مستخدم النظام الذي يؤكد الاستلام."
+"Defaults to the current user's full name, but is editable - the actual sender may not be the System User who records this movement.","الافتراضي هو الاسم الكامل للمستخدم الحالي، ويمكن تعديله - فقد لا يكون المرسل الفعلي هو مستخدم النظام الذي يسجّل هذه الحركة."
+"Definition","التعريف"
+"Delivered","تم التسليم"
+"Delivered By (Courier Signature)","سُلِّم بواسطة (توقيع المندوب)"
+"Delivery & Distribution","التسليم والتوزيع"
+"Delivery &amp; Distribution","التسليم والتوزيع"
+"Delivery Address","عنوان التسليم"
+"Delivery Method","طريقة التسليم"
+"Delivery Sheet","كشف تسليم"
+"Delivery Sheet Item","بند كشف التسليم"
+"Delivery Sheet No","رقم كشف التسليم"
+"Delivery Sheet Print","طباعة كشف التسليم"
+"Delivery Sheet Workflow","سير عمل كشف التسليم"
+"Delivery Sheets","كشوفات تسليم"
+"Denied","مرفوض"
+"Department","قسم"
+"Department Exempt Roles","الأدوار المعفاة من تقييد القسم"
+"Department Field {0} does not exist on {1}","حقل القسم {0} غير موجود في {1}"
+"Department Fields","حقول القسم"
+"Department Head","مسؤول قسم"
+"Department Members Can Read","أعضاء القسم يمكنهم القراءة"
+"Department Name","اسم القسم"
+"Department Scoping","التقييد حسب القسم"
+"Depositor","المودِع"
+"Description","وصف"
+"Desk","سطح المكتب"
+"Device","الجهاز"
+"Device Info","معلومات الجهاز"
+"Direct Hand Delivery","تسليم مباشر باليد"
+"Diwan Officer","أمين الديوان"
+"Diwan Portal","بوابة الديوان"
+"Document Access Profile","ملف صلاحيات الوثائق"
+"Document Access Profile Department Field","حقل قسم في ملف صلاحيات الوثائق"
+"Document Access Profile Role","دور في ملف صلاحيات الوثائق"
+"Document Access Profile Searchable Field","حقل بحث في ملف صلاحيات الوثائق"
+"Document Date","تاريخ الوثيقة"
+"Document Label","ليبل الوثيقة"
+"Documents","وثائق"
+"Done","مُنجز"
+"Download","تحميل"
+"Draft","مسودة"
+"Draft Text","نص المسودة"
+"Drag and drop files here, or click to select","اسحب وأفلت الملفات هنا، أو اضغط للاختيار"
+"due","الاستحقاق"
+"Due Date","تاريخ الاستحقاق"
+"Dynamic Fields","الحقول الديناميكية"
+"Edit & Resubmit","تعديل وإعادة التقديم"
+"Editable on a direct Correspondence (no source_request yet); auto-filled and locked once one is approved into this record from the tray. Drives which fields appear in Additional Fields below.","قابل للتعديل في المراسلة المباشرة (دون طلب مصدر بعد)؛ يُملأ تلقائياً ويُقفل بمجرد اعتماد طلب في هذا السجل من صينية الديوان. يحدد الحقول التي تظهر في ""حقول إضافية"" أدناه."
+"Employee","الموظف"
+"Enter the exact ""Field Name (auto, permanent)"" value of the field to reuse, from any other category. Field Type/Options/Link Scope are then taken from that existing definition, not from what's set above, to guarantee the shared column stays consistent everywhere it's used.","أدخل قيمة ""اسم الحقل (تلقائي، دائم)"" للحقل المراد إعادة استخدامه من أي فئة أخرى بالضبط. يُؤخذ نوع الحقل والخيارات ونطاق الربط من ذلك التعريف الموجود وليس مما هو مضبوط أعلاه، لضمان بقاء العمود المشترك متسقاً في كل مكان يُستخدم فيه."
+"Enter the exact tracking reference or scan the QR code printed on the correspondence. This only shows the single record you already hold a reference to - it is not a search tool.","أدخل رقم التتبع المرجعي بالضبط أو امسح رمز QR المطبوع على المراسلة. تعرض هذه الصفحة السجل الوحيد الذي تملك مرجعه فقط - وليست أداة بحث."
+"Envelope","مغلف"
+"Envelope Document","وثيقة المغلف"
+"Envelope Label","ليبل المغلف"
+"Envelope No","رقم المغلف"
+"Envelope {0}","المغلف {0}"
+"Enveloped","إدراج في مغلف"
+"Envelopes","المغلفات"
+"erpnext: this field is skipped entirely (with a logged warning) on a site that doesn't have ERPNext installed, instead of failing the sync.","erpnext: يُتجاهل هذا الحقل كلياً (مع تسجيل تحذير) في الموقع الذي لا يحتوي على ERPNext بدلاً من فشل المزامنة."
+"Event Datetime","تاريخ ووقت الحدث"
+"Event Type","نوع الحدث"
+"Existing Field Name To Reuse","اسم الحقل الموجود المراد إعادة استخدامه"
+"Express Mail","بريد سريع"
+"Field Name (auto, permanent)","اسم الحقل (تلقائي، دائم)"
+"Fieldname of a Link field on the target Document Type that points at Department (or whichever doctype is currently providing it) - e.g. 'department', 'from_department'. A document matches this profile's department scoping if any one of its department fields' value is one of the user's departments (logical OR across rows).","اسم حقل ربط في نوع المستند المستهدف يشير إلى القسم (أو إلى أي نوع مستند يقدّمه حالياً) - مثل 'department' أو 'from_department'. تنطبق الوثيقة على تقييد القسم في هذا الملف إذا كانت قيمة أي من حقول القسم فيها هي أحد أقسام المستخدم (أو منطقية عبر الصفوف)."
+"Fieldname on Document Type holding a Link to Confidentiality Level.","اسم الحقل في نوع المستند الذي يحمل رابطاً إلى درجة السرية."
+"Fieldname on Document Type that holds its human-readable reference/document number - used by the unified search result display.","اسم الحقل في نوع المستند الذي يحمل رقم المرجع/الوثيقة المقروء - يُستخدم في عرض نتائج البحث الموحّد."
+"Fieldname on Document Type that holds its workflow/lifecycle status - used to build generic per-status Number Cards and reports.","اسم الحقل في نوع المستند الذي يحمل حالة سير العمل/دورة الحياة - يُستخدم لبناء بطاقات الأرقام والتقارير العامة لكل حالة."
+"Fieldname on Document Type that identifies who currently owns/is responsible for the document (used for the Confidentiality Level 'Owner Can Read' rule). Defaults to the standard 'owner' meta field - override if the doctype tracks ownership under a different fieldname (e.g. Correspondence uses 'current_owner').","اسم الحقل في نوع المستند الذي يحدد مالك الوثيقة أو المسؤول عنها حالياً (يُستخدم في قاعدة 'المالك يمكنه القراءة' لدرجة السرية). الافتراضي هو الحقل القياسي 'owner' - غيّره إذا كان نوع المستند يتتبع الملكية في حقل آخر (مثلاً تستخدم المراسلة 'current_owner')."
+"Fieldname on that master doctype holding the prefix string, e.g. 'prefix'.","اسم الحقل في نوع المستند الرئيسي الذي يحمل نص البادئة، مثل 'prefix'."
+"Fields queried by the unified search across all registered document types.","الحقول التي يبحث فيها البحث الموحّد عبر جميع أنواع المستندات المسجّلة."
+"File Name","اسم الملف"
+"File not found","لم يتم العثور على الملف"
+"Financial","مالي"
+"Follow-up","متابعة"
+"Follow-up Action","إجراء متابعة"
+"Follow-up Actions","إجراءات المتابعة"
+"Follow-up Date","تاريخ المتابعة"
+"For Select: one option per line. For Link: the target DocType's exact name.","للحقل من نوع اختيار: خيار واحد في كل سطر. للحقل من نوع ربط: الاسم الدقيق لنوع المستند المستهدف."
+"Frappe Support","دعم فرابيه"
+"From Department","من القسم"
+"From New IP","من عنوان IP جديد"
+"From User","من المستخدم"
+"Hide Completely","إخفاء كامل"
+"Highly Confidential","سري للغاية"
+"If checked, any user in the document's own department may read a document at this level, even without an explicit bypass role or being an authorized viewer.","عند التفعيل، يمكن لأي مستخدم في قسم الوثيقة قراءة وثيقة بهذه الدرجة، حتى دون دور تجاوز صريح أو دون أن يكون من المخوّلين بالاطلاع."
+"If checked, the document's own owner field (see Document Access Profile.owner_field) may always read it at this level, even outside their department.","عند التفعيل، يمكن لمالك الوثيقة (انظر حقل المالك في ملف صلاحيات الوثائق) قراءتها دائماً بهذه الدرجة، حتى خارج قسمه."
+"Incoming","وارد"
+"Incoming Requests","الطلبات الواردة"
+"Incompatible Values","قيم غير متوافقة"
+"Initial Attachments","مرفقات مبدئية"
+"Inoice Date","تاريخ الفاتورة"
+"Inside envelope","داخل المغلف"
+"Int","عدد صحيح"
+"Internal","داخلي"
+"Internal Courier","مندوب داخلي"
+"Internal Mail Movement","حركة البريد الداخلي"
+"Internal mail movement sent to your department: {0}","حركة بريد داخلي أُرسلت إلى قسمك: {0}"
+"Internal Mail Movement Workflow","سير عمل حركة البريد الداخلي"
+"Invoice No","رقم الفاتورة"
+"IP","عنوان IP"
+"IP Address","عنوان IP"
+"Is New IP","عنوان IP جديد"
+"Items","العناصر"
+"Keyboard Shortcuts","اختصارات لوحة المفاتيح"
+"Last Reset Year","سنة آخر إعادة تصفير"
+"Level Name","اسم الدرجة"
+"Level Name (English)","اسم الدرجة (بالإنجليزية)"
+"Link fields on Document Type that hold a department (or whichever doctype is currently providing 'Department') used for department scoping - e.g. 'department', or 'from_department'+'to_department' for a doctype with two. A user sees the document if ANY one of these fields' value is one of their own departments (logical OR across rows) - or if their role is in Department Exempt Roles below. Leave empty if this type is not department-scoped at all.","حقول الربط في نوع المستند التي تحمل القسم (أو أي نوع مستند يقدّم 'القسم' حالياً) وتُستخدم للتقييد حسب القسم - مثل 'department' أو 'from_department' و'to_department' لنوع مستند يحمل قسمين. يرى المستخدم الوثيقة إذا كانت قيمة أي من هذه الحقول هي أحد أقسامه (أو منطقية عبر الصفوف) - أو إذا كان دوره ضمن الأدوار المعفاة من تقييد القسم أدناه. اتركه فارغاً إذا كان هذا النوع غير مقيّد بالقسم."
+"Link Scope","نطاق الربط"
+"Linked Correspondence","مراسلة مرتبطة"
+"Linked Delivery Sheet","كشف تسليم مرتبط"
+"Login","دخول"
+"Mark Completed","تحديد كمكتمل"
+"Mark Delivered","تحديد كمُسلَّم"
+"Masar Diwan","مسار ديوان"
+"Master doctype this type's reference-number prefix is configured on, e.g. Correspondence Type.","نوع المستند الرئيسي الذي تُضبط عليه بادئة رقم المرجع لهذا النوع، مثل نوع المراسلة."
+"My Filter","مرشحي"
+"My Requests","طلباتي"
+"Name of a child-table doctype, shaped like {parent, parenttype, user}, listing users explicitly authorized to read an otherwise-restricted document of this type - e.g. Correspondence Authorized Viewer. Leave blank if this type has no such mechanism (bypass roles + owner + department rules still apply).","اسم نوع مستند جدول فرعي بالشكل {parent, parenttype, user} يسرد المستخدمين المخوّلين صراحةً بقراءة وثيقة مقيّدة من هذا النوع - مثل المخوّل بالاطلاع على المراسلة. اتركه فارغاً إذا لم تكن لهذا النوع آلية كهذه (تبقى أدوار التجاوز والمالك وقواعد القسم سارية)."
+"Needs Revision","يحتاج تعديل"
+"New Correspondence Request","طلب مراسلة جديد"
+"New correspondence request: {0}","طلب مراسلة جديد: {0}"
+"New Field","حقل جديد"
+"New IP","عنوان IP جديد"
+"New Request","طلب جديد"
+"No access log entries match these filters.","لا توجد قيود في سجل الوصول تطابق هذه المرشحات."
+"No correspondence, envelope, or delivery sheet found for this reference.","لم يتم العثور على مراسلة أو مغلف أو كشف تسليم بهذا الرقم المرجعي."
+"No delivery sheets yet.","لا توجد كشوف تسليم بعد."
+"No documents in this envelope.","لا توجد وثائق في هذا المغلف."
+"No envelopes yet.","لا توجد مغلفات بعد."
+"No items on this delivery sheet.","لا توجد عناصر في كشف التسليم هذا."
+"No QR code generated yet","لم يُولَّد رمز QR بعد"
+"No results","لا توجد نتائج"
+"No.","الرقم"
+"Normal","عادي"
+"Note","ملاحظات"
+"Note to Registrar","ملاحظة لأمين الديوان"
+"Nothing pending review right now.","لا يوجد شيء بانتظار المراجعة حالياً."
+"Nothing waiting in the queue right now.","لا يوجد شيء في قائمة الانتظار حالياً."
+"Numbering Prefix Source Doctype","نوع المستند المصدر لبادئة الترقيم"
+"Numbering Prefix Source Field","حقل المصدر لبادئة الترقيم"
+"Numbering Rules","قواعد الترقيم"
+"Old Parent","الأصل السابق"
+"Only meaningful on a leaf category (Is Group unchecked, or a category with no sub-categories) - a category a request can actually be filed under. Fields defined here appear on Correspondence Request/Correspondence the moment this exact category (top-level or sub-category) is selected.","لا معنى له إلا في فئة طرفية (غير مفعّل فيها خيار ""هل مجموعة""، أو فئة بلا فئات فرعية) - أي فئة يمكن تصنيف الطلب تحتها فعلاً. تظهر الحقول المعرّفة هنا في طلب المراسلة/المراسلة بمجرد اختيار هذه الفئة بالذات (رئيسية كانت أم فرعية)."
+"Open","فتح"
+"Optional link to an already-registered Correspondence, if this internal movement is carrying/referring to one.","رابط اختياري إلى مراسلة مسجّلة سابقاً، إذا كانت حركة البريد الداخلي هذه تحملها أو تشير إليها."
+"Ordering only - 0 is the least restrictive level. Does not need to be contiguous.","للترتيب فقط - الرقم 0 هو الدرجة الأقل تقييداً. لا يشترط أن تكون الأرقام متتالية."
+"Outcome","النتيجة النهائية"
+"Outgoing","صادر"
+"Overdue Correspondence","مراسلات متأخرة"
+"Overdue Items","العناصر المتأخرة"
+"Owner Can Read","المالك يمكنه القراءة"
+"Owner Field","حقل المالك"
+"Parent Correspondence Category","فئة المراسلة الأم"
+"Parent Department","القسم الأعلى"
+"Party","الطرف المعني"
+"Party / Department","الجهة / القسم"
+"Party Type","نوع الطرف"
+"Pending Delivery","بانتظار التسليم"
+"Pending Review","بانتظار المراجعة"
+"Performed By","نفّذه"
+"Please log in","يرجى تسجيل الدخول"
+"Please log in to view tracking details","يرجى تسجيل الدخول لعرض تفاصيل التتبع"
+"Please select a request type and enter a subject before continuing.","الرجاء اختيار نوع الطلب وإدخال الموضوع قبل المتابعة."
+"Portal","البوابة"
+"Portal Tracking User","مستخدم بوابة التتبع"
+"Portals","البوابات"
+"Prefix","بادئة"
+"Priority","الأولوية"
+"Proof Uploaded On","تاريخ رفع إثبات الاستلام"
+"QR Code","رمز الاستجابة السريعة"
+"QR Code Image","صورة رمز QR"
+"QR Code Img","صورة رمز QR"
+"QR Scan","مسح رمز الاستجابة السريعة"
+"QR Scan Policy for Restricted Correspondence","سياسة مسح QR للمراسلات المقيّدة"
+"Queue","قائمة الانتظار"
+"Rank","الترتيب"
+"Reason","سبب"
+"Receipt Confirmed","تم تأكيد الاستلام"
+"Received By","استلمه"
+"Received By (Party Signature)","استلمه (توقيع الجهة المستلمة)"
+"Recipient","المستلم"
+"Recipient Party","الجهة المستلمة"
+"Refer","إحالة"
+"Reference","المرجع"
+"Reference Document Type","نوع المستند المرجعي"
+"Reference Field","حقل المرجع"
+"Reference Name","اسم المرجع"
+"Reference No","رقم المرجع"
+"Reference No / Subject","رقم المرجع / الموضوع"
+"Reference Not Found","لم يتم العثور على الرقم المرجعي"
+"Reference not found","لم يتم العثور على المرجع"
+"Reference Number","رقم المرجع"
+"Reference number, then Enter","رقم المرجع، ثم اضغط Enter"
+"Reference Numbering (optional)","ترقيم المرجع (اختياري)"
+"Referral","إحالة"
+"Referred / In Progress","محالة / قيد الإجراء"
+"Register","تسجيل"
+"Registered by","سُجّلت بواسطة"
+"Registered from request","سُجّلت من الطلب"
+"Reject","رفض"
+"Rejected","مرفوض"
+"Related Correspondence","مراسلة ذات صلة"
+"Related Correspondence (optional)","مراسلة ذات صلة (اختياري)"
+"Related Document","المستند المرتبط"
+"Related Document Type","نوع المستند المرتبط"
+"Reply","رد"
+"Reports & Monitoring","التقارير والمتابعة"
+"Reports &amp; Monitoring","التقارير والمتابعة"
+"Request Date","تاريخ الطلب"
+"Request No.","رقم الطلب"
+"Request Revision","طلب تعديل"
+"Request saved as draft","تم حفظ الطلب كمسودة"
+"Request saved as draft with number","تم حفظ الطلب كمسودة برقم"
+"Request Status","حالة الطلب"
+"Request submitted for review successfully","تم إرسال الطلب للمراجعة بنجاح"
+"Request Type","نوع الطلب"
+"Request {0}","الطلب {0}"
+"Requested By","مقدّم الطلب"
+"Requester","مقدّم الطلب"
+"Requester Portal","بوابة مقدم الطلب"
+"Requesting Department","القسم الطالب"
+"Required for Reject and Request Revision.","مطلوبة عند الرفض وطلب التعديل."
+"Required to register - determines the reference number series. This is the Diwan department's own step, separate from the approval decision above.","مطلوب للتسجيل - يحدد سلسلة أرقام المرجع. هذه خطوة خاصة بقسم الديوان، منفصلة عن قرار الاعتماد أعلاه."
+"Reset Yearly","إعادة التصفير سنوياً"
+"Responsible","مسؤول"
+"Restricted content","محتوى مقيّد"
+"Resubmit","إعادة تقديم"
+"Result","نتيجة"
+"Resulting Correspondence","المراسلة الناتجة"
+"Return","مرتجع"
+"Return for Review","إعادة للمراجعة"
+"Returning","مرتجع"
+"Reuse an existing field","إعادة استخدام حقل موجود"
+"Reuse Existing Field","إعادة استخدام حقل موجود"
+"Reuse: this row shares its real column with another category's field of the same name - e.g. both ""Invoices"" and ""Checks"" showing an ""Amount"" field that's really the same underlying data. Never matched automatically by Label alone (two unrelated fields can share a label by coincidence) - must be chosen explicitly here.","إعادة الاستخدام: يشارك هذا الصف عموده الفعلي مع حقل بنفس الاسم في فئة أخرى - مثلاً أن تعرض فئتا ""الفواتير"" و""الشيكات"" حقل ""المبلغ"" وهو في الحقيقة البيانات نفسها. لا تتم المطابقة تلقائياً بالتسمية وحدها (فقد يتشابه حقلان غير مرتبطين في التسمية بالصدفة) - بل يجب اختيارها صراحةً هنا."
+"Review Request","مراجعة الطلب"
+"Revise and Resubmit","تعديل وإعادة التقديم"
+"Roles that may always read a document at this level, in any department, regardless of ownership or authorized-viewer status.","الأدوار التي يمكنها قراءة وثيقة بهذه الدرجة دائماً، في أي قسم، بغض النظر عن الملكية أو صفة المخوّل بالاطلاع."
+"Roles that see documents of this type across every department, regardless of their own User Permission department assignment. Confidentiality tiering (below) still applies independently.","الأدوار التي ترى وثائق هذا النوع في جميع الأقسام، بغض النظر عن القسم المعيّن لها في صلاحيات المستخدم. يبقى تدرّج السرية (أدناه) ساري المفعول بشكل مستقل."
+"Row {0}: choose an existing field name to reuse, or switch back to New Field.","الصف {0}: اختر اسم حقل موجود لإعادة استخدامه، أو عُد إلى ""حقل جديد""."
+"Row {0}: no existing field named {1} was found on any category.","الصف {0}: لم يوجد أي حقل باسم {1} في أي فئة."
+"Row {0}: set either Correspondence or Envelope, not both or neither.","الصف {0}: حدد إما المراسلة أو المغلف، وليس كليهما ولا أياً منهما."
+"Save as Draft","حفظ كمسودة"
+"Saved as draft, but could not submit for review.","تم الحفظ كمسودة، لكن تعذّر الإرسال للمراجعة."
+"Saved as draft.","تم الحفظ كمسودة."
+"Saving draft...","جارٍ حفظ المسودة..."
+"Scan","مسح"
+"Scan a Correspondence","مسح مراسلة"
+"Scan or Enter a Reference","امسح أو أدخل رقم مرجع"
+"Scan or type a reference number","امسح أو اكتب رقم مرجع"
+"Scan with Camera","مسح بالكاميرا"
+"Search Correspondence","البحث عن مراسلة"
+"Searchable Fields","حقول البحث"
+"Select a Correspondence Sub Category - the chosen category has sub-categories.","اختر فئة فرعية للمراسلة - الفئة المختارة تحتوي على فئات فرعية."
+"Select a Correspondence Type for this batch first.","اختر نوع المراسلة لهذه الدفعة أولاً."
+"Select requests that are straightforward and don't need individual review, pick one Correspondence Type for the batch, and register them all at once. Anything that needs a closer look belongs in the Queue instead.","حدّد الطلبات البسيطة التي لا تحتاج مراجعة فردية، واختر نوع مراسلة واحداً للدفعة، وسجّلها جميعاً دفعة واحدة. أما ما يحتاج تدقيقاً أكبر فمكانه قائمة الانتظار."
+"Send Back for Revision","إعادة للتعديل"
+"Senior Management","الإدارة العليا"
+"Sent","أرسلت"
+"Set a Correspondence Type before registering - it determines the reference number series.","حدد نوع المراسلة قبل التسجيل - فهو يحدد سلسلة أرقام المرجع."
+"Set a Correspondence Type before registering.","حدد نوع المراسلة قبل التسجيل."
+"Signed Sheet Image","صورة الكشف الموقّع"
+"Some dynamic fields were not updated","لم يتم تحديث بعض الحقول الديناميكية"
+"Source Request","الطلب المصدر"
+"Start Review","بدء المراجعة"
+"Status","الحالة"
+"Status Change","تغيير الحالة"
+"Status changed from {0} to {1}","تغيّرت الحالة من {0} إلى {1}"
+"Status Field","حقل الحالة"
+"Sub Category","الفئة الفرعية"
+"Subject","الموضوع"
+"Subject (English)","الموضوع (بالإنجليزية)"
+"Subject is required.","الموضوع مطلوب."
+"Submit","إرسال"
+"Submit Another Request","تقديم طلب آخر"
+"Submit for Review","تقديم للمراجعة"
+"Submitted by","مقدَّم من"
+"Submitting for review...","جارٍ الإرسال للمراجعة..."
+"Success","نجاح"
+"Suggested Confidentiality","درجة السرية المقترحة"
+"Suggested Priority","الأولوية المقترحة"
+"Suggested Priority and Confidentiality","الأولوية ودرجة السرية المقترحتان"
+"Supplier","المورد"
+"Supports Confidentiality","يدعم درجات السرية"
+"System Health","صحة النظام"
+"System Manager","مدير النظام"
+"The Diwan department's own registration step - set only once a request is Approved, right before Register. Not part of the review/approval decision itself.","خطوة التسجيل الخاصة بقسم الديوان - تُضبط فقط بعد اعتماد الطلب وقبل التسجيل مباشرةً. ليست جزءاً من قرار المراجعة/الاعتماد نفسه."
+"This reference exists, but you are not authorized to view its details.","هذا المرجع موجود، لكنك غير مخوّل بعرض تفاصيله."
+"This request doesn't exist or you don't have access to it.","هذا الطلب غير موجود أو لا تملك صلاحية الوصول إليه."
+"Title","العنوان"
+"To Department","إلى القسم"
+"To User","إلى المستخدم"
+"Total Events","إجمالي الأحداث"
+"Track","تتبع"
+"Track Correspondence","تتبع مراسلة"
+"Track Portal","بوابة التتبع"
+"Tracking QR Code","رمز التتبع (QR)"
+"Transfer Log","سجل الإحالة"
+"Tray Decision","قرار صينية الديوان"
+"Type","النوع"
+"Unchecking this hides the field everywhere immediately (Desk form, portal) without deleting its column or any value already stored in it. Use the doctype's own delete-row action only for a field that was never actually used.","يؤدي إلغاء التفعيل إلى إخفاء الحقل فوراً في كل مكان (النموذج المكتبي والبوابة) دون حذف عموده أو أي قيمة مخزّنة فيه. استخدم إجراء حذف الصف الخاص بنوع المستند فقط للحقل الذي لم يُستخدم فعلياً قط."
+"Under Review","قيد المراجعة"
+"Unified Search","البحث الموحّد"
+"Urgent","عاجل"
+"Used to build the reference number, e.g. IN, OU, INT","يُستخدم لبناء رقم المرجع، مثل IN وOU وINT"
+"User","المستعمل"
+"View","عرض"
+"View Request","عرض الطلب"
+"Website User — Tracking Portal Only","مستخدم بوابة — للتتبع فقط"
+"What the user sees on the Correspondence Request form. Can be edited freely at any time - unlike fieldname_slug below, changing this never affects any already-stored data.","ما يراه المستخدم في نموذج طلب المراسلة. يمكن تعديله بحرية في أي وقت - وخلافاً لاسم الحقل الدائم أدناه، لا يؤثر تغييره على أي بيانات مخزّنة سابقاً."
+"When","التوقيت"
+"Who is this correspondence with?","مع من هذه المراسلة؟"
+"You are not authorized to view this correspondence","غير مخوّل بالاطلاع على هذه المراسلة"
+"You are not authorized to view this document","غير مخوّل بالاطلاع على هذه الوثيقة"
+"You are not permitted to download this file","غير مصرّح لك بتحميل هذا الملف"
+"You are not permitted to submit correspondence requests.","غير مصرّح لك بتقديم طلبات المراسلة."
+"You are not permitted to view this document","غير مصرّح لك بعرض هذه الوثيقة"
+"You do not have access to the Diwan Portal.","لا تملك صلاحية الوصول إلى بوابة الديوان."
+"You don't have access to search this.","لا تملك صلاحية البحث في هذا."
+"You have {0} overdue correspondence item(s)","لديك {0} من المراسلات المتأخرة"
+"You haven't submitted any correspondence requests yet.","لم تقدّم أي طلبات مراسلة بعد."
+"Your correspondence request <b>{0}</b> has been <b>{1}</b>.","طلب المراسلة الخاص بك <b>{0}</b> أصبح <b>{1}</b>."
+"Your correspondence request <b>{0}</b> has been registered as <b>{1}</b>.","تم تسجيل طلب المراسلة الخاص بك <b>{0}</b> برقم <b>{1}</b>."
+"Your correspondence request was registered: {0}","تم تسجيل طلب المراسلة الخاص بك: {0}"
+"Your correspondence request was {0}: {1}","طلب المراسلة الخاص بك {0}: {1}"
+"{0} is not a valid sub-category of {1}.","{0} ليست فئة فرعية صالحة للفئة {1}."

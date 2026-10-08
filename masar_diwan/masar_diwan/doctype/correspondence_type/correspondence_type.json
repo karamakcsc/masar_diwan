@@ -22,7 +22,7 @@
    "unique": 1
   },
   {
-   "description": "Used to build the reference number, e.g. \u0648, \u0635, \u062f",
+   "description": "Used to build the reference number, e.g. IN, OU, INT",
    "fieldname": "prefix",
    "fieldtype": "Data",
    "in_list_view": 1,
